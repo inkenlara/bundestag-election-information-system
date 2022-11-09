@@ -31,7 +31,27 @@ try:
 except:
     print("Fail")
 
+path_kands_2017 = "csvs/kandidaten2017.csv"
+path_kands_2021 = "csvs/btw21_kandidaturen_utf8.csv"
+path_kerg = "csvs/kerg.csv"
+
+
+# bundesländer
+with open(path_kerg) as f:
+    csv_buffer = csv.reader(f, delimiter=';', quotechar='"')
+    next(csv_buffer)
+    bundesland_data = []
+    for rows in csv_buffer:
+        if(rows[2] == "99"):
+            bundesland_data.append([int(rows[0]), rows[1]])
+    cur.executemany('INSERT INTO BundesLand VALUES(%s, %s)', bundesland_data)
 
 
 
+
+
+
+
+
+sql_con.commit()
 sql_con.close()
