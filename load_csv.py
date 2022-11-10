@@ -118,13 +118,44 @@ def partei():
         cur.executemany('INSERT INTO Partei VALUES(%s, %s, %s)', total_partei)
 
 
+def direktKandidaten2021():
+    with open(path_kands_2021, encoding='utf-8') as f:
+        csv_buffer = csv.reader(f, delimiter=';', quotechar='"')
+        next(csv_buffer)
+        lis = []
+        KandidatID = 0
+        for row in csv_buffer:
+            KandidatID = KandidatID + 1
+            LastName = row[4]
+            FirstName = row[5]
+            Beruf = row[15]
+            Partei = None                      # TODO Have to JOIN with Partei, in order to get Partei IDs
+            WahlKreis = row[19]
+            WahlJahr = 2021
+            AnzahlStimmen = None               # TODO Missing number of votes
+            ProzentWahlhKreis = None           # TODO Missing prozent of votes
+            lis.append([KandidatID, FirstName, LastName, Beruf, Partei, WahlKreis, WahlJahr, AnzahlStimmen, ProzentWahlhKreis])
+    cur.executemany('INSERT INTO DirektKandidaten VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s)', lis)
+
+
+# TODO very tricky to export data for 2017, maybe wait for a better source
+def direktKandidaten2017():
+    with open(path_kands_2017, encoding='utf-8') as f:
+        csv_buffer = csv.reader(f, delimiter=';', quotechar='"')
+        next(csv_buffer)
+        for row in csv_buffer:
+            pass
+
+
+
+
 
 # CALLING THE FUNCTIONS
 # bundesland()
 # kreise()
 # partei()
-
-
+# direktKandidaten2021()
+direktKandidaten2017()
 
 
 sql_con.commit()

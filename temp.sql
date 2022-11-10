@@ -22,14 +22,14 @@ CREATE TABLE Partei (
 
 CREATE TABLE Direktkandidaten (
 	KandidatID int primary key,
-	FirstName varchar(30) not null,
-	LastName varchar(30) not null,
-	Beruf varchar(60),
+	FirstName varchar(60) not null,
+	LastName varchar(60) not null,
+	Beruf varchar(120),
 	Partei int references Partei ON DELETE SET NULL,
 	Wahlkreis int NOT NULL references WahlKreis ON DELETE CASCADE,
 	WahlJahr int NOT NULL,
-	AnzahlStimmen int NOT NULL,
-	ProzentWahlhKreis decimal(3, 2) NOT NULL
+	AnzahlStimmen int,
+	ProzentWahlhKreis decimal(3, 2)
 );
 
 
