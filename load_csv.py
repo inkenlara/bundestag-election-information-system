@@ -89,13 +89,18 @@ def partei():
         cur.executemany('INSERT INTO Partei VALUES(%s, %s)', total_partei)
 
 
+def direktKandidaten():
+    pass
 
 
 
 # CALLING THE FUNCTIONS
 # bundesland()
 # kreise()
-partei()
+# partei()
+direktKandidaten()
+
+
 
 sql_con.commit()
 sql_con.close()
