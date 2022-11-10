@@ -1,3 +1,4 @@
+
 CREATE TABLE BundesLand(
 	BundesLandID int primary key,
 	BundesLandName varchar(30) NOT NULL
@@ -13,10 +14,10 @@ CREATE TABLE WahlKreis (
 CREATE TABLE Partei (
 	ParteiID int primary key,
 	Bezeichnung varchar(200) unique not null,
-	KurzBezeichnung varchar(30),
-	AnzahlMitglieder int,
-	PolitischeAusrichtung varchar(200),
-	ParteiVorsitzende varchar(60)
+	-- KurzBezeichnung varchar(30),      --Brauchen wir nicht wirklich
+	-- AnzahlMitglieder int,
+	-- PolitischeAusrichtung varchar(200),
+	-- ParteiVorsitzende varchar(60)
 );
 
 CREATE TABLE Direktkandidaten (
@@ -32,18 +33,18 @@ CREATE TABLE Direktkandidaten (
 );
 
 
-CREATE TABLE WahlBezirk(
-	WahlBezirkID int primary key,
-	AnzahlWahlBerechtigte int NOT NULL,
-	WahlKreis int NOT NULL references WahlKreis ON DELETE CASCADE
-);
+-- CREATE TABLE WahlBezirk(
+-- 	WahlBezirkID int primary key,
+-- 	AnzahlWahlBerechtigte int NOT NULL,
+-- 	WahlKreis int NOT NULL references WahlKreis ON DELETE CASCADE
+-- );
 
 
-CREATE TABLE WahlLokal (
-	WahlLokalID int primary key,
-	Adresse varchar(100) NOT NULL,
-	WahlBezirk int NOT NULL references WahlBezirk ON DELETE CASCADE
-);
+-- CREATE TABLE WahlLokal (
+--	WahlLokalID int primary key,
+--	Adresse varchar(100) NOT NULL,
+--	WahlBezirk int NOT NULL references WahlBezirk ON DELETE CASCADE
+--);
 
 
 CREATE TABLE WahlBerechtigte (
@@ -51,14 +52,14 @@ CREATE TABLE WahlBerechtigte (
 	FirstName varchar(30) not null,
 	LastName varchar(30) not null,
 	Gewahlt Bool NOT NULL,
-	WahlBezirk int NOT NULL references WahlBezirk ON DELETE SET NULL,
+	WahlKreis int NOT NULL references WahlKreis ON DELETE SET NULL,
 	WahlJahr int NOT NULL
 );
 
 
 CREATE TABLE ErstStimmen(
 	ErstimmID int primary key,
-	WahlLokal int NOT NULL references WahlLokal,
+	WahlKreis int NOT NULL references WahlKreis,
 	Kandidat int references Direktkandidaten,
 	WahlJahr int NOT NULL
 );
@@ -72,7 +73,7 @@ CREATE TABLE LandesListe(
 
 CREATE TABLE ZweitStimmen(
 	ZweitstimmID int primary key,
-	WahlLokal int NOT NULL references WahlLokal,
+	WahlKreis int NOT NULL references WahlKreis,
 	Partei int references Partei ON DELETE SET NULL,
 	LandesListe int NOT NULL references LandesListe,
 	WahlJahr int NOT NULL
@@ -165,4 +166,5 @@ CREATE TABLE StimmZettel (
 	Verwendet bool NOT NULL,
 	WahlKreis int NOT NULL references WahlKreis
 );
+
 

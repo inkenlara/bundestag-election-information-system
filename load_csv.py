@@ -68,6 +68,25 @@ def kreise():
         cur.executemany('INSERT INTO WahlKreis VALUES(%s, %s, %s)', kreis_data)
 
 
+def partei():
+    with open(path_kerg, encoding='utf-8') as f:
+        csv_buffer = csv.reader(f, delimiter=';', quotechar='"')
+        # next(csv_buffer)
+        partei_data = []
+        i = 0
+        for row in csv_buffer:
+            i = i + 1
+            for k in range(19, 208, 4):    # 48 total
+                partei_data.append(row[k])
+            if (i == 1):
+                break
+        ids = []
+        for k in range(1, 49):
+            ids.append(k)
+        total_partei = []
+        for n in range(0, 48):
+            total_partei.append([ids[n], partei_data[n]])
+        cur.executemany('INSERT INTO Partei VALUES(%s, %s)', total_partei)
 
 
 
@@ -76,6 +95,7 @@ def kreise():
 # CALLING THE FUNCTIONS
 # bundesland()
 # kreise()
+partei()
 
 sql_con.commit()
 sql_con.close()
