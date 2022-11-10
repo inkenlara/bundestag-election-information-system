@@ -14,7 +14,7 @@ CREATE TABLE WahlKreis (
 CREATE TABLE Partei (
 	ParteiID int primary key,
 	Bezeichnung varchar(200) unique not null,
-	-- KurzBezeichnung varchar(30),      --Brauchen wir nicht wirklich
+	KurzBezeichnung varchar(30),      --Brauchen wir nicht wirklich
 	-- AnzahlMitglieder int,
 	-- PolitischeAusrichtung varchar(200),
 	-- ParteiVorsitzende varchar(60)
@@ -159,12 +159,10 @@ CREATE TABLE DeutschlandStimmenAggregation (
 	UberhangsMandate int NOT NULL
 );
 
-CREATE TABLE StimmZettel (
-	StimmZettelToken int primary key,
-	DirektKandidaten int references Direktkandidaten,
-	LandListe int references LandesListe,
-	Verwendet bool NOT NULL,
-	WahlKreis int NOT NULL references WahlKreis
-);
-
-
+-- CREATE TABLE StimmZettel (
+--	StimmZettelToken int primary key,
+--	DirektKandidaten int references Direktkandidaten,
+--	LandListe int references LandesListe,
+--	Verwendet bool NOT NULL,
+--	WahlKreis int NOT NULL references WahlKreis
+--);

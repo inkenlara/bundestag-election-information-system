@@ -34,6 +34,8 @@ except:
 path_kands_2017 = "csvs/kandidaten2017.csv"
 path_kands_2021 = "csvs/btw21_kandidaturen_utf8.csv"
 path_kerg = "csvs/kerg.csv"
+path_kerg2 = "csvs/kerg2.csv"
+path_kandidaturen = "csvs/kandidaturen.csv"
 
 
 # bundesländer
@@ -67,7 +69,7 @@ def kreise():
                 kreis_data.append([int(rows[0]), int(rows[2]), rows[1]])
         cur.executemany('INSERT INTO WahlKreis VALUES(%s, %s, %s)', kreis_data)
 
-
+# Übrige sind mit NULL bezeichnet
 def partei():
     with open(path_kerg, encoding='utf-8') as f:
         csv_buffer = csv.reader(f, delimiter=';', quotechar='"')
@@ -86,11 +88,34 @@ def partei():
         total_partei = []
         for n in range(0, 48):
             total_partei.append([ids[n], partei_data[n]])
-        cur.executemany('INSERT INTO Partei VALUES(%s, %s)', total_partei)
-
-
-def direktKandidaten():
-    pass
+    with open(path_kands_2021, encoding='utf-8') as f:
+        csv_buffer2 = csv.reader(f, delimiter=';', quotechar='"')
+        next(csv_buffer2)
+        kurz = []
+        lang = []
+        for row in csv_buffer2:
+            if(row[22].startswith('EB')):
+                continue
+            else:
+                kurz.append(row[22])
+                lang.append(row[23])
+        ded_kurz = list(dict.fromkeys(kurz))
+        ded_lang = list(dict.fromkeys(lang))
+        kurz_lang = []
+        for n in range(0, 51):
+            kurz_lang.append([ded_kurz[n], ded_lang[n]])
+        k_l = dict(zip(ded_lang, ded_kurz))
+        total_partei.append([49, "RESIST! FRIEDLICHE ÖKOLINKSLIBERALE DEMOKRATISCHE REVOLUTION. FREIHEITEN, DEMOKRATIE, WOHLSTAND, GESUNDHEIT FÜR ALLE! BULTHEEL WÄHLEN!"])
+        total_partei.append([50, "Unabhängig! Für Dich. Für Uns. Für Alle."])
+        total_partei.append([51, "Erststimme fürs Klima"])
+        total_partei.append([52, "Transparent, Nah am Bürger, Treu den Wählern"])
+        for r in total_partei:
+            dict_key = r[1]
+            if(dict_key == "Übrige"):
+                r.append(None)
+            else:
+                r.append(k_l[dict_key])
+        cur.executemany('INSERT INTO Partei VALUES(%s, %s, %s)', total_partei)
 
 
 
@@ -98,7 +123,7 @@ def direktKandidaten():
 # bundesland()
 # kreise()
 # partei()
-direktKandidaten()
+
 
 
 
