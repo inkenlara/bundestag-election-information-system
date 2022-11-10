@@ -37,14 +37,35 @@ path_kerg = "csvs/kerg.csv"
 
 
 # bundesländer
-with open(path_kerg) as f:
-    csv_buffer = csv.reader(f, delimiter=';', quotechar='"')
-    next(csv_buffer)
-    bundesland_data = []
-    for rows in csv_buffer:
-        if(rows[2] == "99"):
-            bundesland_data.append([int(rows[0]), rows[1]])
-    cur.executemany('INSERT INTO BundesLand VALUES(%s, %s)', bundesland_data)
+def bundesland():
+    with open(path_kerg) as f:
+        csv_buffer = csv.reader(f, delimiter=';', quotechar='"')
+        next(csv_buffer)
+        bundesland_data = []
+        for rows in csv_buffer:
+            if(rows[2] == "99"):
+                bundesland_data.append([int(rows[0]), rows[1]])
+        cur.executemany('INSERT INTO BundesLand VALUES(%s, %s)', bundesland_data)
+
+#   WahlKreisID int primary key,
+#   Bundesland int NOT NULL references BundesLand
+# 	WahlKreisName varchar(100) NOT NULL,
+
+#kreise
+def kreise():
+    with open(path_kerg) as f:
+        csv_buffer = csv.reader(f, delimiter=';', quotechar='"')
+        next(csv_buffer)
+        next(csv_buffer)
+        next(csv_buffer)
+        kreis_data = []
+        for rows in csv_buffer:
+            if(rows[2] == "99" or rows[1] == "Bundesgebiet"):
+                continue
+            else:
+                # print([int(rows[0]), int(rows[2]), rows[1]])
+                kreis_data.append([int(rows[0]), int(rows[2]), rows[1]])
+        cur.executemany('INSERT INTO WahlKreis VALUES(%s, %s, %s)', kreis_data)
 
 
 
@@ -52,6 +73,9 @@ with open(path_kerg) as f:
 
 
 
+# CALLING THE FUNCTIONS
+# bundesland()
+# kreise()
 
 sql_con.commit()
 sql_con.close()
