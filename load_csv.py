@@ -185,6 +185,138 @@ def erstStimmen():
 
 
 
+"""WahlKreis int references WahlKreis ON DELETE CASCADE,
+	WahlJahr int NOT NULL,
+	PRIMARY KEY (WahlKreis, WahlJahr),
+	UnGultigeErst int NOT NULL,
+	UnGultigeZweit int NOT NULL,
+	AnzahlWahlBerechtigte int NOT NULL,
+	AnzahlWahlende int NOT NULL"""
+def WahlKreisAggretation():
+    with open(path_kerg, encoding='utf-8') as f:  # 2021
+        csv_buffer = csv.reader(f, delimiter=';', quotechar='"')
+        next(csv_buffer)
+        next(csv_buffer)
+        next(csv_buffer)
+        final = []
+        for row in csv_buffer:
+            if(row[2] == "99" or row[1] == "Bundesgebiet"):
+                continue
+            else:
+                WahlKreis = row[0]
+                WahlJahr = 2021
+                UnGultigeErst = row[11]
+                UnGultigeZweit = row[13]
+                AnzahlWahlBerechtigte = row[3]
+                AnzahlWahlende = row[7]
+                final.append([WahlKreis, WahlJahr, UnGultigeErst, UnGultigeZweit, AnzahlWahlBerechtigte, AnzahlWahlende])
+    with open(path_kerg, encoding='utf-8') as f:  # 2017
+        csv_buffer = csv.reader(f, delimiter=';', quotechar='"')
+        next(csv_buffer)
+        next(csv_buffer)
+        next(csv_buffer)
+        for row in csv_buffer:
+            if(row[2] == "99" or row[1] == "Bundesgebiet"):
+                continue
+            else:
+                WahlKreis = row[0]
+                WahlJahr = 2017
+                UnGultigeErst = row[12]
+                UnGultigeZweit = row[14]
+                AnzahlWahlBerechtigte = row[4]
+                AnzahlWahlende = row[8]
+                final.append([WahlKreis, WahlJahr, UnGultigeErst, UnGultigeZweit, AnzahlWahlBerechtigte, AnzahlWahlende])
+        cur.executemany('INSERT INTO WahlKreisAggretation VALUES(%s, %s, %s, %s, %s, %s)', final)
+
+
+    """BundesLand int references BundesLand,
+	WahlJahr int NOT NULL,
+	PRIMARY KEY (BundesLand, WahlJahr),
+	UnGultigeErst int NOT NULL,
+	UnGultigeZweit int NOT NULL,
+	AnzahlWahlBerechtigte int NOT NULL,
+	AnzahlWahlende int NOT NULL"""
+def BundesLandAggregation():
+    with open(path_kerg, encoding='utf-8') as f:  # 2021
+        csv_buffer = csv.reader(f, delimiter=';', quotechar='"')
+        next(csv_buffer)
+        next(csv_buffer)
+        next(csv_buffer)
+        final = []
+        for row in csv_buffer:
+            if(not row[2] == "99"):
+                continue
+            else:
+                BundesLand = row[0]
+                WahlJahr = 2021
+                UnGultigeErst = row[11]
+                UnGultigeZweit = row[13]
+                AnzahlWahlBerechtigte = row[3]
+                AnzahlWahlende = row[7]
+                final.append([BundesLand, WahlJahr, UnGultigeErst, UnGultigeZweit, AnzahlWahlBerechtigte, AnzahlWahlende])
+    with open(path_kerg, encoding='utf-8') as f:  # 2017
+        csv_buffer = csv.reader(f, delimiter=';', quotechar='"')
+        next(csv_buffer)
+        next(csv_buffer)
+        next(csv_buffer)
+        for row in csv_buffer:
+            if(not row[2] == "99"):
+                continue
+            else:
+                BundesLand = row[0]
+                WahlJahr = 2017
+                UnGultigeErst = row[12]
+                UnGultigeZweit = row[14]
+                AnzahlWahlBerechtigte = row[4]
+                AnzahlWahlende = row[8]
+                final.append([BundesLand, WahlJahr, UnGultigeErst, UnGultigeZweit, AnzahlWahlBerechtigte, AnzahlWahlende])
+    cur.executemany('INSERT INTO BundesLandAggregation VALUES(%s, %s, %s, %s, %s, %s)', final)
+
+
+"""WahlJahr int primary key,
+	UnGultigeErst int NOT NULL,
+	UnGultigeZweit int NOT NULL,
+	AnzahlWahlBerechtigte int NOT NULL,
+	AnzahlWahlende int NOT NULL"""
+def deutschland():
+    with open(path_kerg, encoding='utf-8') as f: 
+        csv_buffer = csv.reader(f, delimiter=';', quotechar='"')
+        next(csv_buffer)
+        next(csv_buffer)
+        next(csv_buffer)
+        final = []
+        for row in csv_buffer:
+            if(not row[0] == "99" and not row[1] == "Bundesgebiet"):
+                continue
+            else:
+                WahlJahr = 2021
+                UnGultigeErst = row[11]
+                UnGultigeZweit = row[13]
+                AnzahlWahlBerechtigte = row[3]
+                AnzahlWahlende = row[7]
+                final.append([WahlJahr, UnGultigeErst, UnGultigeZweit, AnzahlWahlBerechtigte, AnzahlWahlende])
+    with open(path_kerg, encoding='utf-8') as f: 
+        csv_buffer = csv.reader(f, delimiter=';', quotechar='"')
+        next(csv_buffer)
+        next(csv_buffer)
+        next(csv_buffer)
+        for row in csv_buffer:
+            if(not row[0] == "99" and not row[1] == "Bundesgebiet"):
+                continue
+            else:
+                WahlJahr = 2017
+                UnGultigeErst = row[12]
+                UnGultigeZweit = row[14]
+                AnzahlWahlBerechtigte = row[4]
+                AnzahlWahlende = row[8]
+                final.append([WahlJahr, UnGultigeErst, UnGultigeZweit, AnzahlWahlBerechtigte, AnzahlWahlende])
+    cur.executemany('INSERT INTO DeutschlandAggregation VALUES(%s, %s, %s, %s, %s)', final)
+
+
+
+
+
+
 
 
 # CALLING THE FUNCTIONS
@@ -194,7 +326,10 @@ def erstStimmen():
 # direktKandidaten2021()
 # direktKandidaten2017()
 # wahlBerechtigte()
-erstStimmen()
+# erstStimmen()
+# WahlKreisAggretation()
+# BundesLandAggregation()
+# deutschland()
 
 
 
