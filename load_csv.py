@@ -154,36 +154,36 @@ def direktKandidaten2017():
 
 """
 	ErstimmID int primary key,
-	WahlKreis int NOT NULL references WahlKreis,
 	Kandidat int references Direktkandidaten,   -- NULl
-	WahlJahr int NOT NULL
+	WahlJahr int NOT NULL,
+    WahlKreis int NOT NULL references WahlKreis,
+    KVorName varchar(200),
+	KNachName varchar(200)
 """
-""" def erstStimmen():
-    with open(, encoding='utf-8') as f:
+def erstStimmen():
+    with open(path_kandidaturen, encoding='utf-8') as f:
         csv_buffer = csv.reader(f, delimiter=';', quotechar='"')
-        header = next(csv_buffer)
+        next(csv_buffer)
+        next(csv_buffer)
+        next(csv_buffer)
         final = []
         ErstimmID = 0
+        WahlJahr = 2021
+        Kandidat = None      # TODO join using names to get candidate keys
+        WahlKreis = 0
+        KVorName = ""
+        KNachName = ""
         for row in csv_buffer:
-            ErstimmID = ErstimmID + 1 
-"""
-        
+            if(not row[14]):    # if None -> the kandidat ist Direkt kandidat
+                ErstimmID = ErstimmID + 1 
+                # if(ErstimmID > 20): break
+                WahlKreis = row[20]
+                KVorName = row[5]
+                KNachName = row[4]
+                final.append([ErstimmID, None, WahlJahr, WahlKreis, KVorName, KNachName])
+        cur.executemany('INSERT INTO erststimmen VALUES(%s, %s, %s, %s, %s, %s)', final)
 
 
-""" 	
-    ListID int primary key,
-	BundesLand int NOT NULL references BundesLand,
-	Partei int references Partei ON DELETE CASCADE,
-	WahlJahr int NOT NULL
- """
-def landesListe():
-    with open(, encoding='utf-8') as f:
-        csv_buffer = csv.reader(f, delimiter=';', quotechar='"')
-        header = next(csv_buffer)
-        final = []
-        ListID = 0
-        for row in csv_buffer:
-            ListID = ListID + 1
 
 
 
@@ -194,8 +194,7 @@ def landesListe():
 # direktKandidaten2021()
 # direktKandidaten2017()
 # wahlBerechtigte()
-# erstStimmen()
-landesListe()
+erstStimmen()
 
 
 

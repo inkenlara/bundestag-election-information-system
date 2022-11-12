@@ -59,9 +59,11 @@ CREATE TABLE Direktkandidaten (
 
 CREATE TABLE ErstStimmen(
 	ErstimmID int primary key,
-	WahlKreis int NOT NULL references WahlKreis,
 	Kandidat int references Direktkandidaten,   -- NULL am anfang
-	WahlJahr int NOT NULL
+	WahlJahr int NOT NULL,
+	WahlKreis int NOT NULL references WahlKreis,
+	KVorName varchar(200),
+	KNachName varchar(200)
 );
 
 CREATE TABLE LandesListe(
