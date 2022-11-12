@@ -128,7 +128,8 @@ CREATE TABLE WahlKreisZweitStimmenAggregation (
 	Partei int references Partei,
 	WahlKreis int references WahlKreis,
 	AnzahlStimmen int NOT NULL,
-	ProzentWahlhKreis decimal(3, 2) NOT NULL,
+	ProzentWahlhKreis decimal(3, 2),
+	ParteiName varchar(200),
 	PRIMARY KEY(Partei, WahlKreis, WahlJahr)
 );
 

@@ -315,6 +315,63 @@ def deutschland():
 
 
 
+"""WahlJahr int NOT NULL,
+	Partei int references Partei,
+	WahlKreis int references WahlKreis,
+	AnzahlStimmen int NOT NULL,
+	ProzentWahlhKreis decimal(3, 2),
+    ParteiName varchar(200)"""
+def WahlKreisZweitStimmenAggregation():
+    with open(path_kerg, encoding='utf-8') as f: 
+        csv_buffer = csv.reader(f, delimiter=';', quotechar='"')
+        partei_namen = []
+        head = next(csv_buffer)
+        for k in range(19, 208, 4):    # 48 total
+            partei_namen.append(head[k])
+        next(csv_buffer)
+        next(csv_buffer)
+        final = []
+        WahlJahr = 2021
+        for row in csv_buffer:
+            if(row[2] == "99" or row[1] == "Bundesgebiet"):
+                continue
+            else:
+                ProzentWahlhKreis = 0         # TODO Calc prozent
+                WahlKreis = row[0]
+                i = 21
+                for partei in partei_namen:
+                    Partei = partei_namen.index(partei) + 1
+                    if(not row[i]): AnzahlStimmen = 0
+                    else:
+                        AnzahlStimmen = row[i]
+                    final.append([WahlJahr, Partei, WahlKreis, AnzahlStimmen, ProzentWahlhKreis, partei])
+                    i = i + 4
+    with open(path_kerg, encoding='utf-8') as f: 
+        csv_buffer = csv.reader(f, delimiter=';', quotechar='"')
+        partei_namen = []
+        head = next(csv_buffer)
+        for k in range(19, 208, 4):    # 48 total
+            partei_namen.append(head[k])
+        next(csv_buffer)
+        next(csv_buffer)
+        WahlJahr = 2017
+        for row in csv_buffer:
+            if(row[2] == "99" or row[1] == "Bundesgebiet"):
+                continue
+            else:
+                ProzentWahlhKreis = 0
+                WahlKreis = int(row[0])
+                i = 21
+                for partei in partei_namen:
+                    Partei = partei_namen.index(partei) + 1
+                    if(not row[i + 1]): AnzahlStimmen = 0
+                    else:
+                        AnzahlStimmen = row[i + 1]
+                    final.append([WahlJahr, Partei, WahlKreis, AnzahlStimmen, ProzentWahlhKreis, partei])
+                    i = i + 4
+    cur.executemany('INSERT INTO WahlKreisZweitStimmenAggregation VALUES(%s, %s, %s, %s, %s, %s)', final)
+
+
 
 
 
@@ -330,7 +387,7 @@ def deutschland():
 # WahlKreisAggretation()
 # BundesLandAggregation()
 # deutschland()
-
+WahlKreisZweitStimmenAggregation()
 
 
 sql_con.commit()
