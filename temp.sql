@@ -47,20 +47,20 @@ CREATE TABLE Direktkandidaten (
 --);
 
 
-CREATE TABLE WahlBerechtigte (
-	PersonID int primary key,
-	FirstName varchar(30) not null,
-	LastName varchar(30) not null,
-	Gewahlt Bool NOT NULL,
-	WahlKreis int NOT NULL references WahlKreis ON DELETE SET NULL,
-	WahlJahr int NOT NULL
-);
+-- CREATE TABLE WahlBerechtigte (
+--	PersonID int primary key,
+--	FirstName varchar(30) not null,
+--	LastName varchar(30) not null,
+--	Gewahlt Bool NOT NULL,
+--	WahlKreis int NOT NULL references WahlKreis ON DELETE SET NULL,
+--	WahlJahr int NOT NULL
+--);
 
 
 CREATE TABLE ErstStimmen(
 	ErstimmID int primary key,
 	WahlKreis int NOT NULL references WahlKreis,
-	Kandidat int references Direktkandidaten,
+	Kandidat int references Direktkandidaten,   -- NULL am anfang
 	WahlJahr int NOT NULL
 );
 
@@ -110,6 +110,7 @@ CREATE TABLE BundesLandAggregation(
 	AnzahlWahlBerechtigte int NOT NULL,
 	AnzahlWahlende int NOT NULL
 );	
+
 
 CREATE TABLE DeutschlandAggregation(
 	WahlJahr int primary key,

@@ -147,6 +147,43 @@ def direktKandidaten2017():
             pass
 
 
+# TODO figure out what to change in this table
+# def wahlBerechtigte():
+#    pass
+
+
+"""
+	ErstimmID int primary key,
+	WahlKreis int NOT NULL references WahlKreis,
+	Kandidat int references Direktkandidaten,   -- NULl
+	WahlJahr int NOT NULL
+"""
+""" def erstStimmen():
+    with open(, encoding='utf-8') as f:
+        csv_buffer = csv.reader(f, delimiter=';', quotechar='"')
+        header = next(csv_buffer)
+        final = []
+        ErstimmID = 0
+        for row in csv_buffer:
+            ErstimmID = ErstimmID + 1 
+"""
+        
+
+
+""" 	
+    ListID int primary key,
+	BundesLand int NOT NULL references BundesLand,
+	Partei int references Partei ON DELETE CASCADE,
+	WahlJahr int NOT NULL
+ """
+def landesListe():
+    with open(, encoding='utf-8') as f:
+        csv_buffer = csv.reader(f, delimiter=';', quotechar='"')
+        header = next(csv_buffer)
+        final = []
+        ListID = 0
+        for row in csv_buffer:
+            ListID = ListID + 1
 
 
 
@@ -155,7 +192,11 @@ def direktKandidaten2017():
 # kreise()
 # partei()
 # direktKandidaten2021()
-direktKandidaten2017()
+# direktKandidaten2017()
+# wahlBerechtigte()
+# erstStimmen()
+landesListe()
+
 
 
 sql_con.commit()
