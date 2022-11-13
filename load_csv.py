@@ -71,6 +71,7 @@ def kreise():
 
 # Übrige sind mit NULL bezeichnet
 def partei():
+    total_partei = []
     with open(path_kerg, encoding='utf-8') as f:
         csv_buffer = csv.reader(f, delimiter=';', quotechar='"')
         # next(csv_buffer)
@@ -85,7 +86,6 @@ def partei():
         ids = []
         for k in range(1, 49):
             ids.append(k)
-        total_partei = []
         for n in range(0, 48):
             total_partei.append([ids[n], partei_data[n]])
     with open(path_kands_2021, encoding='utf-8') as f:
@@ -193,12 +193,12 @@ def erstStimmen():
 	AnzahlWahlBerechtigte int NOT NULL,
 	AnzahlWahlende int NOT NULL"""
 def WahlKreisAggretation():
+    final = []
     with open(path_kerg, encoding='utf-8') as f:  # 2021
         csv_buffer = csv.reader(f, delimiter=';', quotechar='"')
         next(csv_buffer)
         next(csv_buffer)
         next(csv_buffer)
-        final = []
         for row in csv_buffer:
             if(row[2] == "99" or row[1] == "Bundesgebiet"):
                 continue
@@ -237,12 +237,12 @@ def WahlKreisAggretation():
 	AnzahlWahlBerechtigte int NOT NULL,
 	AnzahlWahlende int NOT NULL"""
 def BundesLandAggregation():
+    final = []
     with open(path_kerg, encoding='utf-8') as f:  # 2021
         csv_buffer = csv.reader(f, delimiter=';', quotechar='"')
         next(csv_buffer)
         next(csv_buffer)
         next(csv_buffer)
-        final = []
         for row in csv_buffer:
             if(not row[2] == "99"):
                 continue
@@ -279,12 +279,12 @@ def BundesLandAggregation():
 	AnzahlWahlBerechtigte int NOT NULL,
 	AnzahlWahlende int NOT NULL"""
 def deutschland():
+    final = []
     with open(path_kerg, encoding='utf-8') as f: 
         csv_buffer = csv.reader(f, delimiter=';', quotechar='"')
         next(csv_buffer)
         next(csv_buffer)
         next(csv_buffer)
-        final = []
         for row in csv_buffer:
             if(not row[0] == "99" and not row[1] == "Bundesgebiet"):
                 continue
@@ -322,6 +322,7 @@ def deutschland():
 	ProzentWahlhKreis decimal(3, 2),
     ParteiName varchar(200)"""
 def WahlKreisZweitStimmenAggregation():
+    final = []
     with open(path_kerg, encoding='utf-8') as f: 
         csv_buffer = csv.reader(f, delimiter=';', quotechar='"')
         partei_namen = []
@@ -330,7 +331,6 @@ def WahlKreisZweitStimmenAggregation():
             partei_namen.append(head[k])
         next(csv_buffer)
         next(csv_buffer)
-        final = []
         WahlJahr = 2021
         for row in csv_buffer:
             if(row[2] == "99" or row[1] == "Bundesgebiet"):
@@ -385,6 +385,7 @@ def WahlKreisZweitStimmenAggregation():
 	ListenMandate int NOT NULL,
 	UberhangsMandate int NOT NULL"""
 def BundeslandStimmenAggregation():
+    final = []
     with open(path_kerg, encoding='utf-8') as f: 
         csv_buffer = csv.reader(f, delimiter=';', quotechar='"')
         partei_namen = []
@@ -393,7 +394,6 @@ def BundeslandStimmenAggregation():
             partei_namen.append(head[k])
         next(csv_buffer)
         next(csv_buffer)
-        final = []
         WahlJahr = 2021
         for row in csv_buffer:
             if(not row[2] == "99"):
@@ -459,6 +459,8 @@ def BundeslandStimmenAggregation():
 	ListenMandate int NOT NULL,
 	UberhangsMandate int NOT NULL"""
 def DeutschlandStimmenAggregation():
+    final2021 = []
+    final2017 = []
     with open(path_kerg, encoding='utf-8') as f: 
         csv_buffer = csv.reader(f, delimiter=';', quotechar='"')
         partei_namen = []
@@ -467,7 +469,6 @@ def DeutschlandStimmenAggregation():
             partei_namen.append(head[k])
         next(csv_buffer)
         next(csv_buffer)
-        final2021 = []
         WahlJahr = 2021
         for row in csv_buffer:
             if(not row[0] == "99" and not row[1] == "Bundesgebiet"):
@@ -499,12 +500,12 @@ def DeutschlandStimmenAggregation():
                     ProzentErstStimmen = row[12] if row[12] else 0
                     list_erst.append(ProzentErstStimmen)
                     for i in range(0, len(list_erst)):
-                        final2021[i][3] = round(float(str(list_erst[i]).replace(",", ".")), 2)
+                        final2021[i][3] = round(float(str(list_erst[i]).replace(",", ".")), 4)
                 if(row[10] == "2"): # Zweitstimmen
                     ProzentZweitStimmen = row[12] if row[12] else 0
                     list_zwei.append(ProzentZweitStimmen)
                     for i in range(0, len(list_zwei)):
-                        final2021[i][5] = round(float(str(list_zwei[i]).replace(",", ".")), 2)
+                        final2021[i][5] = round(float(str(list_zwei[i]).replace(",", ".")), 4)
     with open(path_kerg, encoding='utf-8') as f: 
         csv_buffer = csv.reader(f, delimiter=';', quotechar='"')
         partei_namen = []
@@ -514,7 +515,6 @@ def DeutschlandStimmenAggregation():
         next(csv_buffer)
         next(csv_buffer)
         WahlJahr = 2017
-        final2017 = []
         for row in csv_buffer:
             if(not row[0] == "99" and not row[1] == "Bundesgebiet"):
                 continue
@@ -545,14 +545,145 @@ def DeutschlandStimmenAggregation():
                     ProzentErstStimmen = row[14] if row[14] else 0
                     list_erst.append(ProzentErstStimmen)
                     for i in range(0, len(list_erst)):
-                        final2017[i][3] = round(float(str(list_erst[i]).replace(',', ".")), 2)
+                        final2017[i][3] = round(float(str(list_erst[i]).replace(',', ".")), 4)
                 if(row[10] == "2"): # Zweitstimmen
                     ProzentZweitStimmen = row[14] if row[14] else 0
                     list_zwei.append(ProzentZweitStimmen)
                     for i in range(0, len(list_zwei)):
-                        final2017[i][5] = round(float(str(list_zwei[i]).replace(',','.')), 2)
+                        final2017[i][5] = round(float(str(list_zwei[i]).replace(',','.')), 4)
     final = final2021 + final2017
     cur.executemany('INSERT INTO DeutschlandStimmenAggregation VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s)', final)
+
+
+
+"""WahlJahr int NOT NULL,
+	BundesLand int references BundesLand,
+	ParteiKurz varchar(60),
+	ProzentErstStimmen decimal(10, 8) NOT NULL,"""
+def BundesLandProzentErst():
+    final = []
+    with open(path_kerg2, encoding='utf-8') as f:  # 2021
+        csv_buffer = csv.reader(f, delimiter=';', quotechar='"')
+        for i in range(0, 16):
+            next(csv_buffer)
+        Wahljahr = 2021
+        parteikurz_idx = 8
+        prozent = 12
+        b_idx = 3
+        for row in csv_buffer:
+            if(row[2] == "Land" and row[10] == "1" and row[5] == "BUND" and (row[7] == "Partei" or row[7] == "System-Gruppe") and row[8] != "Wahlberechtigte" and row[8] != "Wählende" and row[8] != "Ungültige" and row[8] != "Gültige"):
+                Prozent = round(float(str(row[prozent] if row[prozent] else 0).replace(',', ".")), 4)
+                final.append([Wahljahr, row[b_idx], row[parteikurz_idx], Prozent])
+    with open(path_kerg2, encoding='utf-8') as f:  # 2017
+        csv_buffer = csv.reader(f, delimiter=';', quotechar='"')
+        for i in range(0, 16):
+            next(csv_buffer)
+        Wahljahr = 2017
+        parteikurz_idx = 8
+        prozent = 12 + 2
+        for row in csv_buffer:
+            if(row[2] == "Land" and row[10] == "1" and row[5] == "BUND" and (row[7] == "Partei" or row[7] == "System-Gruppe") and row[8] != "Wahlberechtigte" and row[8] != "Wählende" and row[8] != "Ungültige" and row[8] != "Gültige"):
+                Prozent = round(float(str(row[prozent] if row[prozent] else 0).replace(',', ".")), 4)
+                final.append([Wahljahr, row[b_idx], row[parteikurz_idx], Prozent])
+    cur.executemany('INSERT INTO BundesLandProzentErst VALUES(%s, %s, %s, %s)', final)
+
+
+"""WahlJahr int NOT NULL,
+	BundesLand int references BundesLand,
+	ParteiKurz varchar(60),
+	ProzentZweitStimmen decimal(10, 8) NOT NULL"""
+def BundesLandProzentZwei():
+    final = []
+    with open(path_kerg2, encoding='utf-8') as f:  # 2021
+        csv_buffer = csv.reader(f, delimiter=';', quotechar='"')
+        for i in range(0, 16):
+            next(csv_buffer)
+        Wahljahr = 2021
+        parteikurz_idx = 8
+        prozent = 12
+        b_idx = 3
+        for row in csv_buffer:
+            if(row[2] == "Land" and row[10] == "2" and row[5] == "BUND" and (row[7] == "Partei" or row[7] == "System-Gruppe") and row[8] != "Wahlberechtigte" and row[8] != "Wählende" and row[8] != "Ungültige" and row[8] != "Gültige"):
+                Prozent = round(float(str(row[prozent] if row[prozent] else 0).replace(',', ".")), 4)
+                final.append([Wahljahr, row[b_idx], row[parteikurz_idx], Prozent])
+    with open(path_kerg2, encoding='utf-8') as f:  # 2017
+        csv_buffer = csv.reader(f, delimiter=';', quotechar='"')
+        for i in range(0, 16):
+            next(csv_buffer)
+        Wahljahr = 2017
+        parteikurz_idx = 8
+        prozent = 12 + 2
+        for row in csv_buffer:
+            if(row[2] == "Land" and row[10] == "2" and row[5] == "BUND" and (row[7] == "Partei" or row[7] == "System-Gruppe") and row[8] != "Wahlberechtigte" and row[8] != "Wählende" and row[8] != "Ungültige" and row[8] != "Gültige"):
+                Prozent = round(float(str(row[prozent] if row[prozent] else 0).replace(',', ".")), 4)
+                final.append([Wahljahr, row[b_idx], row[parteikurz_idx], Prozent])
+    cur.executemany('INSERT INTO BundesLandProzentZwei VALUES(%s, %s, %s, %s)', final)
+
+
+
+"""WahlJahr int NOT NULL,
+	WahlKreis int references WahlKreis,
+	ParteiKurz varchar(60),
+	ProzentErstStimmen decimal(10, 8) NOT NULL,"""
+def WahlKreisProzentErst():
+    final = []
+    with open(path_kerg2, encoding='utf-8') as f:  # 2021
+        csv_buffer = csv.reader(f, delimiter=';', quotechar='"')
+        for i in range(0, 16):
+            next(csv_buffer)
+        Wahljahr = 2021
+        parteikurz_idx = 8
+        prozent = 12
+        b_idx = 3
+        for row in csv_buffer:
+            if(row[2] == "Wahlkreis" and row[10] == "1" and row[5] == "LAND" and (row[7] == "Partei" or row[7] == "System-Gruppe") and row[8] != "Wahlberechtigte" and row[8] != "Wählende" and row[8] != "Ungültige" and row[8] != "Gültige"):
+                Prozent = round(float(str(row[prozent] if row[prozent] else 0).replace(',', ".")), 4)
+                final.append([Wahljahr, row[b_idx], row[parteikurz_idx], Prozent])
+    with open(path_kerg2, encoding='utf-8') as f:  # 2017
+        csv_buffer = csv.reader(f, delimiter=';', quotechar='"')
+        for i in range(0, 16):
+            next(csv_buffer)
+        Wahljahr = 2017
+        parteikurz_idx = 8
+        prozent = 12 + 2
+        for row in csv_buffer:
+            if(row[2] == "Wahlkreis" and row[10] == "1" and row[5] == "LAND" and (row[7] == "Partei" or row[7] == "System-Gruppe") and row[8] != "Wahlberechtigte" and row[8] != "Wählende" and row[8] != "Ungültige" and row[8] != "Gültige"):
+                Prozent = round(float(str(row[prozent] if row[prozent] else 0).replace(',', ".")), 4)
+                final.append([Wahljahr, row[b_idx], row[parteikurz_idx], Prozent])
+    cur.executemany('INSERT INTO WahlKreisProzentErst VALUES(%s, %s, %s, %s)', final)
+
+
+
+"""WahlJahr int NOT NULL,
+	WahlKreis int references WahlKreis,
+	ParteiKurz varchar(60),
+	ProzentZweitStimmen decimal(10, 8) NOT NULL,"""
+def WahlKreisProzentZweit():
+    final = []
+    with open(path_kerg2, encoding='utf-8') as f:  # 2021
+        csv_buffer = csv.reader(f, delimiter=';', quotechar='"')
+        for i in range(0, 16):
+            next(csv_buffer)
+        Wahljahr = 2021
+        parteikurz_idx = 8
+        prozent = 12
+        b_idx = 3
+        for row in csv_buffer:
+            if(row[2] == "Wahlkreis" and row[10] == "2" and row[5] == "LAND" and (row[7] == "Partei" or row[7] == "System-Gruppe") and row[8] != "Wahlberechtigte" and row[8] != "Wählende" and row[8] != "Ungültige" and row[8] != "Gültige"):
+                Prozent = round(float(str(row[prozent] if row[prozent] else 0).replace(',', ".")), 4)
+                final.append([Wahljahr, row[b_idx], row[parteikurz_idx], Prozent])
+    with open(path_kerg2, encoding='utf-8') as f:  # 2017
+        csv_buffer = csv.reader(f, delimiter=';', quotechar='"')
+        for i in range(0, 16):
+            next(csv_buffer)
+        Wahljahr = 2017
+        parteikurz_idx = 8
+        prozent = 12 + 2
+        for row in csv_buffer:
+            if(row[2] == "Wahlkreis" and row[10] == "2" and row[5] == "LAND" and (row[7] == "Partei" or row[7] == "System-Gruppe") and row[8] != "Wahlberechtigte" and row[8] != "Wählende" and row[8] != "Ungültige" and row[8] != "Gültige"):
+                Prozent = round(float(str(row[prozent] if row[prozent] else 0).replace(',', ".")), 4)
+                final.append([Wahljahr, row[b_idx], row[parteikurz_idx], Prozent])
+    cur.executemany('INSERT INTO WahlKreisProzentZweit VALUES(%s, %s, %s, %s)', final)
 
 
 
@@ -570,6 +701,10 @@ def DeutschlandStimmenAggregation():
 # WahlKreisZweitStimmenAggregation()
 # BundeslandStimmenAggregation()
 # DeutschlandStimmenAggregation()
+# BundesLandProzentErst()
+# BundesLandProzentZwei()
+# WahlKreisProzentErst()
+# WahlKreisProzentZweit()
 
 
 

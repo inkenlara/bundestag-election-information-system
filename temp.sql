@@ -133,7 +133,37 @@ CREATE TABLE WahlKreisZweitStimmenAggregation (
 	PRIMARY KEY(Partei, WahlKreis, WahlJahr)
 );
 
+CREATE TABLE WahlKreisProzentErst(
+	WahlJahr int NOT NULL,
+	WahlKreis int references WahlKreis,
+	ParteiKurz varchar(60),
+	ProzentErstStimmen decimal(10, 8) NOT NULL,
+	PRIMARY KEY(WahlJahr, WahlKreis, ParteiKurz)
+);
 
+CREATE TABLE WahlKreisProzentZweit(
+	WahlJahr int NOT NULL,
+	WahlKreis int references WahlKreis,
+	ParteiKurz varchar(60),
+	ProzentZweitStimmen decimal(10, 8) NOT NULL,
+	PRIMARY KEY(WahlJahr, WahlKreis, ParteiKurz)
+);
+
+CREATE TABLE BundesLandProzentErst(
+	WahlJahr int NOT NULL,
+	BundesLand int references BundesLand,
+	ParteiKurz varchar(60),
+	ProzentErstStimmen decimal(10, 8) NOT NULL,
+	PRIMARY KEY(WahlJahr, BundesLand, ParteiKurz)
+);
+
+CREATE TABLE BundesLandProzentZwei(
+	WahlJahr int NOT NULL,
+	BundesLand int references BundesLand,
+	ParteiKurz varchar(60),
+	ProzentZweitStimmen decimal(10, 8) NOT NULL,
+	PRIMARY KEY(WahlJahr, BundesLand, ParteiKurz)
+);
 
 CREATE TABLE BundeslandStimmenAggregation (
     Wahljahr int NOT NULL,
@@ -161,6 +191,16 @@ CREATE TABLE DeutschlandStimmenAggregation (
 	DirektMandate int NOT NULL,
 	ListenMandate int NOT NULL,
 	UberhangsMandate int NOT NULL
+);
+
+
+CREATE TABLE WahlKreisErstStimmenAggregation (
+WahlJahr int NOT NULL,
+Kandidat int references Direktkandidaten,
+WahlKreis int references WahlKreis,
+AnzahlStimmen int NOT NULL,
+ProzentWahlhKreis decimal(3, 2),
+PRIMARY KEY(Partei, WahlKreis, WahlJahr)
 );
 
 -- CREATE TABLE StimmZettel (
