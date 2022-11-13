@@ -128,7 +128,7 @@ CREATE TABLE WahlKreisZweitStimmenAggregation (
 	Partei int references Partei,
 	WahlKreis int references WahlKreis,
 	AnzahlStimmen int NOT NULL,
-	ProzentWahlhKreis decimal(3, 2),
+	ProzentWahlhKreis decimal(10, 8),
 	ParteiName varchar(200),
 	PRIMARY KEY(Partei, WahlKreis, WahlJahr)
 );
@@ -141,9 +141,9 @@ CREATE TABLE BundeslandStimmenAggregation (
     Partei int NOT NULL references Partei,
 	PRIMARY KEY(Partei, Bundesland, WahlJahr),
     AnzahlErstStimmen int NOT NULL,
-	ProzentErstStimmen decimal(3, 2) NOT NULL,
+	ProzentErstStimmen decimal(10, 8) NOT NULL,
 	AnzahlZweitStimmen int NOT NULL,
-	ProzentZweitStimmen decimal(3, 2) NOT NULL,
+	ProzentZweitStimmen decimal(10, 8) NOT NULL,
 	DirektMandate int NOT NULL,
 	ListenMandate int NOT NULL,
 	UberhangsMandate int NOT NULL
@@ -155,9 +155,9 @@ CREATE TABLE DeutschlandStimmenAggregation (
     Partei int NOT NULL references Partei,
 	PRIMARY KEY(Partei, WahlJahr),
     AnzahlErstStimmen int NOT NULL,
-	ProzentErstStimmen decimal(3, 2) NOT NULL,
+	ProzentErstStimmen decimal(10, 8) NOT NULL,
 	AnzahlZweitStimmen int NOT NULL,
-	ProzentZweitStimmen decimal(3, 2) NOT NULL,
+	ProzentZweitStimmen decimal(10, 8) NOT NULL,
 	DirektMandate int NOT NULL,
 	ListenMandate int NOT NULL,
 	UberhangsMandate int NOT NULL

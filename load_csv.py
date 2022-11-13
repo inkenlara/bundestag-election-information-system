@@ -446,6 +446,8 @@ def BundeslandStimmenAggregation():
 
 
 
+
+
 """Wahljahr int NOT NULL,
     Partei int NOT NULL references Partei,
 	PRIMARY KEY(Partei, WahlJahr),
@@ -465,7 +467,7 @@ def DeutschlandStimmenAggregation():
             partei_namen.append(head[k])
         next(csv_buffer)
         next(csv_buffer)
-        final = []
+        final2021 = []
         WahlJahr = 2021
         for row in csv_buffer:
             if(not row[0] == "99" and not row[1] == "Bundesgebiet"):
@@ -478,13 +480,31 @@ def DeutschlandStimmenAggregation():
                     else:
                         AnzahlErstStimmen = row[i]
                         AnzahlZweitStimmen = row[i + 2] if row[i + 2] else 0
-                    ProzentErstStimmen = 0             # TODO calc
-                    ProzentZweitStimmen = 0             # TODO calc
+                    ProzentErstStimmen = 0
+                    ProzentZweitStimmen = 0
                     DirektMandate = 0               # TODO calc
                     ListenMandate = 0               # TODO calc
                     UberhangsMandate = 0            # TODO calc
-                    final.append([WahlJahr, Partei, AnzahlErstStimmen, ProzentErstStimmen, AnzahlZweitStimmen, ProzentZweitStimmen, DirektMandate, ListenMandate, UberhangsMandate])
+                    final2021.append([WahlJahr, Partei, AnzahlErstStimmen, ProzentErstStimmen, AnzahlZweitStimmen, ProzentZweitStimmen, DirektMandate, ListenMandate, UberhangsMandate])
                     i = i + 4
+    with open(path_kerg2, encoding='utf-8') as f:  # 2021
+        csv_buffer = csv.reader(f, delimiter=';', quotechar='"')
+        for i in range(0, 16):
+            next(csv_buffer)
+        list_erst = []
+        list_zwei = []
+        for row in csv_buffer:
+            if(row[3] == "99" and row[4] == "Bundesgebiet" and not row[7] == "Einzelbewerber/Wählergruppe"):
+                if(row[10] == "1"): # Erststimme
+                    ProzentErstStimmen = row[12] if row[12] else 0
+                    list_erst.append(ProzentErstStimmen)
+                    for i in range(0, len(list_erst)):
+                        final2021[i][3] = round(float(str(list_erst[i]).replace(",", ".")), 2)
+                if(row[10] == "2"): # Zweitstimmen
+                    ProzentZweitStimmen = row[12] if row[12] else 0
+                    list_zwei.append(ProzentZweitStimmen)
+                    for i in range(0, len(list_zwei)):
+                        final2021[i][5] = round(float(str(list_zwei[i]).replace(",", ".")), 2)
     with open(path_kerg, encoding='utf-8') as f: 
         csv_buffer = csv.reader(f, delimiter=';', quotechar='"')
         partei_namen = []
@@ -494,6 +514,7 @@ def DeutschlandStimmenAggregation():
         next(csv_buffer)
         next(csv_buffer)
         WahlJahr = 2017
+        final2017 = []
         for row in csv_buffer:
             if(not row[0] == "99" and not row[1] == "Bundesgebiet"):
                 continue
@@ -505,15 +526,33 @@ def DeutschlandStimmenAggregation():
                     else:
                         AnzahlErstStimmen = row[i + 1]
                         AnzahlZweitStimmen = row[i + 2 + 1] if row[i + 2 + 1] else 0
-                    ProzentErstStimmen = 0             # TODO calc
-                    ProzentZweitStimmen = 0             # TODO calc
+                    ProzentErstStimmen = 0 
+                    ProzentZweitStimmen = 0
                     DirektMandate = 0               # TODO calc
                     ListenMandate = 0               # TODO calc
                     UberhangsMandate = 0            # TODO calc
-                    final.append([WahlJahr, Partei, AnzahlErstStimmen, ProzentErstStimmen, AnzahlZweitStimmen, ProzentZweitStimmen, DirektMandate, ListenMandate, UberhangsMandate])
+                    final2017.append([WahlJahr, Partei, AnzahlErstStimmen, ProzentErstStimmen, AnzahlZweitStimmen, ProzentZweitStimmen, DirektMandate, ListenMandate, UberhangsMandate])
                     i = i + 4
+    with open(path_kerg2, encoding='utf-8') as f:  # 2017
+        csv_buffer = csv.reader(f, delimiter=';', quotechar='"')
+        for i in range(0, 16):
+            next(csv_buffer)
+        list_erst = []
+        list_zwei = []
+        for row in csv_buffer:
+            if(row[3] == "99" and row[4] == "Bundesgebiet" and not row[7] == "Einzelbewerber/Wählergruppe"):
+                if(row[10] == "1"): # Erststimme
+                    ProzentErstStimmen = row[14] if row[14] else 0
+                    list_erst.append(ProzentErstStimmen)
+                    for i in range(0, len(list_erst)):
+                        final2017[i][3] = round(float(str(list_erst[i]).replace(',', ".")), 2)
+                if(row[10] == "2"): # Zweitstimmen
+                    ProzentZweitStimmen = row[14] if row[14] else 0
+                    list_zwei.append(ProzentZweitStimmen)
+                    for i in range(0, len(list_zwei)):
+                        final2017[i][5] = round(float(str(list_zwei[i]).replace(',','.')), 2)
+    final = final2021 + final2017
     cur.executemany('INSERT INTO DeutschlandStimmenAggregation VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s)', final)
-
 
 
 
@@ -530,7 +569,10 @@ def DeutschlandStimmenAggregation():
 # deutschland()
 # WahlKreisZweitStimmenAggregation()
 # BundeslandStimmenAggregation()
-DeutschlandStimmenAggregation()
+# DeutschlandStimmenAggregation()
+
+
+
 
 sql_con.commit()
 sql_con.close()
