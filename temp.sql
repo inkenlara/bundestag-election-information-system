@@ -32,6 +32,10 @@ CREATE TABLE Direktkandidaten (
 	ProzentWahlhKreis decimal(3, 2)
 );
 
+-- Kandidaten 
+-- DirektKandidaten
+-- ListenKandidaten # auf discord
+
 
 -- CREATE TABLE WahlBezirk(
 -- 	WahlBezirkID int primary key,
@@ -66,12 +70,12 @@ CREATE TABLE ErstStimmen(
 	KNachName varchar(200)
 );
 
-CREATE TABLE LandesListe(
+"""CREATE TABLE LandesListe(
 	ListID int primary key,
 	BundesLand int NOT NULL references BundesLand,
 	Partei int references Partei ON DELETE CASCADE,
 	WahlJahr int NOT NULL
-);
+);"""
 
 CREATE TABLE ZweitStimmen(
 	ZweitstimmID int primary key,

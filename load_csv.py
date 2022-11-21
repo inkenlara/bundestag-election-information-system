@@ -129,27 +129,13 @@ def direktKandidaten2021():
             LastName = row[4]
             FirstName = row[5]
             Beruf = row[15]
-            Partei = None                      # TODO Have to JOIN with Partei, in order to get Partei IDs
+            Partei = None                      # TODO MERGE WITH NEW BRANCH
             WahlKreis = row[19]
             WahlJahr = 2021
-            AnzahlStimmen = None               # TODO Missing number of votes
-            ProzentWahlhKreis = None           # TODO Missing prozent of votes
+            AnzahlStimmen = None
+            ProzentWahlhKreis = None
             lis.append([KandidatID, FirstName, LastName, Beruf, Partei, WahlKreis, WahlJahr, AnzahlStimmen, ProzentWahlhKreis])
     cur.executemany('INSERT INTO DirektKandidaten VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s)', lis)
-
-
-# TODO very tricky to export data for 2017, maybe wait for a better source
-def direktKandidaten2017():
-    with open(path_kands_2017, encoding='utf-8') as f:
-        csv_buffer = csv.reader(f, delimiter=';', quotechar='"')
-        next(csv_buffer)
-        for row in csv_buffer:
-            pass
-
-
-# TODO figure out what to change in this table
-# def wahlBerechtigte():
-#    pass
 
 
 """
@@ -169,7 +155,7 @@ def erstStimmen():
         final = []
         ErstimmID = 0
         WahlJahr = 2021
-        Kandidat = None      # TODO join using names to get candidate keys
+        Kandidat = None      # TODO CHECK WITH INKEN'S PART...
         WahlKreis = 0
         KVorName = ""
         KNachName = ""
@@ -336,7 +322,7 @@ def WahlKreisZweitStimmenAggregation():
             if(row[2] == "99" or row[1] == "Bundesgebiet"):
                 continue
             else:
-                ProzentWahlhKreis = 0         # TODO Calc prozent
+                ProzentWahlhKreis = 0
                 WahlKreis = row[0]
                 i = 21
                 for partei in partei_namen:
@@ -407,8 +393,8 @@ def BundeslandStimmenAggregation():
                     else:
                         AnzahlErstStimmen = row[i]
                         AnzahlZweitStimmen = row[i + 2] if row[i + 2] else 0
-                    ProzentErstStimmen = 0             # TODO calc
-                    ProzentZweitStimmen = 0             # TODO calc
+                    ProzentErstStimmen = 0             # andere tabele
+                    ProzentZweitStimmen = 0             # andere tabele
                     DirektMandate = 0               # TODO calc
                     ListenMandate = 0               # TODO calc
                     UberhangsMandate = 0            # TODO calc
@@ -435,8 +421,8 @@ def BundeslandStimmenAggregation():
                     else:
                         AnzahlErstStimmen = row[i + 1]
                         AnzahlZweitStimmen = row[i + 2 + 1] if row[i + 2 + 1] else 0
-                    ProzentErstStimmen = 0             # TODO calc
-                    ProzentZweitStimmen = 0             # TODO calc
+                    ProzentErstStimmen = 0             # andere tabele
+                    ProzentZweitStimmen = 0             # andere tabele
                     DirektMandate = 0               # TODO calc
                     ListenMandate = 0               # TODO calc
                     UberhangsMandate = 0            # TODO calc
