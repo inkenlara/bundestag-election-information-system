@@ -13,6 +13,9 @@
     <script type="text/javascript" src="mitglieder_bundestag.js"></script>
     <script type="text/javascript" src="stimmkreissieger_table.js"></script>
     <script type="text/javascript" src="uberangsmandate_table.js"></script>
+    <script type="text/javascript" src="knappste_sieger_table.js"></script>
+    <script type="text/javascript" src="query8.js"></script>
+    <script type="text/javascript" src="query9.js"></script>
  </head>
  <body>
     <nav class="navbar">
@@ -28,6 +31,8 @@
                 <a href="#Uberhangmandate">Uberhangmandate</a>
                 <a href="#knappste">Knappste Sieger</a>
                 <a href="#Wahlkreisubersicht_erst">Wahlkreisubersicht (Einzelstimmen)</a>
+                <a href="#Add1">Add 1</a>
+                <a href="#Add2">Add 2</a>
             </div>
             </div>
             <li><a class="dropbtn" href="vote.html">Vote</a></li>
@@ -360,10 +365,27 @@
     <div id="uberangsmandate_table"></div>
 
     <h2 id="knappste" style="margin-top: 3em; margin-left: 2em;">Knappste Sieger</h2>
-    <p>TODO Figure out how to represent this part....</p>
+    <p style="margin-left: 2em;">die gewählten Erstkandidaten, welche mit dem geringsten Vorsprung gegenuber ihren Konkurrenten gewonnen haben.</p>
+    <div id="knappste_sieger_table"></div>
+    <p style="margin-top:2em; margin-left: 2em;">die Wahlkreise, in denen die Partei, falls sie keinen Kreis gewonnen haben am knappsten verloren hat.</p>
+    <div id="knappste_verlierer"></div>
 
     <h2 id="Wahlkreisubersicht_erst" style="margin-top: 3em; margin-left: 2em;">Wahlkreisubersicht (Einzelstimmen)</h2>
-    <p>TODO Figure out how to represent this part....</p>
+    <h1>TODO Figure out how to represent this part....</h1>
+    <select id="wahlkreis_choice2">   <script type="text/javascript" src="wahlkreisubersicht_erst.js"></script>
+        <option value="1">Flensburg – Schleswig</option>
+        <option value="2">Nordfriesland – Dithmarschen Nord</option>
+        <option value="3">Steinburg – Dithmarschen Süd</option>
+        <option value="4">Rendsburg-Eckernförde</option>
+        <option value="5">Kiel</option>
+    </select>
+    <div id="q7"></div>
+
+    <h2 id="Add1" style="margin-top: 3em; margin-left: 2em;">Add 1</h2>
+    <div id="query8"></div>
+
+    <h2 id="Add2" style="margin-top: 3em; margin-left: 2em;">Add 2</h2>
+    <div id="query9"></div>
 
  </body>
  </html>
