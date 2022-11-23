@@ -2,21 +2,20 @@ var value = 10;
 google.charts.load('current', {'packages':['table']});
 // google.charts.setOnLoadCallback(drawTable);
 
-var menu = document.getElementById("wahlkreis_choice2");
-menu.addEventListener("change", set_value);
+// var menu2 = document.getElementById("wahlkreis_choice2");
+// menu2.addEventListener("change", set_value);
 
-function set_value(event) {
-    value = menu.value;
+/* function set_value(event) {
+    value = menu2.value; */
     google.charts.setOnLoadCallback(drawTable);
-    console.log(menu.value)
-}
+// }
 
 ///////////////
 
 // The global variable value contains the Wahlkreis id, which can be used to filter the data
 function drawTable() {
     let data = new google.visualization.DataTable();
-    data.addColumn('number', 'WahlBeteiligung');
+    data.addColumn('number', 'Something...');
     data.addRows([
         [ parseInt(value)] // in value is Wahlkreis ID
     ]);
