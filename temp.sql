@@ -8,57 +8,37 @@ CREATE TABLE WahlKreis (
 	WahlKreisID int primary key,
 	WahlKreisName varchar(100) NOT NULL,
 	Bundesland int NOT NULL references BundesLand
-	-- AnzahlWahlBezirke int NOT NULL,    --Brauchen wir nicht wirklich
 );
 
 CREATE TABLE Partei (
 	ParteiID int primary key,
 	Bezeichnung varchar(200) unique not null,
-	KurzBezeichnung varchar(30),      --Brauchen wir nicht wirklich
-	-- AnzahlMitglieder int,
-	-- PolitischeAusrichtung varchar(200),
-	-- ParteiVorsitzende varchar(60)
+	KurzBezeichnung varchar(30)
 );
 
-CREATE TABLE Direktkandidaten (
+
+CREATE TABLE Kandidaten (
 	KandidatID int primary key,
 	FirstName varchar(60) not null,
 	LastName varchar(60) not null,
 	Beruf varchar(120),
 	Partei int references Partei ON DELETE SET NULL,
-	Wahlkreis int NOT NULL references WahlKreis ON DELETE CASCADE,
 	WahlJahr int NOT NULL,
-	AnzahlStimmen int,
-	ProzentWahlhKreis decimal(3, 2)
 );
 
--- Kandidaten 
--- DirektKandidaten
--- ListenKandidaten # auf discord
+CREATE TABLE Direktkandidaten (
+	KandidatID int primary key,
+	Wahlkreis int NOT NULL references WahlKreis ON DELETE CASCADE
+	FOREIGN KEY (KandidatID) REFERENCES Kandidaten
+);
 
+CREATE TABLE ListenKandidaten(
+	KandidatenID int primary key,
+	Bundesland int NOT NULL references BundesLand,
+	ListenPlatz int not null,
+	FOREIGN KEY (KandidatID) REFERENCES Kandidaten
+);
 
--- CREATE TABLE WahlBezirk(
--- 	WahlBezirkID int primary key,
--- 	AnzahlWahlBerechtigte int NOT NULL,
--- 	WahlKreis int NOT NULL references WahlKreis ON DELETE CASCADE
--- );
-
-
--- CREATE TABLE WahlLokal (
---	WahlLokalID int primary key,
---	Adresse varchar(100) NOT NULL,
---	WahlBezirk int NOT NULL references WahlBezirk ON DELETE CASCADE
---);
-
-
--- CREATE TABLE WahlBerechtigte (
---	PersonID int primary key,
---	FirstName varchar(30) not null,
---	LastName varchar(30) not null,
---	Gewahlt Bool NOT NULL,
---	WahlKreis int NOT NULL references WahlKreis ON DELETE SET NULL,
---	WahlJahr int NOT NULL
---);
 
 
 CREATE TABLE ErstStimmen(
@@ -66,16 +46,11 @@ CREATE TABLE ErstStimmen(
 	Kandidat int references Direktkandidaten,   -- NULL am anfang
 	WahlJahr int NOT NULL,
 	WahlKreis int NOT NULL references WahlKreis,
+	
 	KVorName varchar(200),
 	KNachName varchar(200)
 );
 
-"""CREATE TABLE LandesListe(
-	ListID int primary key,
-	BundesLand int NOT NULL references BundesLand,
-	Partei int references Partei ON DELETE CASCADE,
-	WahlJahr int NOT NULL
-);"""
 
 CREATE TABLE ZweitStimmen(
 	ZweitstimmID int primary key,

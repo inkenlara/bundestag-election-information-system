@@ -192,7 +192,7 @@ def partei():
         cur.executemany('INSERT INTO Partei VALUES(%s, %s, %s)', total_partei)
 
 
-def direktKandidaten2021():
+"""def direktKandidaten2021():
     with open(path_kands_2021, encoding='utf-8') as f:
         csv_buffer = csv.reader(f, delimiter=';', quotechar='"')
         next(csv_buffer)
@@ -209,7 +209,7 @@ def direktKandidaten2021():
             AnzahlStimmen = None
             ProzentWahlhKreis = None
             lis.append([KandidatID, FirstName, LastName, Beruf, Partei, WahlKreis, WahlJahr, AnzahlStimmen, ProzentWahlhKreis])
-    cur.executemany('INSERT INTO DirektKandidaten VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s)', lis)
+    cur.executemany('INSERT INTO DirektKandidaten VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s)', lis)"""
 
 
 """
