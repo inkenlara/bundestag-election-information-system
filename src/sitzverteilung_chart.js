@@ -13,6 +13,7 @@ google.charts.load('current', {'packages':['corechart']});
         ]);
 
         var options = {
+          'is3D':true
           //title: 'Sitzverteilung'
         };
 
