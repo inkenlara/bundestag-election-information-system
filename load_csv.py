@@ -87,8 +87,7 @@ def kandidaten2021():
     with open(path_kands_2021, encoding='utf-8') as f:
         csv_buffer = csv.reader(f, delimiter=';', quotechar='"')
 
-        for i in range(9):
-            next(csv_buffer)
+        next(csv_buffer)
 
         id = 0
 
