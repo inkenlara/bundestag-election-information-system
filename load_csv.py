@@ -353,7 +353,7 @@ def BundesLandAggregation():
     final = []
     with open(path_kerg, encoding='utf-8') as f:  # 2021
         bevoelkerung = {"Schleswig-Holstein": 2659792, "Mecklenburg-Vorpommern": 1532412, "Hamburg": 1537766, "Niedersachsen": 7207587, "Bremen": 548941, "Brandenburg": 2397701, "Sachsen-Anhalt": 2056177,
-                        "Berlin": 2942960, "Nordrhein-Westfalen": 1541564, "Sachsen": 3826905, "Hessen": 5222158, "Thüringen": 1996822, "Rheinland-Pfalz": 3610865, "Bayern": 11328866, "Baden-Württemberg": 9313413, "Saarland": 865191}
+                        "Berlin": 2942960, "Nordrhein-Westfalen": 15415642, "Sachsen": 3826905, "Hessen": 5222158, "Thüringen": 1996822, "Rheinland-Pfalz": 3610865, "Bayern": 11328866, "Baden-Württemberg": 9313413, "Saarland": 865191}
         csv_buffer = csv.reader(f, delimiter=';', quotechar='"')
         next(csv_buffer)
         next(csv_buffer)
@@ -884,11 +884,8 @@ def WahlKreisProzentZweit():
 # kandidaten2021()
 # DeutschlandStimmenAggregation()
 
-cur.execute("truncate table BundesLandAggregation")
-sql_con.commit()
-cur.execute("ALTER TABLE BundesLandAggregation ADD Bevoelkerung int NOT NULL;")
-sql_con.commit()
-BundesLandAggregation()
+
+BundeslandStimmenAggregation()
 
 #cur.execute("truncate table kandidaten cascade")
 
