@@ -251,7 +251,8 @@ def partei():
             WahlJahr = 2021
             AnzahlStimmen = None
             ProzentWahlhKreis = None
-            lis.append([KandidatID, FirstName, LastName, Beruf, Partei, WahlKreis, WahlJahr, AnzahlStimmen, ProzentWahlhKreis])
+            lis.append([KandidatID, FirstName, LastName, Beruf, Partei,
+                       WahlKreis, WahlJahr, AnzahlStimmen, ProzentWahlhKreis])
     cur.executemany('INSERT INTO DirektKandidaten VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s)', lis)"""
 
 
@@ -351,6 +352,8 @@ def WahlKreisAggretation():
 def BundesLandAggregation():
     final = []
     with open(path_kerg, encoding='utf-8') as f:  # 2021
+        bevoelkerung = {"Schleswig-Holstein": 2659792, "Mecklenburg-Vorpommern": 1532412, "Hamburg": 1537766, "Niedersachsen": 7207587, "Bremen": 548941, "Brandenburg": 2397701, "Sachsen-Anhalt": 2056177,
+                        "Berlin": 2942960, "Nordrhein-Westfalen": 1541564, "Sachsen": 3826905, "Hessen": 5222158, "Thüringen": 1996822, "Rheinland-Pfalz": 3610865, "Bayern": 11328866, "Baden-Württemberg": 9313413, "Saarland": 865191}
         csv_buffer = csv.reader(f, delimiter=';', quotechar='"')
         next(csv_buffer)
         next(csv_buffer)
@@ -360,14 +363,17 @@ def BundesLandAggregation():
                 continue
             else:
                 BundesLand = row[0]
+                BundesLandName = row[1]
                 WahlJahr = 2021
                 UnGultigeErst = row[11]
                 UnGultigeZweit = row[13]
                 AnzahlWahlBerechtigte = row[3]
                 AnzahlWahlende = row[7]
                 final.append([BundesLand, WahlJahr, UnGultigeErst,
-                             UnGultigeZweit, AnzahlWahlBerechtigte, AnzahlWahlende])
+                             UnGultigeZweit, AnzahlWahlBerechtigte, AnzahlWahlende, bevoelkerung[BundesLandName]])
     with open(path_kerg, encoding='utf-8') as f:  # 2017
+        bevoelkerung = {"Schleswig-Holstein": 2673803, "Mecklenburg-Vorpommern": 1548400, "Hamburg": 1525090, "Niedersachsen": 7278789, "Bremen": 568510, "Brandenburg": 2391746, "Sachsen-Anhalt": 2145671,
+                        "Berlin": 2975745, "Nordrhein-Westfalen": 15707569, "Sachsen": 3914671, "Hessen": 5281198, "Thüringen": 2077901, "Rheinland-Pfalz": 3661245, "Bayern": 11362245, "Baden-Württemberg": 9365001, "Saarland": 899748}
         csv_buffer = csv.reader(f, delimiter=';', quotechar='"')
         next(csv_buffer)
         next(csv_buffer)
@@ -377,15 +383,16 @@ def BundesLandAggregation():
                 continue
             else:
                 BundesLand = row[0]
+                BundesLandName = row[1]
                 WahlJahr = 2017
                 UnGultigeErst = row[12]
                 UnGultigeZweit = row[14]
                 AnzahlWahlBerechtigte = row[4]
                 AnzahlWahlende = row[8]
                 final.append([BundesLand, WahlJahr, UnGultigeErst,
-                             UnGultigeZweit, AnzahlWahlBerechtigte, AnzahlWahlende])
+                             UnGultigeZweit, AnzahlWahlBerechtigte, AnzahlWahlende, bevoelkerung[BundesLandName]])
     cur.executemany(
-        'INSERT INTO BundesLandAggregation VALUES(%s, %s, %s, %s, %s, %s)', final)
+        'INSERT INTO BundesLandAggregation VALUES(%s, %s, %s, %s, %s, %s, %s)', final)
 
 
 """WahlJahr int primary key,
@@ -412,7 +419,7 @@ def deutschland():
                 AnzahlWahlBerechtigte = row[3]
                 AnzahlWahlende = row[7]
                 final.append([WahlJahr, UnGultigeErst, UnGultigeZweit,
-                             AnzahlWahlBerechtigte, AnzahlWahlende])
+                             AnzahlWahlBerechtigte, AnzahlWahlende, 72463198])
     with open(path_kerg, encoding='utf-8') as f:
         csv_buffer = csv.reader(f, delimiter=';', quotechar='"')
         next(csv_buffer)
@@ -428,9 +435,9 @@ def deutschland():
                 AnzahlWahlBerechtigte = row[4]
                 AnzahlWahlende = row[8]
                 final.append([WahlJahr, UnGultigeErst, UnGultigeZweit,
-                             AnzahlWahlBerechtigte, AnzahlWahlende])
+                             AnzahlWahlBerechtigte, AnzahlWahlende, 73377332])
     cur.executemany(
-        'INSERT INTO DeutschlandAggregation VALUES(%s, %s, %s, %s, %s)', final)
+        'INSERT INTO DeutschlandAggregation VALUES(%s, %s, %s, %s, %s, %s)', final)
 
 
 """WahlJahr int NOT NULL,
@@ -874,8 +881,14 @@ def WahlKreisProzentZweit():
 # bundesland()
 # partei()
 # kreise()
+# kandidaten2021()
+# DeutschlandStimmenAggregation()
 
-kandidaten2021()
+cur.execute("truncate table BundesLandAggregation")
+sql_con.commit()
+cur.execute("ALTER TABLE BundesLandAggregation ADD Bevoelkerung int NOT NULL;")
+sql_con.commit()
+BundesLandAggregation()
 
 #cur.execute("truncate table kandidaten cascade")
 
