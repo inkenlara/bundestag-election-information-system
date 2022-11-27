@@ -234,6 +234,8 @@ divisoren_parteien_mit = """
 ###########################################################################
 divisor_mit = int(57899.446)
 
+# 3. Bestimme endgültigen Divisor und berechne damit die Sitzverteilung
+
 divisor_total = min(divisor_mit, divisor_ohne)
 
 sitze_bundestag_query = """
@@ -250,3 +252,9 @@ cur.execute(sitze_bundestag)
 
 sql_con.commit()
 sql_con.close()
+
+#########################################################################################
+####################################### Schritt 4 #######################################
+#########################################################################################
+
+# Verteile die Sitze auf die Bundesländer
