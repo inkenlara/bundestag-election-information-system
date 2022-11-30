@@ -34,8 +34,7 @@ except:
 
 wahljahr = 2021  # TODO: main erstellen, bei der man das wahljahr angeben kann
 
-cur.execute(
-    "DROP MATERIALIZED VIEW sitzverteilungbundestag")
+cur.execute("DROP TABLE sitzverteilungbundestag")
 sql_con.commit()
 cur.execute(
     "DROP MATERIALIZED VIEW vorlaufigesitzverteilungparteienprobundesland")
@@ -65,10 +64,6 @@ union
 select parteiid
 from Partei 
 where kurzbezeichnung = 'SSW'
-union
-select parteiid
-from Partei 
-where kurzbezeichnung = 'DIE LINKE' --ncoh loeschen und es ueber direktmandate loesen
 """.format(wahljahr, wahljahr)
 
 load_bundestags_parteien = "CREATE MATERIALIZED VIEW ParteienInBT AS {};".format(
@@ -76,8 +71,6 @@ load_bundestags_parteien = "CREATE MATERIALIZED VIEW ParteienInBT AS {};".format
 
 cur.execute(load_bundestags_parteien)
 sql_con.commit()
-
-# TODO: Direktmandate sind noch nicht in Deutschlandaggregation, deswegen linke manuell hinzugefuegt
 
 
 ######################################################################################
@@ -117,8 +110,6 @@ sql_con.commit()
 
 # für jedes bundesland query erstellen und am ende alle mit union zusammenfügen
 
-# TODO: stimmen der CSU sind noch falsch, führt zu folgefehlern
-
 # input: bundeslandID int
 # output: list((bundesland int, partei int, sitze int))
 def sitze_parteien_pro_bundesland(bundeslandID):
@@ -129,7 +120,6 @@ def sitze_parteien_pro_bundesland(bundeslandID):
         where b.bundesland = {}
         and b.wahljahr = {}
         and p.partei = b.partei
-        and p.partei != 7 --noch loeschen, macht das ergebnis fuer jedes bl ausser bayern korrekt
     """.format(bundeslandID, bundeslandID, wahljahr)
 
     cur.execute(divisor_query)
@@ -143,7 +133,6 @@ def sitze_parteien_pro_bundesland(bundeslandID):
             where b.bundesland = {}
             and b.wahljahr = {}
             and p.partei = b.partei
-            and p.partei != 7 --noch loeschen, macht das ergebnis fuer jedes bl ausser bayern korrekt 
             )
             
         select sum(sitze)
@@ -176,7 +165,6 @@ def sitze_parteien_pro_bundesland(bundeslandID):
         where b.bundesland = {}
         and b.wahljahr = {}
         and p.partei = b.partei
-        and p.partei != 7 --noch loeschen, macht das ergebnis fuer jedes bl ausser bayern korrekt
     """.format(divisor, bundeslandID, wahljahr)
 
     return divisor_query
@@ -203,7 +191,7 @@ sql_con.commit()
 # Verteile 598 Sitze im Bundestag auf die Parteien und vergrößere eventuell den Bundestag
 
 # 1. Bestimmung Divisor ohne Überhang
-divisoren_parteien_ohne = """
+divisor_parteien_ohne = """
     with divisoren as (select v.partei,  avg(d.anzahlzweitstimmen)/(sum(v.sitzkontingente)-0.5) as Divisor
         from  VorlaufigeSitzverteilungParteienProBundesland v, deutschlandstimmenaggregation d
         where v.partei = d.partei
@@ -213,39 +201,57 @@ divisoren_parteien_ohne = """
     select min(Divisor)
     from divisoren
     """.format(wahljahr)
-cur.execute(divisoren_parteien_ohne)
+cur.execute(divisor_parteien_ohne)
 divisor_ohne = int(cur.fetchall()[0][0])
 
 # 2. Bestimme Divisor mit Überhang
-# TODO: nicht sicher, ob das funktioniert, da testen wegen falscher CSU stimmen nicht geht
-# TODO: momentan noch ein workaround, richtige Berechnung einfügen, bei der das viertkleinste genommen wird
-###########################################################################
-divisoren_parteien_mit = """
-    with mindestsitze as (select partei, (case when sum(sitzkontingente) > sum(direktmandate) then null else sum(direktmandate) end) as mindestsitze
+divisor_parteien_mit = """
+    with mindestsitze as (select partei, sum(direktmandate) as mindestsitze
     from VorlaufigeSitzverteilungParteienProBundesland v
-    group by partei)
-
-
-    select m.partei, (1.0000*d.anzahlzweitstimmen)/(m.mindestsitze-0.5) as Divisor1, (1.0000*d.anzahlzweitstimmen)/(m.mindestsitze-1.5) as Divisor2, (1.0000*d.anzahlzweitstimmen)/(m.mindestsitze-2.5) as Divisor3, (1.0000*d.anzahlzweitstimmen)/(m.mindestsitze-3.5) as Divisor4
+    group by partei
+    having sum(sitzkontingente) < sum(direktmandate) ),
+    divisoren_parteien_mit as (
+    select m.partei, (1.0000*d.anzahlzweitstimmen)/(m.mindestsitze-0.5) as divisor
     from  mindestsitze m, deutschlandstimmenaggregation d
     where m.partei = d.partei
     and wahljahr = {}
-    """.format(wahljahr)
-###########################################################################
-divisor_mit = int(57899.446)
+    union
+    select m.partei, (1.0000*d.anzahlzweitstimmen)/(m.mindestsitze-1.5) as divisor
+    from  mindestsitze m, deutschlandstimmenaggregation d
+    where m.partei = d.partei
+    and wahljahr = {}
+    union
+    select m.partei, (1.0000*d.anzahlzweitstimmen)/(m.mindestsitze-2.5) as divisor
+    from  mindestsitze m, deutschlandstimmenaggregation d
+    where m.partei = d.partei
+    and wahljahr = {}
+    union
+    select m.partei, (1.0000*d.anzahlzweitstimmen)/(m.mindestsitze-3.5) as divisor
+    from  mindestsitze m, deutschlandstimmenaggregation d
+    where m.partei = d.partei
+    and wahljahr = {} 
+    order by divisor asc)
+
+    select divisor
+    from divisoren_parteien_mit
+    LIMIT 1 OFFSET 3
+    """.format(wahljahr, wahljahr, wahljahr, wahljahr)
+
+cur.execute(divisor_parteien_mit)
+divisor_mit = int(cur.fetchall()[0][0])
 
 # 3. Bestimme endgültigen Divisor und berechne damit die Sitzverteilung
 
 divisor_total = min(divisor_mit, divisor_ohne)
 
 sitze_bundestag_query = """
-    select p.partei, round((1.000*d.anzahlzweitstimmen)/{})
+    select p.partei, case when d.direktmandate > round((1.000*d.anzahlzweitstimmen)/{}) then d.direktmandate else round((1.000*d.anzahlzweitstimmen)/{}) end
     from  deutschlandstimmenaggregation d, ParteienInBT p
     where d.partei = p.partei
     and wahljahr = {}
-    """.format(divisor_mit, wahljahr)
+    """.format(divisor_total, divisor_total, wahljahr)
 
-sitze_bundestag = "CREATE MATERIALIZED VIEW SitzverteilungBundestag AS {};".format(
+sitze_bundestag = "CREATE TABLE SitzverteilungBundestag AS {};".format(
     sitze_bundestag_query)
 
 cur.execute(sitze_bundestag)

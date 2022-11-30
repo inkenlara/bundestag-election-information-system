@@ -265,7 +265,7 @@ def partei():
 	KNachName varchar(200)
 """
 
-
+"""
 def erstStimmen():
     with open(path_kandidaturen, encoding='utf-8') as f:
         csv_buffer = csv.reader(f, delimiter=';', quotechar='"')
@@ -290,7 +290,7 @@ def erstStimmen():
                              WahlKreis, KVorName, KNachName])
         cur.executemany(
             'INSERT INTO erststimmen VALUES(%s, %s, %s, %s, %s, %s)', final)
-
+"""
 
 """WahlKreis int references WahlKreis ON DELETE CASCADE,
 	WahlJahr int NOT NULL,
@@ -552,6 +552,7 @@ def BundeslandStimmenAggregation():
                     final.append([WahlJahr, Bundesland, Partei, AnzahlErstStimmen, ProzentErstStimmen,
                                  AnzahlZweitStimmen, ProzentZweitStimmen, DirektMandate, ListenMandate, UberhangsMandate])
                     i = i + 4
+
     with open(path_kerg, encoding='utf-8') as f:
         csv_buffer = csv.reader(f, delimiter=';', quotechar='"')
         partei_namen = []
@@ -587,6 +588,57 @@ def BundeslandStimmenAggregation():
                     i = i + 4
     cur.executemany(
         'INSERT INTO BundeslandStimmenAggregation VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)', final)
+
+
+"""
+computes direktmandate per bundesland per partei for 2021
+IMPORTANT: has to be called after BundeslandStimmenAggregation committed!
+"""
+
+
+def DirektmandateBundeslandStimmenAggregation():
+    wahljahr = 2021
+    direktmandate_query = """
+    with wahlkreis_max as 
+    (select wahlkreis, max(prozenterststimmen) as maxi
+    from wahlkreisprozenterst
+    where wahljahr = {}
+    group by wahlkreis),
+    direktmandate_wahlkreis as (
+    select w.wahlkreis, w.parteikurz
+    from wahlkreis_max b, wahlkreisprozenterst w
+    where b.wahlkreis = w.wahlkreis 
+    and b.maxi = w.prozenterststimmen),
+    aggregated_direktmandate as(
+    select w.bundesland, d.parteikurz, count(*) as direktmandate, p.parteiid
+    from wahlkreis w, direktmandate_wahlkreis d, partei p
+    where w.wahlkreisid = d.wahlkreis
+    and p.kurzbezeichnung = d.parteikurz
+    group by w.bundesland, d.parteikurz, p.parteiid)
+    update BundeslandStimmenAggregation b 
+    set direktmandate = case 
+    when (select direktmandate from aggregated_direktmandate d where b.bundesland = d.bundesland and b.partei = d.parteiid) is not null 
+    then (select direktmandate from aggregated_direktmandate d where b.bundesland = d.bundesland and b.partei = d.parteiid)
+    else 0
+    end
+    """.format(wahljahr)
+
+    cur.execute(direktmandate_query)
+
+
+def DirektmandateDeutschlandStimmenAggregation():
+    wahljahr = 2021
+    direktmandate_query = """
+    with aggregation as(
+    select partei, sum(direktmandate) as direktmandate
+    from BundeslandStimmenAggregation
+    where wahljahr = {}
+    group by partei)
+    update deutschlandstimmenaggregation d
+    set direktmandate = (select direktmandate from aggregation a where a.partei = d.partei)
+    """.format(wahljahr)
+
+    cur.execute(direktmandate_query)
 
 
 """Wahljahr int NOT NULL,
@@ -883,6 +935,9 @@ def WahlKreisProzentZweit():
 # WahlKreisProzentErst()
 # WahlKreisProzentZweit()
 
+# After BundeslandStimmenAggregation committed:
+# DirektmandateBundeslandStimmenAggregation()
+
 # bundesland()
 # partei()
 # kreise()
@@ -890,10 +945,12 @@ def WahlKreisProzentZweit():
 # DeutschlandStimmenAggregation()
 
 
-BundeslandStimmenAggregation()
+# cur.execute("truncate table BundeslandStimmenAggregation cascade")
+# sql_con.commit()
+# BundeslandStimmenAggregation()
+# sql_con.commit()
+# DirektmandateBundeslandStimmenAggregation()
 
-#cur.execute("truncate table kandidaten cascade")
-
-
+DirektmandateDeutschlandStimmenAggregation()
 sql_con.commit()
 sql_con.close()
