@@ -540,7 +540,10 @@ def BundeslandStimmenAggregation():
                         AnzahlErstStimmen = 0
                     else:
                         AnzahlErstStimmen = row[i]
-                        AnzahlZweitStimmen = row[i + 2] if row[i + 2] else 0
+                    if (not row[i + 2]):
+                        AnzahlZweitStimmen = 0
+                    else:
+                        AnzahlZweitStimmen = row[i + 2]
                     ProzentErstStimmen = 0             # andere tabele
                     ProzentZweitStimmen = 0             # andere tabele
                     DirektMandate = 0               # TODO calc
@@ -570,8 +573,10 @@ def BundeslandStimmenAggregation():
                         AnzahlErstStimmen = 0
                     else:
                         AnzahlErstStimmen = row[i + 1]
-                        AnzahlZweitStimmen = row[i +
-                                                 2 + 1] if row[i + 2 + 1] else 0
+                    if (not row[i + 2 + 1]):
+                        AnzahlZweitStimmen = 0
+                    else:
+                        AnzahlZweitStimmen = row[i + 2 + 1]
                     ProzentErstStimmen = 0             # andere tabele
                     ProzentZweitStimmen = 0             # andere tabele
                     DirektMandate = 0               # TODO calc
