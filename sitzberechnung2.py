@@ -34,6 +34,9 @@ except:
 
 wahljahr = 2021  # TODO: main erstellen, bei der man das wahljahr angeben kann
 
+cur.execute(
+    "DROP MATERIALIZED VIEW sitzverteilungparteienprobundesland")
+sql_con.commit()
 cur.execute("DROP TABLE sitzverteilungbundestag")
 sql_con.commit()
 cur.execute(
@@ -158,7 +161,6 @@ def sitze_parteien_pro_bundesland(bundeslandID):
         else:
             break
 
-    # TODO: hierfuer brauchen wir die direktmandate der partei in dem bundesland
     divisor_query = """
     select b.bundesland, p.partei, round((1.0000*b.anzahlzweitstimmen)/{}) as Sitzkontingente, b.direktmandate
         from  bundeslandstimmenaggregation b, ParteienInBT p
@@ -187,6 +189,8 @@ sql_con.commit()
 #########################################################################################
 ####################################### Schritt 3 #######################################
 #########################################################################################
+
+# TODO: speicher die daten für 2021 und 2017
 
 # Verteile 598 Sitze im Bundestag auf die Parteien und vergrößere eventuell den Bundestag
 
@@ -245,7 +249,7 @@ divisor_mit = int(cur.fetchall()[0][0])
 divisor_total = min(divisor_mit, divisor_ohne)
 
 sitze_bundestag_query = """
-    select p.partei, case when d.direktmandate > round((1.000*d.anzahlzweitstimmen)/{}) then d.direktmandate else round((1.000*d.anzahlzweitstimmen)/{}) end
+    select p.partei, case when d.direktmandate > round((1.000*d.anzahlzweitstimmen)/{}) then d.direktmandate else round((1.000*d.anzahlzweitstimmen)/{}) end as sitze
     from  deutschlandstimmenaggregation d, ParteienInBT p
     where d.partei = p.partei
     and wahljahr = {}
@@ -255,12 +259,89 @@ sitze_bundestag = "CREATE TABLE SitzverteilungBundestag AS {};".format(
     sitze_bundestag_query)
 
 cur.execute(sitze_bundestag)
-
 sql_con.commit()
-sql_con.close()
+
 
 #########################################################################################
 ####################################### Schritt 4 #######################################
 #########################################################################################
 
-# Verteile die Sitze auf die Bundesländer
+# Verteile die Sitze auf die Parteien in den Bundesländern
+
+
+def parteisitze_pro_bundesland(partei):
+    divisor_query = """
+    select ((1.000*d.anzahlzweitstimmen)/s.sitze) as divisor
+    from deutschlandstimmenaggregation d, sitzverteilungbundestag s
+    where d.wahljahr = {}
+    and d.partei = s.partei
+    and d.partei = {}
+    """.format(wahljahr, partei)
+
+    cur.execute(divisor_query)
+    divisor = round(cur.fetchall()[0][0])
+
+    while (True):
+        summe_sitze_query = """
+        with sitzeBundeslaenderVorlaufig as 
+            (select bundesland, case when round((1.000*anzahlzweitstimmen)/{}) > direktmandate then round((1.000*anzahlzweitstimmen)/{}) else direktmandate end as sitze
+            from  bundeslandstimmenaggregation b
+            where partei = {}
+            and wahljahr = {}
+            )
+            
+        select sum(sitze)
+        from sitzeBundeslaenderVorlaufig        
+        """.format(divisor, divisor, partei, wahljahr)
+
+        cur.execute(summe_sitze_query)
+        summe_sitze = cur.fetchall()[0][0]
+
+        echte_sitze_query = """
+        select sitze
+        from sitzverteilungbundestag
+        where partei = {}
+        """.format(partei)
+
+        cur.execute(echte_sitze_query)
+        echte_sitze = cur.fetchall()[0][0]
+
+        if summe_sitze < echte_sitze:
+            divisor -= 1
+        elif summe_sitze > echte_sitze:
+            divisor += 1
+        else:
+            break
+
+    endgueltig_query = """
+    select bundesland, partei, case when round((1.000*anzahlzweitstimmen)/{}) > direktmandate then round((1.000*anzahlzweitstimmen)/{}) else direktmandate end as sitze
+    from  bundeslandstimmenaggregation b
+    where partei = {}
+    and wahljahr = {}
+    """.format(divisor, divisor, partei, wahljahr)
+
+    return endgueltig_query
+
+
+parteien_bt_query = """
+select partei
+from sitzverteilungbundestag
+"""
+cur.execute(parteien_bt_query)
+parteien_bt = cur.fetchall()
+
+total_query = ""
+for i in range(len(parteien_bt)):
+    if (i != len(parteien_bt) - 1):
+        total_query = total_query + \
+            parteisitze_pro_bundesland(parteien_bt[i][0]) + "union"
+    else:
+        total_query = total_query + \
+            parteisitze_pro_bundesland(parteien_bt[i][0])
+
+sitzverteilung_partei_bundesland = "CREATE MATERIALIZED VIEW SitzverteilungParteienProBundesland AS {};".format(
+    total_query)
+cur.execute(sitzverteilung_partei_bundesland)
+
+sql_con.commit()
+sql_con.close()
