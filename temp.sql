@@ -1,5 +1,5 @@
 
-CREATE TABLE BundesLand(
+CREATE TABLE BundesLand (
 	BundesLandID int primary key,
 	BundesLandName varchar(30) NOT NULL
 );
@@ -23,52 +23,52 @@ CREATE TABLE Kandidaten (
 	LastName varchar(60) not null,
 	Beruf varchar(120),
 	Partei int references Partei ON DELETE SET NULL,
-	WahlJahr int NOT NULL,
+	WahlJahr int NOT NULL
 );
 
 CREATE TABLE Direktkandidaten (
 	KandidatID int primary key,
-	Wahlkreis int NOT NULL references WahlKreis ON DELETE CASCADE
-	FOREIGN KEY (KandidatID) REFERENCES Kandidaten
+	Wahlkreis int NOT NULL references WahlKreis ON DELETE CASCADE,
+	FOREIGN KEY (KandidatID) REFERENCES Kandidaten ON DELETE CASCADE
 );
 
 CREATE TABLE ListenKandidaten(
-	KandidatenID int primary key,
+	KandidatID int primary key,
 	Bundesland int NOT NULL references BundesLand,
 	ListenPlatz int not null,
-	FOREIGN KEY (KandidatID) REFERENCES Kandidaten
+	FOREIGN KEY (KandidatID) REFERENCES Kandidaten ON DELETE CASCADE
 );
 
 
 
 CREATE TABLE ErstStimmen(
 	ErstimmID int primary key,
-	Kandidat int references Direktkandidaten,   -- NULL am anfang
-	WahlJahr int NOT NULL,
 	WahlKreis int NOT NULL references WahlKreis,
-	
-	KVorName varchar(200),
-	KNachName varchar(200)
+	Partei int references Partei ON DELETE SET NULL
+--	Kandidat int references Direktkandidaten,   -- NULL am anfang
+--	WahlJahr int NOT NULL,
+--	KVorName varchar(200),
+--	KNachName varchar(200)
 );
 
 
 CREATE TABLE ZweitStimmen(
 	ZweitstimmID int primary key,
 	WahlKreis int NOT NULL references WahlKreis,
-	Partei int references Partei ON DELETE SET NULL,
-	LandesListe int NOT NULL references LandesListe,
-	WahlJahr int NOT NULL
+	Partei int references Partei ON DELETE SET NULL
+--	LandesListe int NOT NULL references LandesListe,
+--	WahlJahr int NOT NULL
 );
 
 
 
-CREATE TABLE ListenKandidaten(
-	KandidatenID int not null,
-	FirstName varchar(30) not null,
-	LastName varchar(30) not null,
-	LandesListe int NOT NULL references LandesListe,
-	ListenPlatz int not null
-);
+-- CREATE TABLE ListenKandidaten(
+--	KandidatenID int not null,
+--	FirstName varchar(30) not null,
+--	LastName varchar(30) not null,
+--	LandesListe int NOT NULL references LandesListe,
+--	ListenPlatz int not null
+--);
 
 
 CREATE TABLE WahlKreisAggretation(
@@ -89,7 +89,8 @@ CREATE TABLE BundesLandAggregation(
 	UnGultigeErst int NOT NULL,
 	UnGultigeZweit int NOT NULL,
 	AnzahlWahlBerechtigte int NOT NULL,
-	AnzahlWahlende int NOT NULL
+	AnzahlWahlende int NOT NULL,
+	Bevoelkerung int NOT NULL
 );	
 
 
@@ -98,7 +99,8 @@ CREATE TABLE DeutschlandAggregation(
 	UnGultigeErst int NOT NULL,
 	UnGultigeZweit int NOT NULL,
 	AnzahlWahlBerechtigte int NOT NULL,
-	AnzahlWahlende int NOT NULL
+	AnzahlWahlende int NOT NULL,
+	Bevoelkerung int NOT NULL
 );	
 
 
@@ -179,8 +181,8 @@ Kandidat int references Direktkandidaten,
 WahlKreis int references WahlKreis,
 AnzahlStimmen int NOT NULL,
 ProzentWahlhKreis decimal(3, 2),
-PRIMARY KEY(Partei, WahlKreis, WahlJahr)
-);
+PRIMARY KEY(Partei, WahlKreis, WahlJahr) -- TODO: partei is not in this table??
+); 
 
 -- CREATE TABLE StimmZettel (
 --	StimmZettelToken int primary key,
