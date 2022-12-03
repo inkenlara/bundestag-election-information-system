@@ -46,6 +46,7 @@ path_kands_2021 = "csvs/btw21_kandidaturen_utf8.csv"
 path_kerg = "csvs/kerg.csv"
 path_kerg2 = "csvs/kerg2.csv"
 path_kandidaturen = "csvs/kandidaturen.csv"
+path_strukturdaten = "csvs/btw21_strukturdaten.csv"
 
 
 # loads kandidaten, direkt- und listenkandidaten for year 2021
@@ -916,6 +917,32 @@ def WahlKreisProzentZweit():
         'INSERT INTO WahlKreisProzentZweit VALUES(%s, %s, %s, %s)', final)
 
 
+def load_strukturdaten():
+    with open(path_strukturdaten, encoding='utf-8') as f:  # 2021
+        csv_buffer = csv.reader(f, delimiter=';', quotechar='"')
+        next(csv_buffer)
+        next(csv_buffer)
+        next(csv_buffer)
+        next(csv_buffer)
+        next(csv_buffer)
+        next(csv_buffer)
+        next(csv_buffer)
+        next(csv_buffer)
+        next(csv_buffer)
+        lis = []
+        for row in csv_buffer:
+            if(int(row[1]) > 300): continue
+            bildung = round(
+                    float(str(row[32]).replace(',', ".")), 1)
+            lis.append([int(row[1]), row[2], bildung, int(row[35])])
+        cur.executemany(
+        'INSERT INTO strukturdaten VALUES(%s, %s, %s, %s)', lis)
+        for i in lis:
+            print(i)
+        
+
+
+
 # CALLING THE FUNCTIONS
 # bundesland()
 # kreise()
@@ -944,6 +971,7 @@ def WahlKreisProzentZweit():
 # kandidaten2021()
 # DeutschlandStimmenAggregation()
 
+# load_strukturdaten()
 
 # cur.execute("truncate table BundeslandStimmenAggregation cascade")
 # sql_con.commit()

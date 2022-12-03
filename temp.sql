@@ -184,6 +184,15 @@ ProzentWahlhKreis decimal(3, 2),
 PRIMARY KEY(Partei, WahlKreis, WahlJahr) -- TODO: partei is not in this table??
 ); 
 
+
+CREATE TABLE StrukturDaten (
+	WahlKreis int references WahlKreis PRIMARY KEY,
+	WahlKreisName varchar(100) NOT NULL,
+	Bildung decimal(3, 2) NOT NULL,           -- AG
+	EinkommenPrivateHaushalte int NOT NULL,   -- AJ
+); 
+
+
 -- CREATE TABLE StimmZettel (
 --	StimmZettelToken int primary key,
 --	DirektKandidaten int references Direktkandidaten,
