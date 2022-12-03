@@ -89,7 +89,8 @@ CREATE TABLE BundesLandAggregation(
 	UnGultigeErst int NOT NULL,
 	UnGultigeZweit int NOT NULL,
 	AnzahlWahlBerechtigte int NOT NULL,
-	AnzahlWahlende int NOT NULL
+	AnzahlWahlende int NOT NULL,
+	Bevoelkerung int NOT NULL
 );	
 
 
@@ -98,7 +99,8 @@ CREATE TABLE DeutschlandAggregation(
 	UnGultigeErst int NOT NULL,
 	UnGultigeZweit int NOT NULL,
 	AnzahlWahlBerechtigte int NOT NULL,
-	AnzahlWahlende int NOT NULL
+	AnzahlWahlende int NOT NULL,
+	Bevoelkerung int NOT NULL
 );	
 
 

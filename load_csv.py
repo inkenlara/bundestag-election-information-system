@@ -251,7 +251,8 @@ def partei():
             WahlJahr = 2021
             AnzahlStimmen = None
             ProzentWahlhKreis = None
-            lis.append([KandidatID, FirstName, LastName, Beruf, Partei, WahlKreis, WahlJahr, AnzahlStimmen, ProzentWahlhKreis])
+            lis.append([KandidatID, FirstName, LastName, Beruf, Partei,
+                       WahlKreis, WahlJahr, AnzahlStimmen, ProzentWahlhKreis])
     cur.executemany('INSERT INTO DirektKandidaten VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s)', lis)"""
 
 
@@ -264,7 +265,7 @@ def partei():
 	KNachName varchar(200)
 """
 
-
+"""
 def erstStimmen():
     with open(path_kandidaturen, encoding='utf-8') as f:
         csv_buffer = csv.reader(f, delimiter=';', quotechar='"')
@@ -289,7 +290,7 @@ def erstStimmen():
                              WahlKreis, KVorName, KNachName])
         cur.executemany(
             'INSERT INTO erststimmen VALUES(%s, %s, %s, %s, %s, %s)', final)
-
+"""
 
 """WahlKreis int references WahlKreis ON DELETE CASCADE,
 	WahlJahr int NOT NULL,
@@ -351,6 +352,8 @@ def WahlKreisAggretation():
 def BundesLandAggregation():
     final = []
     with open(path_kerg, encoding='utf-8') as f:  # 2021
+        bevoelkerung = {"Schleswig-Holstein": 2659792, "Mecklenburg-Vorpommern": 1532412, "Hamburg": 1537766, "Niedersachsen": 7207587, "Bremen": 548941, "Brandenburg": 2397701, "Sachsen-Anhalt": 2056177,
+                        "Berlin": 2942960, "Nordrhein-Westfalen": 15415642, "Sachsen": 3826905, "Hessen": 5222158, "Thüringen": 1996822, "Rheinland-Pfalz": 3610865, "Bayern": 11328866, "Baden-Württemberg": 9313413, "Saarland": 865191}
         csv_buffer = csv.reader(f, delimiter=';', quotechar='"')
         next(csv_buffer)
         next(csv_buffer)
@@ -360,14 +363,17 @@ def BundesLandAggregation():
                 continue
             else:
                 BundesLand = row[0]
+                BundesLandName = row[1]
                 WahlJahr = 2021
                 UnGultigeErst = row[11]
                 UnGultigeZweit = row[13]
                 AnzahlWahlBerechtigte = row[3]
                 AnzahlWahlende = row[7]
                 final.append([BundesLand, WahlJahr, UnGultigeErst,
-                             UnGultigeZweit, AnzahlWahlBerechtigte, AnzahlWahlende])
+                             UnGultigeZweit, AnzahlWahlBerechtigte, AnzahlWahlende, bevoelkerung[BundesLandName]])
     with open(path_kerg, encoding='utf-8') as f:  # 2017
+        bevoelkerung = {"Schleswig-Holstein": 2673803, "Mecklenburg-Vorpommern": 1548400, "Hamburg": 1525090, "Niedersachsen": 7278789, "Bremen": 568510, "Brandenburg": 2391746, "Sachsen-Anhalt": 2145671,
+                        "Berlin": 2975745, "Nordrhein-Westfalen": 15707569, "Sachsen": 3914671, "Hessen": 5281198, "Thüringen": 2077901, "Rheinland-Pfalz": 3661245, "Bayern": 11362245, "Baden-Württemberg": 9365001, "Saarland": 899748}
         csv_buffer = csv.reader(f, delimiter=';', quotechar='"')
         next(csv_buffer)
         next(csv_buffer)
@@ -377,15 +383,16 @@ def BundesLandAggregation():
                 continue
             else:
                 BundesLand = row[0]
+                BundesLandName = row[1]
                 WahlJahr = 2017
                 UnGultigeErst = row[12]
                 UnGultigeZweit = row[14]
                 AnzahlWahlBerechtigte = row[4]
                 AnzahlWahlende = row[8]
                 final.append([BundesLand, WahlJahr, UnGultigeErst,
-                             UnGultigeZweit, AnzahlWahlBerechtigte, AnzahlWahlende])
+                             UnGultigeZweit, AnzahlWahlBerechtigte, AnzahlWahlende, bevoelkerung[BundesLandName]])
     cur.executemany(
-        'INSERT INTO BundesLandAggregation VALUES(%s, %s, %s, %s, %s, %s)', final)
+        'INSERT INTO BundesLandAggregation VALUES(%s, %s, %s, %s, %s, %s, %s)', final)
 
 
 """WahlJahr int primary key,
@@ -412,7 +419,7 @@ def deutschland():
                 AnzahlWahlBerechtigte = row[3]
                 AnzahlWahlende = row[7]
                 final.append([WahlJahr, UnGultigeErst, UnGultigeZweit,
-                             AnzahlWahlBerechtigte, AnzahlWahlende])
+                             AnzahlWahlBerechtigte, AnzahlWahlende, 72463198])
     with open(path_kerg, encoding='utf-8') as f:
         csv_buffer = csv.reader(f, delimiter=';', quotechar='"')
         next(csv_buffer)
@@ -428,9 +435,9 @@ def deutschland():
                 AnzahlWahlBerechtigte = row[4]
                 AnzahlWahlende = row[8]
                 final.append([WahlJahr, UnGultigeErst, UnGultigeZweit,
-                             AnzahlWahlBerechtigte, AnzahlWahlende])
+                             AnzahlWahlBerechtigte, AnzahlWahlende, 73377332])
     cur.executemany(
-        'INSERT INTO DeutschlandAggregation VALUES(%s, %s, %s, %s, %s)', final)
+        'INSERT INTO DeutschlandAggregation VALUES(%s, %s, %s, %s, %s, %s)', final)
 
 
 """WahlJahr int NOT NULL,
@@ -533,7 +540,10 @@ def BundeslandStimmenAggregation():
                         AnzahlErstStimmen = 0
                     else:
                         AnzahlErstStimmen = row[i]
-                        AnzahlZweitStimmen = row[i + 2] if row[i + 2] else 0
+                    if (not row[i + 2]):
+                        AnzahlZweitStimmen = 0
+                    else:
+                        AnzahlZweitStimmen = row[i + 2]
                     ProzentErstStimmen = 0             # andere tabele
                     ProzentZweitStimmen = 0             # andere tabele
                     DirektMandate = 0               # TODO calc
@@ -542,6 +552,7 @@ def BundeslandStimmenAggregation():
                     final.append([WahlJahr, Bundesland, Partei, AnzahlErstStimmen, ProzentErstStimmen,
                                  AnzahlZweitStimmen, ProzentZweitStimmen, DirektMandate, ListenMandate, UberhangsMandate])
                     i = i + 4
+
     with open(path_kerg, encoding='utf-8') as f:
         csv_buffer = csv.reader(f, delimiter=';', quotechar='"')
         partei_namen = []
@@ -563,8 +574,10 @@ def BundeslandStimmenAggregation():
                         AnzahlErstStimmen = 0
                     else:
                         AnzahlErstStimmen = row[i + 1]
-                        AnzahlZweitStimmen = row[i +
-                                                 2 + 1] if row[i + 2 + 1] else 0
+                    if (not row[i + 2 + 1]):
+                        AnzahlZweitStimmen = 0
+                    else:
+                        AnzahlZweitStimmen = row[i + 2 + 1]
                     ProzentErstStimmen = 0             # andere tabele
                     ProzentZweitStimmen = 0             # andere tabele
                     DirektMandate = 0               # TODO calc
@@ -575,6 +588,57 @@ def BundeslandStimmenAggregation():
                     i = i + 4
     cur.executemany(
         'INSERT INTO BundeslandStimmenAggregation VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)', final)
+
+
+"""
+computes direktmandate per bundesland per partei for 2021
+IMPORTANT: has to be called after BundeslandStimmenAggregation committed!
+"""
+
+
+def DirektmandateBundeslandStimmenAggregation():
+    wahljahr = 2021
+    direktmandate_query = """
+    with wahlkreis_max as 
+    (select wahlkreis, max(prozenterststimmen) as maxi
+    from wahlkreisprozenterst
+    where wahljahr = {}
+    group by wahlkreis),
+    direktmandate_wahlkreis as (
+    select w.wahlkreis, w.parteikurz
+    from wahlkreis_max b, wahlkreisprozenterst w
+    where b.wahlkreis = w.wahlkreis 
+    and b.maxi = w.prozenterststimmen),
+    aggregated_direktmandate as(
+    select w.bundesland, d.parteikurz, count(*) as direktmandate, p.parteiid
+    from wahlkreis w, direktmandate_wahlkreis d, partei p
+    where w.wahlkreisid = d.wahlkreis
+    and p.kurzbezeichnung = d.parteikurz
+    group by w.bundesland, d.parteikurz, p.parteiid)
+    update BundeslandStimmenAggregation b 
+    set direktmandate = case 
+    when (select direktmandate from aggregated_direktmandate d where b.bundesland = d.bundesland and b.partei = d.parteiid) is not null 
+    then (select direktmandate from aggregated_direktmandate d where b.bundesland = d.bundesland and b.partei = d.parteiid)
+    else 0
+    end
+    """.format(wahljahr)
+
+    cur.execute(direktmandate_query)
+
+
+def DirektmandateDeutschlandStimmenAggregation():
+    wahljahr = 2021
+    direktmandate_query = """
+    with aggregation as(
+    select partei, sum(direktmandate) as direktmandate
+    from BundeslandStimmenAggregation
+    where wahljahr = {}
+    group by partei)
+    update deutschlandstimmenaggregation d
+    set direktmandate = (select direktmandate from aggregation a where a.partei = d.partei)
+    """.format(wahljahr)
+
+    cur.execute(direktmandate_query)
 
 
 """Wahljahr int NOT NULL,
@@ -871,14 +935,22 @@ def WahlKreisProzentZweit():
 # WahlKreisProzentErst()
 # WahlKreisProzentZweit()
 
+# After BundeslandStimmenAggregation committed:
+# DirektmandateBundeslandStimmenAggregation()
+
 # bundesland()
 # partei()
 # kreise()
-
-kandidaten2021()
-
-#cur.execute("truncate table kandidaten cascade")
+# kandidaten2021()
+# DeutschlandStimmenAggregation()
 
 
+# cur.execute("truncate table BundeslandStimmenAggregation cascade")
+# sql_con.commit()
+# BundeslandStimmenAggregation()
+# sql_con.commit()
+# DirektmandateBundeslandStimmenAggregation()
+
+DirektmandateDeutschlandStimmenAggregation()
 sql_con.commit()
 sql_con.close()
