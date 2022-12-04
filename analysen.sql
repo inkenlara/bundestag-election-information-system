@@ -161,6 +161,14 @@ with erststimmensieger as (
 
 
 --Q5: Ueberhangsmandate
+--aufgabe wurde so interpretiert, dass ueberhangsmandate von schritt 2 im divisorverfahren gemeint sind
+
+select bundesland, partei, direktmandate-sitzkontingente  as ueberhangsmandate
+from vorlaufigesitzverteilungparteienprobundesland
+where sitzkontingente < direktmandate
+
+
+
 
 --Q6: Knappste Sieger
 -- filtere sieger
@@ -234,3 +242,44 @@ where not exists (
 
 
 --Q7: Wahlkreisuebersicht (Einzelstimmen)
+
+--betrachte wahlkreise 1-5 (erst mal nur 1)
+--wahlbeteiligung (funktioniert wahrscheinlich noch nicht richtig, da ungültige stimmen nicht in den stimmzetteln sind)
+with anzahlwahlberechtigte as (select anzahlwahlberechtigte, wahlkreis from wahlkreisaggretation where wahljahr = 2021 and wahlkreis = 1),
+wahlende as 
+    (select count(*) as wahlende
+    from anzahlwahlberechtigte a, zweitstimmen zw
+    where zw.wahlkreis = 1)
+select wahlkreis, (1.0*wahlende)/anzahlwahlberechtigte as wahlbeteiligung
+from anzahlwahlberechtigte, wahlende
+
+--gewaehlten direktkandidaten
+with stimmen_pro_partei as (
+  select partei, count(*) as stimmen
+  from erststimmen
+  where wahlkreis = 1
+  group by partei
+)
+select k.kandidatid, k.firstname, k.lastname, s.partei, k.wahljahr
+from stimmen_pro_partei s, direktkandidaten dk, kandidaten k
+where stimmen = (select max(stimmen) from stimmen_pro_partei)
+and s.partei = k.partei
+and k.wahljahr= 2021
+and k.kandidatid = dk.kandidatid
+and dk.wahlkreis = 1
+
+--prozentualer und absolute anzahl an stimmen pro partei
+
+with stimmen_gesamt as(
+    select count(*) as stimmen_gesamt
+    from zweitstimmen
+    where wahlkreis = 1
+),
+    stimmen_pro_partei as(
+    select partei, count(*) as stimmen_pro_partei
+    from zweitstimmen
+    where wahlkreis = 1
+    group by partei
+)
+select 1 as wahlkreis, partei, stimmen_pro_partei, (1.00*stimmen_pro_partei)/stimmen_gesamt as stimmen_prozentual
+from stimmen_pro_partei, stimmen_gesamt
