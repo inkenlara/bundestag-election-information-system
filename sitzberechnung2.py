@@ -284,7 +284,7 @@ def parteisitze_pro_bundesland(partei):
     while (True):
         summe_sitze_query = """
         with sitzeBundeslaenderVorlaufig as 
-            (select bundesland, case when round((1.000*anzahlzweitstimmen)/{}) > direktmandate then round((1.000*anzahlzweitstimmen)/{}) else direktmandate end as sitze
+            (select bundesland, case when round((1.000*anzahlzweitstimmen)/{}) > direktmandate then round((1.000*anzahlzweitstimmen)/{}) else direktmandate end as sitze, round((1.000*anzahlzweitstimmen)/{}) as sitze_ohne_dm
             from  bundeslandstimmenaggregation b
             where partei = {}
             and wahljahr = {}
@@ -292,7 +292,7 @@ def parteisitze_pro_bundesland(partei):
             
         select sum(sitze)
         from sitzeBundeslaenderVorlaufig        
-        """.format(divisor, divisor, partei, wahljahr)
+        """.format(divisor, divisor, divisor, partei, wahljahr)
 
         cur.execute(summe_sitze_query)
         summe_sitze = cur.fetchall()[0][0]
@@ -314,11 +314,11 @@ def parteisitze_pro_bundesland(partei):
             break
 
     endgueltig_query = """
-    select bundesland, partei, case when round((1.000*anzahlzweitstimmen)/{}) > direktmandate then round((1.000*anzahlzweitstimmen)/{}) else direktmandate end as sitze
+    select bundesland, partei, case when round((1.000*anzahlzweitstimmen)/{}) > direktmandate then round((1.000*anzahlzweitstimmen)/{}) else direktmandate end as sitze, round((1.000*anzahlzweitstimmen)/{}) as sitze_ohne_dm
     from  bundeslandstimmenaggregation b
     where partei = {}
     and wahljahr = {}
-    """.format(divisor, divisor, partei, wahljahr)
+    """.format(divisor, divisor, divisor, partei, wahljahr)
 
     return endgueltig_query
 
