@@ -18,21 +18,21 @@ except ImportError:
     import csv
 
 # Adnans local test db:
-"""
+
 db_host = "localhost"
 db_port = 5432
 db_name = "wahl"
 db_user = "postgres"
 db_password = ""
-"""
+
 
 # Inkens local test db:
-db_host = "localhost"
+"""db_host = "localhost"
 db_port = 5432
 db_name = "postgres"
 db_user = "newuser"
 db_password = "pw"
-
+"""
 try:
     sql_con = psycopg2.connect(
         host=db_host, port=db_port, database=db_name, user=db_user, password=db_password)
@@ -979,6 +979,7 @@ def load_strukturdaten():
 # sql_con.commit()
 # DirektmandateBundeslandStimmenAggregation()
 
-DirektmandateDeutschlandStimmenAggregation()
+# DirektmandateDeutschlandStimmenAggregation()
+
 sql_con.commit()
 sql_con.close()
