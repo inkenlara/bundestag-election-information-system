@@ -81,7 +81,7 @@ and p.parteiid = k.partei
 --wahlbeteiligung
 select wahlkreis, (1.00*anzahlwahlende)/anzahlwahlberechtigte as wahlbeteiligung, wahljahr
 from wahlkreisaggretation
-and wahljahr = 2021
+WHERE wahljahr = 2021
     
 --gewaehlte direktkandidaten
 erststimmensieger as (

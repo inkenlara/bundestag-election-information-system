@@ -77,6 +77,12 @@ async def query1_chart_call():
     query1_chart()
     return FileResponse("public/img/query1_chart.png")
 
+@app.get("/query1_table")
+async def query1_table_call():
+    value = query1_table()
+    return HTMLResponse(content=value, status_code=200)
+
+
 db_host = "localhost"
 db_port = 5432
 db_name = "wahl"
@@ -103,7 +109,6 @@ except:
 plt.switch_backend('Agg') 
 
 
-# TODO TEST
 def query1_chart():
     cur.execute("""SELECT p.KurzBezeichnung, s.sitze FROM sitzverteilungbundestag s, partei p
 WHERE s.partei = p.parteiid""")
@@ -131,37 +136,15 @@ def query1_table():
     WHERE s.partei = p.parteiid""")
 
     data =  cur.fetchall()
+    str_table = '<table>'
+    for i in data:
+        str_table = str_table + '<tr>'
+        str_table = str_table + '<td>' + str(i[0]) + '</td><td>' + str(i[1]) + '</td>'
+        str_table = str_table + '</tr>'
+    str_table = str_table + ' </table>'
+    return str_table
 
-    cell_text = []
-    for row in data:
-        cell_text.append([x for x in row])
 
-    plt.figure(linewidth=2,
-            tight_layout={'pad':1},
-            )
-    # Add a table at the bottom of the axes
-    the_table = plt.table(cellText=cell_text,
-                        rowLoc='right',
-                        loc='center')
-
-    # Make the rows taller
-    the_table.scale(1, 1.5)
-    # Hide axes
-    ax = plt.gca()
-    ax.get_xaxis().set_visible(False)
-    ax.get_yaxis().set_visible(False)
-    # Hide axes border
-    plt.box(on=None)
-    plt.draw()
-    # Create image. plt.savefig ignores figure edge and face colors, so map them.
-    fig = plt.gcf()
-    plt.savefig('public/img/query1_table.png',
-                #bbox='tight',
-                edgecolor=fig.get_edgecolor(),
-                facecolor=fig.get_facecolor(),
-                dpi=150
-                )
-    plt.close()
 
 # TODO TEST
 def query2_table():
