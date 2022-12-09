@@ -84,7 +84,7 @@ from wahlkreisaggretation
 WHERE wahljahr = 2021
     
 --gewaehlte direktkandidaten
-erststimmensieger as (
+with erststimmensieger as (
   select we.wahlkreis, we.wahljahr, we.parteikurz as erststimmensieger, we.wahljahr
   from wahlkreisprozenterst we
   where we.wahljahr = 2021

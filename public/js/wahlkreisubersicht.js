@@ -22,6 +22,17 @@ function set_value(event) {
       }).catch(function(err) {
         console.log('Fetch Error :-S', err);
       });
+    
+      fetch("http://localhost:8000/query3_direktkandidaten/" + value.toString()).then(function(response) {
+        return response.json();
+      }).then(function(data) {
+        const newContent = document.createElement('p');        
+        var tag_id = document.getElementById('direktkand');
+        tag_id.innerHTML = data["data"];
+        
+      }).catch(function(err) {
+        console.log('Fetch Error :-S', err);
+      });
 
 }
 

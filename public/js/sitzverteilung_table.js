@@ -12,7 +12,7 @@ google.charts.load('current', {'packages':['table']});
           ['p4',   40]
         ]);
 
-        var table = new google.visualization.Table(document.getElementById('sitzverteilung_table'));
+        // var table = new google.visualization.Table(document.getElementById('sitzverteilung_table'));
 
-        table.draw(data, {showRowNumber: true, width: '100%', height: '100%'});
+       // table.draw(data, {showRowNumber: true, width: '100%', height: '100%'});
       }

@@ -66,6 +66,12 @@ async def query3_wahlbeteiligung_call(kreis_id: int):
     value = query3_wahlbeteiligung(kreis_id)
     return HTMLResponse(content=value, status_code=200)
 
+@app.get("/query3_direktkandidaten/{kreis_id}")
+async def query3_direktkandidaten_call(kreis_id: int):
+    value = query3_direktkandidaten(kreis_id)
+    return HTMLResponse(content=value, status_code=200)
+
+
 
 @app.get("/query1_chart")
 async def query1_chart_call():
@@ -272,6 +278,36 @@ def query3_wahlbeteiligung(kreis):
         if(int(i[0]) == int(kreis)):
             result = i[2] * 100
     stringy = '<p> ' + str(float("{:.3f}".format(result))) + " %" + ' </p>' 
+    jsony = {"data": stringy}
+    return json.dumps(jsony)
+
+
+def query3_direktkandidaten(kreis):
+    cur.execute("""with erststimmensieger as (
+  select we.wahlkreis, we.wahljahr, we.parteikurz as erststimmensieger, we.wahljahr
+  from wahlkreisprozenterst we
+  where we.wahljahr = 2021
+  and not exists                        
+          (select *                    
+          from wahlkreisprozenterst we2            
+          where we.wahlkreis = we2.wahlkreis  
+          and we2.wahljahr = 2021
+          and we2.prozenterststimmen > we.prozenterststimmen    
+          )
+)
+select e.wahlkreis,wk.wahlkreisname, k.firstname, k.lastname, e.erststimmensieger, k.wahljahr
+from erststimmensieger e, direktkandidaten dk, kandidaten k, partei p, wahlkreis wk
+where e.erststimmensieger = p.KurzBezeichnung
+and p.parteiid = k.partei
+and wk.wahlkreisid = e.wahlkreis
+and k.kandidatid = dk.kandidatid
+and dk.wahlkreis = e.wahlkreis
+and k.wahljahr = 2021""")
+    data = cur.fetchall()
+    stringy = ''
+    for i in data:
+        if(int(i[0]) == int(kreis)):
+            stringy = '<p> ' + str(i[2]) + '   ' + str(i[3]) + '   ' + str(i[4]) + '   ' + str(i[5]) + ' </p>'
     jsony = {"data": stringy}
     return json.dumps(jsony)
 
