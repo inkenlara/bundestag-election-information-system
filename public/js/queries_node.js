@@ -1,3 +1,4 @@
+/* 
 const {Client} = require('pg')
 
 const client = new Client({
@@ -20,4 +21,4 @@ function get_data(query) {
         }
         client.end;
     })
-}
+} */

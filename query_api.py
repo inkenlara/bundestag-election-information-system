@@ -711,9 +711,10 @@ def query8_rich():
     
     labels = 'Grüne', 'FDP', 'SPD', 'CDU', 'AfD', 'Others'
     explode = (0.1, 0.1, 0.1, 0.1, 0.1, 0.1) 
+    colors = ['#47973b', '#efe14b', '#de3121', '#c53729', '#4dabe9', '#a8a9aa']
 
     fig1, ax1 = plt.subplots()
-    ax1.pie(results, explode=explode, labels=labels, autopct='%1.1f%%',
+    ax1.pie(results, explode=explode, labels=labels, colors=colors, autopct='%1.1f%%',
             shadow=True, startangle=90)
     ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
 
@@ -817,12 +818,11 @@ def query8_poor():
         total += i[1]
     results.append(100 - total)
     
-    
     labels = 'AfD', 'CDU', 'FDP', 'SPD', 'Grüne', 'Others'
-    explode = (0.1, 0.1, 0.1, 0.1, 0.1, 0.1) 
-
+    explode = (0.1, 0.1, 0.1, 0.1, 0.1, 0.1)
+    colors = ['#4dabe9', '#c53729', '#efe14b', '#de3121', '#47973b', '#a8a9aa']
     fig1, ax1 = plt.subplots()
-    ax1.pie(results, explode=explode, labels=labels, autopct='%1.1f%%',
+    ax1.pie(results, explode=explode, labels=labels, colors=colors, autopct='%1.1f%%',
             shadow=True, startangle=90)
     ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
 
@@ -934,9 +934,9 @@ SELECT * FROM most_educated_total""")
     
     labels = 'Grüne', 'SPD', 'AfD', 'CDU', 'FDP', 'Others'
     explode = (0.1, 0.1, 0.1, 0.1, 0.1, 0.1) 
-
+    colors = ['#47973b', '#de3121', '#4dabe9', '#c53729', '#efe14b', '#a8a9aa']
     fig1, ax1 = plt.subplots()
-    ax1.pie(results, explode=explode, labels=labels, autopct='%1.1f%%',
+    ax1.pie(results, explode=explode, labels=labels, colors=colors, autopct='%1.1f%%',
             shadow=True, startangle=90)
     # ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
 
@@ -1044,12 +1044,11 @@ SELECT * FROM least_educated_total""")
         total += i[1]
     results.append(100 - total)
     
-    
     labels = 'FDP', 'Grüne', 'AfD', 'CDU', 'SPD', 'Others'
     explode = (0.1, 0.1, 0.1, 0.1, 0.1, 0.1) 
-
+    colors = ['#efe14b', '#47973b', '#4dabe9', '#c53729', '#de3121', '#a8a9aa']
     fig1, ax1 = plt.subplots()
-    ax1.pie(results, explode=explode, labels=labels, autopct='%1.1f%%',
+    ax1.pie(results, explode=explode, labels=labels, colors=colors, autopct='%1.1f%%',
             shadow=True, startangle=90)
     # ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
 

@@ -1,3 +1,4 @@
+/*
 google.charts.load('current', {'packages':['table']});
       google.charts.setOnLoadCallback(drawTable);
 
@@ -16,4 +17,4 @@ google.charts.load('current', {'packages':['table']});
         var table = new google.visualization.Table(document.getElementById('uberangsmandate_table'));
 
         table.draw(data, {showRowNumber: true, width: '100%', height: '100%'});
-      }
+      } */

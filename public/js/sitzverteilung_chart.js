@@ -1,3 +1,4 @@
+/*
 google.charts.load('current', {'packages':['corechart']});
 google.charts.setOnLoadCallback(drawChart);
 
@@ -22,4 +23,4 @@ google.charts.setOnLoadCallback(drawChart);
         // var chart = new google.visualization.PieChart(document.getElementById('sitzverteilung_chart'));
 
         // chart.draw(data, options);
-      }
+      } */
