@@ -181,11 +181,18 @@ DF2 = pd.DataFrame(allZweitstimmen)
 DF1.to_csv("erststimmen.csv", header=None, index=None)
 DF2.to_csv("zweitstimmen.csv", header=None, index=None)
 
+"""
 db_host = "localhost"
 db_port = 5432
 db_name = "postgres"
 db_user = "newuser"
 db_password = "pw"
+"""
+db_host = "localhost"
+db_port = 5432
+db_name = "wahl"
+db_user = "postgres"
+db_password = ""
 
 try:
     conn = psycopg2.connect(
@@ -207,13 +214,24 @@ try:
 
     copyDataStartTime = timeit.default_timer()
 
-    f = open('/Users/inkengruner/Documents/Studium/Master/1. Semester/Datenbanken/wahl/erststimmen.csv', 'r')
+    # Inken
+    """f = open('/Users/inkengruner/Documents/Studium/Master/1. Semester/Datenbanken/wahl/erststimmen.csv', 'r')
     cur.copy_from(f, 'erststimmen', sep=',')
     f.close()
 
     f = open('/Users/inkengruner/Documents/Studium/Master/1. Semester/Datenbanken/wahl/zweitstimmen.csv', 'r')
     cur.copy_from(f, 'zweitstimmen', sep=',')
+    f.close()"""
+
+    # Adnan
+    f = open('erststimmen.csv', 'r')
+    cur.copy_from(f, 'erststimmen', sep=',')
     f.close()
+
+    f = open('zweitstimmen.csv', 'r')
+    cur.copy_from(f, 'zweitstimmen', sep=',')
+    f.close()
+
 
     print("Filling tables took:", timeit.default_timer() - copyDataStartTime)
 
