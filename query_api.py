@@ -72,6 +72,11 @@ async def query3_direktkandidaten_call(kreis_id: int):
     return HTMLResponse(content=value, status_code=200)
 
 
+@app.get("/query3_stimmen_entwicklung/{kreis_id}")
+async def query3_stimmen_entwicklung_call(kreis_id: int):
+    value = query3_stimmen_entwicklung(kreis_id)
+    return HTMLResponse(content=value, status_code=200)
+
 
 @app.get("/query1_chart")
 async def query1_chart_call():
@@ -144,6 +149,10 @@ def query1_table():
 
     data =  cur.fetchall()
     str_table = '<table>'
+    str_table = str_table + '<tr>'
+    str_table = str_table + '<th>Partei</th>'
+    str_table = str_table + '<th>Sitze</th>'
+    str_table = str_table + '</tr>'
     for i in data:
         str_table = str_table + '<tr>'
         str_table = str_table + '<td>' + str(i[0]) + '</td><td>' + str(i[1]) + '</td>'
@@ -219,6 +228,12 @@ and p.parteiid = k.partei""")
 
     data =  cur.fetchall()
     str_table = '<table>'
+    str_table = str_table + '<tr>'
+    str_table = str_table + '<th>Vorname</th>'
+    str_table = str_table + '<th>Nachname</th>'
+    str_table = str_table + '<th>Beruf</th>'
+    str_table = str_table + '<th>Partei</th>'
+    str_table = str_table + '</tr>'
     for i in data:
         str_table = str_table + '<tr>'
         str_table = str_table + '<td>' + str(i[1]) + '</td><td>' + str(i[2]) + '</td><td>' + str(i[3]) + '</td><td>' + str(i[4]) + '</td>'
@@ -259,6 +274,12 @@ def query4_table():
 
     data =  cur.fetchall()
     str_table = '<table>'
+    str_table = str_table + '<tr>'
+    str_table = str_table + '<th>Wahlkreisname</th>'
+    str_table = str_table + '<th>Wahljahr</th>'
+    str_table = str_table + '<th>Erststimmensieger</th>'
+    str_table = str_table + '<th>Zweitstimmensieger</th>'
+    str_table = str_table + '</tr>'
     for i in data:
         str_table = str_table + '<tr>'
         str_table = str_table + '<td>' + str(i[0]) + '</td><td>' + str(i[1]) + '</td><td>' + str(i[2]) + '</td><td>' + str(i[3]) +'</td>'
@@ -309,6 +330,44 @@ and k.wahljahr = 2021""")
         if(int(i[0]) == int(kreis)):
             stringy = '<p> ' + str(i[2]) + '   ' + str(i[3]) + '   ' + str(i[4]) + '   ' + str(i[5]) + ' </p>'
     jsony = {"data": stringy}
+    return json.dumps(jsony)
+
+
+def query3_stimmen_entwicklung(kreis):
+    cur.execute("""with vorjahr as (
+    select w.wahlkreis, pz.parteikurz, w.anzahlstimmen, pz.prozentzweitstimmen
+    from wahlkreisprozentzweit pz, wahlkreiszweitstimmenaggregation w, partei p
+    where pz.wahljahr = 2017
+    and w.wahljahr = 2017
+    and pz.wahlkreis = w.wahlkreis
+    and w.partei = p.parteiid
+    and p.KurzBezeichnung = pz.parteikurz
+)
+select w.wahlkreis, pz.parteikurz, w.anzahlstimmen, pz.prozentzweitstimmen, w.anzahlstimmen-v.anzahlstimmen as stimmendifferenz, pz.prozentzweitstimmen-v.prozentzweitstimmen as prozentdifferenz
+from wahlkreisprozentzweit pz, wahlkreiszweitstimmenaggregation w, partei p, vorjahr v
+where pz.wahljahr = 2021
+and w.wahljahr = 2021
+and pz.wahlkreis = w.wahlkreis
+and w.partei = p.parteiid
+and p.KurzBezeichnung = pz.parteikurz
+and w.wahlkreis = v.wahlkreis
+and p.KurzBezeichnung = v.parteikurz""")
+    data =  cur.fetchall()
+    str_table = '<table>'
+    str_table = str_table + '<tr>'
+    str_table = str_table + '<th>Partei</th>'
+    str_table = str_table + '<th>Anzahlstimmen</th>'
+    str_table = str_table + '<th>Prozentzweitstimmen</th>'
+    str_table = str_table + '<th>Stimmendifferenz</th>'
+    str_table = str_table + '<th>Prozentdifferenz</th>'
+    str_table = str_table + '</tr>'
+    for i in data:
+        if(int(i[0]) == int(kreis)):
+            str_table = str_table + '<tr>'
+            str_table = str_table + '<td>' + str(i[1]) + '</td><td>' + str(i[2]) + '</td><td>' + str(float("{:.2f}".format(i[3]))) + '%' + '</td><td>' + str(i[4]) +'</td><td>' + str(float("{:.2f}".format(i[5]))) + '%' +'</td>'
+            str_table = str_table + '</tr>'
+    str_table = str_table + ' </table>'
+    jsony = {"data": str_table}
     return json.dumps(jsony)
 
 

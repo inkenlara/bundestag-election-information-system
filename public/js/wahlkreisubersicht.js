@@ -34,6 +34,17 @@ function set_value(event) {
         console.log('Fetch Error :-S', err);
       });
 
+      fetch("http://localhost:8000/query3_stimmen_entwicklung/" + value.toString()).then(function(response) {
+        return response.json();
+      }).then(function(data) {
+        const newContent = document.createElement('p');        
+        var tag_id = document.getElementById('p_entw');
+        tag_id.innerHTML = data["data"];
+        
+      }).catch(function(err) {
+        console.log('Fetch Error :-S', err);
+      });
+
 }
 
 
