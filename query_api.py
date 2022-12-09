@@ -100,6 +100,11 @@ async def query5_table_call():
     return HTMLResponse(content=value, status_code=200)
 
 
+@app.get("/query6_win")
+async def query6_win_call():
+    value = query6_table_win()
+    return HTMLResponse(content=value, status_code=200)
+
 
 db_host = "localhost"
 db_port = 5432
@@ -399,6 +404,67 @@ and p.KurzBezeichnung = v.parteikurz""")
     str_table = str_table + ' </table>'
     jsony = {"data": str_table}
     return json.dumps(jsony)
+
+
+def query6_table_win():
+    cur.execute("""with sieger as(
+    select *
+    from wahlkreisprozenterst w1
+    where w1.wahljahr = 2021
+    and not exists (select * from wahlkreisprozenterst w2 
+                    where w2.wahljahr = 2021 
+                    and w1.wahlkreis = w2.wahlkreis 
+                    and w2.prozenterststimmen > w1.prozenterststimmen)
+),
+-- filtere zweite
+wahlkreisprozenterst_ohne_sieger as(
+    select * from wahlkreisprozenterst
+    EXCEPT
+    select * from sieger    
+),
+zweite_sieger as(
+    select *
+    from wahlkreisprozenterst_ohne_sieger w1
+    where 
+    w1.wahljahr = 2021
+    and not exists (select * from wahlkreisprozenterst_ohne_sieger w2 
+                    where w2.wahljahr = 2021 
+                    and w1.wahlkreis = w2.wahlkreis 
+                    and w2.prozenterststimmen > w1.prozenterststimmen)    
+), 
+--bilde differenz zwischen stimmen
+differenz as (
+  select s.wahljahr, s.wahlkreis, s.parteikurz, s.prozenterststimmen-zs.prozenterststimmen as differenz, ROW_NUMBER() OVER(PARTITION BY s.parteikurz ORDER BY s.prozenterststimmen-zs.prozenterststimmen ASC) AS row_number
+  from sieger s, zweite_sieger zs
+  where s.wahlkreis = zs.wahlkreis
+)
+-- waehle die 10 knappsten abstaende
+select k.wahljahr, di.wahlkreis, wk.wahlkreisname, di.parteikurz, di.differenz, di.row_number, k.kandidatid, k.firstname, k.lastname
+from differenz di, kandidaten k, direktkandidaten dk, partei p, wahlkreis as wk
+where row_number <= 10
+and di.parteikurz = p.KurzBezeichnung
+and p.parteiid = k.partei
+and k.wahljahr = 2021
+and wk.wahlkreisid = di.wahlkreis
+and k.kandidatid = dk.kandidatid
+and di.wahlkreis = dk.wahlkreis""")
+    data =  cur.fetchall()
+    str_table = '<table>'
+    str_table = str_table + '<tr>'
+    str_table = str_table + '<th>Wahlkreis</th>'
+    str_table = str_table + '<th>First name</th>'
+    str_table = str_table + '<th>Last name</th>'
+    str_table = str_table + '<th>Partei</th>'
+    str_table = str_table + '<th>Differenz</th>'
+    str_table = str_table + '<th>Row number</th>'
+    str_table = str_table + '</tr>'
+    for i in data:
+        str_table = str_table + '<tr>'
+        str_table = str_table + '<td>' + str(i[2]) + '</td><td>' + str(i[7]) + '</td><td>' + str(i[8]) + '</td><td>' + str(i[3]) + '</td><td>' + str(i[4]) + '</td><td>' + str(i[5]) + '</td>'
+        str_table = str_table + '</tr>'
+    str_table = str_table + ' </table>'
+    return str_table
+
 
 
 
