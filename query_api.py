@@ -110,6 +110,21 @@ async def query6_loser_call():
     value = query6_table_loser()
     return HTMLResponse(content=value, status_code=200)
 
+@app.get("/query7_wahlbeteiligung/{kreis_id}")
+async def query7_wahlbeteiligung_call(kreis_id: int):
+    value = query7_wahlbeteiligung(kreis_id)
+    return HTMLResponse(content=value, status_code=200)
+
+@app.get("/query7_direktkandidaten/{kreis_id}")
+async def query7_direktkandidaten_call(kreis_id: int):
+    value = query7_direktkandidaten(kreis_id)
+    return HTMLResponse(content=value, status_code=200)
+
+@app.get("/query7_stimmen_entwicklung/{kreis_id}")
+async def query7_stimmen_entwicklung(kreis_id: int):
+    value = query7_stimmen_entwicklung(kreis_id)
+    return HTMLResponse(content=value, status_code=200)
+
 db_host = "localhost"
 db_port = 5432
 db_name = "wahl"
@@ -523,6 +538,79 @@ and kd.wahlkreis = dk.wahlkreis""")
     str_table = str_table + ' </table>'
     return str_table
 
+
+def query7_wahlbeteiligung(kreis):
+    cur.execute("""with anzahlwahlberechtigte as (select anzahlwahlberechtigte, wahlkreis from wahlkreisaggretation where wahljahr = 2021 and (wahlkreis = 1 or wahlkreis = 2 or wahlkreis = 3 or wahlkreis = 4 or wahlkreis = 5)),
+wahlende as 
+    (select count(*) as wahlende
+    from anzahlwahlberechtigte a, zweitstimmen zw
+    where zw.wahlkreis = 1)
+select wahlkreis, (1.0*wahlende)/anzahlwahlberechtigte as wahlbeteiligung
+from anzahlwahlberechtigte, wahlende""")
+    data =  cur.fetchall()
+    result = 0.0
+    for i in data:
+        if(int(i[0]) == int(kreis)):
+            result = i[1]
+    stringy = '<p> ' + str(float("{:.3f}".format(result))) + " %" + ' </p>' 
+    jsony = {"data": stringy}
+    return json.dumps(jsony)
+
+
+
+def query7_direktkandidaten(kreis):
+    cur.execute("""with stimmen_pro_partei as (
+  select partei, count(*) as stimmen
+  from erststimmen
+  group by partei
+)
+select dk.wahlkreis, k.kandidatid, k.firstname, k.lastname, s.partei, k.wahljahr, p.kurzbezeichnung
+from stimmen_pro_partei s, direktkandidaten dk, kandidaten k, partei p
+where stimmen = (select max(stimmen) from stimmen_pro_partei)
+and s.partei = k.partei
+and k.wahljahr= 2021
+and k.kandidatid = dk.kandidatid
+and p.parteiid = s.partei""")
+    data = cur.fetchall()
+    stringy = ''
+    for i in data:
+        if(int(i[0]) == int(kreis)):
+            stringy = '<p> ' + str(i[2]) + '   ' + str(i[3]) + '   ' + str(i[6]) + '   ' + str(i[5]) + ' </p>'
+    jsony = {"data": stringy}
+    return json.dumps(jsony)
+
+
+def query7_stimmen_entwicklung(kreis):
+    cur.execute("""with stimmen_gesamt as(
+    select count(*) as stimmen_gesamt
+    from zweitstimmen
+    where wahlkreis = 1
+),
+    stimmen_pro_partei as(
+    select partei, count(*) as stimmen_pro_partei
+    from zweitstimmen
+    where wahlkreis = 1
+    group by partei
+)
+select 1 as wahlkreis, wk.wahlkreisname, p.kurzbezeichnung, partei, stimmen_pro_partei, (1.00*stimmen_pro_partei)/stimmen_gesamt as stimmen_prozentual
+from stimmen_pro_partei, stimmen_gesamt, partei p, wahlkreis wk
+WHERE partei = p.parteiid
+and wk.wahlkreisid = 1""")
+    data =  cur.fetchall()
+    str_table = '<table>'
+    str_table = str_table + '<tr>'
+    str_table = str_table + '<th>Partei</th>'
+    str_table = str_table + '<th>Anzahlstimmen</th>'
+    str_table = str_table + '<th>Prozent stimmen</th>'
+    str_table = str_table + '</tr>'
+    for i in data:
+        if(int(i[0]) == int(kreis)):
+            str_table = str_table + '<tr>'
+            str_table = str_table + '<td>' + str(i[2]) + '</td><td>' + str(i[4]) + '</td><td>' + str(float("{:.3f}".format(i[5]))) + '%' + '</td>'
+            str_table = str_table + '</tr>'
+    str_table = str_table + ' </table>'
+    jsony = {"data": str_table}
+    return json.dumps(jsony)
 
 
 def query8_rich():
