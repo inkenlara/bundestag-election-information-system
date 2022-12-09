@@ -37,7 +37,7 @@ function set_value(event) {
       fetch("http://localhost:8000/query3_stimmen_entwicklung/" + value.toString()).then(function(response) {
         return response.json();
       }).then(function(data) {
-        const newContent = document.createElement('p');        
+        const newContent = document.createElement('table');        
         var tag_id = document.getElementById('p_entw');
         tag_id.innerHTML = data["data"];
         

@@ -188,7 +188,8 @@ def query1_table():
         str_table = str_table + '<td>' + str(i[0]) + '</td><td>' + str(i[1]) + '</td>'
         str_table = str_table + '</tr>'
     str_table = str_table + ' </table>'
-    return str_table
+    jsony = {"data": str_table}
+    return json.dumps(jsony)
 
 
 

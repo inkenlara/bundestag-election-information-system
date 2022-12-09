@@ -45,7 +45,18 @@
     <div id="sitzverteilung_chart" style="width: 900px; height: 500px;">
       <img src="http://localhost:8000/query1_chart">
     </div>
-    <iframe src="http://localhost:8000/query1_table" title="Sitzverteilung table" style="border-style: none;width: 100%; height: 120px;"></iframe>
+    <table id="sitzetabelle" style="table-layout: fixed;width: 30%; border-collapse: collapse; border: 1px solid rgb(17, 198, 44); text-align: center;"></table>
+    <script type="text/javascript">
+      fetch("http://localhost:8000/query1_table").then(function(response) {
+        return response.json();
+      }).then(function(data) {
+        const newContent = document.createElement('table');        
+        var tag_id = document.getElementById('sitzetabelle');
+        tag_id.innerHTML = data["data"];
+      }).catch(function(err) {
+        console.log('Fetch Error :-S', err);
+      });
+    </script>
     <!-- <div id="sitzverteilung_table"></div> -->
 
     <h2 id="Mitglieder" style="margin-top: 3em; margin-left: 2em;">Mitglieder des Bundestages</h2>
@@ -366,7 +377,7 @@
 
     <h3 style="margin-left: 2em;">Pro Partei, entwicklung</h3>
     <div id="partei_entw">
-      <p id="p_entw"></p>
+      <table id="p_entw" style="table-layout: fixed;width: 60%; border-collapse: collapse; border: 1px solid rgb(17, 198, 44); text-align: center;"></table>
     </div>
     <!-- <div id="pro_partei"></div>
     <h3 style="margin-left: 2em;"></h3>
@@ -406,7 +417,7 @@
 
     <h3 style="margin-left: 2em;">Pro Partei, entwicklung</h3>
     <div id="partei_entw7">
-      <p id="p_entw7"></p>
+      <table id="p_entw7" style="table-layout: fixed;width: 40%; border-collapse: collapse; border: 1px solid rgb(17, 198, 44); text-align: center;"></table>
     </div>
 
 
