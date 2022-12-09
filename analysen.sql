@@ -163,9 +163,11 @@ with erststimmensieger as (
 --Q5: Ueberhangsmandate
 --aufgabe wurde so interpretiert, dass ueberhangsmandate von schritt 2 im divisorverfahren gemeint sind
 
-select bundesland, partei, direktmandate-sitzkontingente  as ueberhangsmandate
-from vorlaufigesitzverteilungparteienprobundesland
+select bundesland, b.bundeslandname, partei, direktmandate-sitzkontingente  as ueberhangsmandate
+from vorlaufigesitzverteilungparteienprobundesland as v, bundesland as b
 where sitzkontingente < direktmandate
+and b.bundeslandid = v.bundesland
+ORDER BY v.bundesland
 
 
 

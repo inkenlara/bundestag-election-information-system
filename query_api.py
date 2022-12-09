@@ -94,6 +94,12 @@ async def query2_table_call():
     return HTMLResponse(content=value, status_code=200)
 
 
+@app.get("/query5_table")
+async def query5_table_call():
+    value = query5_table()
+    return HTMLResponse(content=value, status_code=200)
+
+
 
 db_host = "localhost"
 db_port = 5432
@@ -303,6 +309,30 @@ def query3_wahlbeteiligung(kreis):
     return json.dumps(jsony)
 
 
+
+def query5_table():
+    cur.execute("""select bundesland, b.bundeslandname, p.kurzbezeichnung, direktmandate-sitzkontingente  as ueberhangsmandate
+from vorlaufigesitzverteilungparteienprobundesland as v, bundesland as b, partei as p
+where sitzkontingente < direktmandate
+and b.bundeslandid = v.bundesland
+and partei = p.parteiid
+ORDER BY v.bundesland""")
+    data =  cur.fetchall()
+    str_table = '<table>'
+    str_table = str_table + '<tr>'
+    str_table = str_table + '<th>Bundesland</th>'
+    str_table = str_table + '<th>Partei</th>'
+    str_table = str_table + '<th>Überhangsmandate</th>'
+    str_table = str_table + '</tr>'
+    for i in data:
+        str_table = str_table + '<tr>'
+        str_table = str_table + '<td>' + str(i[1]) + '</td><td>' + str(i[2]) + '</td><td>' + str(i[3]) + '</td>'
+        str_table = str_table + '</tr>'
+    str_table = str_table + ' </table>'
+    return str_table
+
+
+
 def query3_direktkandidaten(kreis):
     cur.execute("""with erststimmensieger as (
   select we.wahlkreis, we.wahljahr, we.parteikurz as erststimmensieger, we.wahljahr
@@ -364,7 +394,7 @@ and p.KurzBezeichnung = v.parteikurz""")
     for i in data:
         if(int(i[0]) == int(kreis)):
             str_table = str_table + '<tr>'
-            str_table = str_table + '<td>' + str(i[1]) + '</td><td>' + str(i[2]) + '</td><td>' + str(float("{:.2f}".format(i[3]))) + '%' + '</td><td>' + str(i[4]) +'</td><td>' + str(float("{:.2f}".format(i[5]))) + '%' +'</td>'
+            str_table = str_table + '<td>' + str(i[1]) + '</td><td>' + str(i[2]) + '</td><td>' + str(float("{:.3f}".format(i[3]))) + '%' + '</td><td>' + str(i[4]) +'</td><td>' + str(float("{:.3f}".format(i[5]))) + '%' +'</td>'
             str_table = str_table + '</tr>'
     str_table = str_table + ' </table>'
     jsony = {"data": str_table}
