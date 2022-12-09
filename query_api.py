@@ -56,11 +56,6 @@ async def query8_poor_call():
     return FileResponse("public/img/query8_poor.png")
 
 
-@app.get("/query2_table")
-async def query2_call():
-    query2_table()
-    return FileResponse("public/img/query2_table.png")
-
 @app.get("/query4_table")
 async def query4_call():
     value = query4_table()
@@ -81,6 +76,12 @@ async def query1_chart_call():
 async def query1_table_call():
     value = query1_table()
     return HTMLResponse(content=value, status_code=200)
+
+@app.get("/query2_table")
+async def query2_table_call():
+    value = query2_table()
+    return HTMLResponse(content=value, status_code=200)
+
 
 
 db_host = "localhost"
@@ -211,37 +212,13 @@ and k.wahljahr = 2021
 and p.parteiid = k.partei""")
 
     data =  cur.fetchall()
-    data.insert(0, ["ID", "Vorname", "Nachname", "Beruf", "Partei"])
-    cell_text = []
-    for row in data:
-        cell_text.append([x for x in row])
-
-    plt.figure(linewidth=2,
-            tight_layout={'pad':1},
-            )
-    # Add a table at the bottom of the axes
-    the_table = plt.table(cellText=cell_text,
-                        rowLoc='right',
-                        loc='center')
-
-    # Make the rows taller
-    the_table.scale(1, 1.5)
-    # Hide axes
-    ax = plt.gca()
-    ax.get_xaxis().set_visible(False)
-    ax.get_yaxis().set_visible(False)
-    # Hide axes border
-    plt.box(on=None)
-    plt.draw()
-    # Create image. plt.savefig ignores figure edge and face colors, so map them.
-    fig = plt.gcf()
-    plt.savefig('public/img/query2_table.png',
-                #bbox='tight',
-                edgecolor=fig.get_edgecolor(),
-                facecolor=fig.get_facecolor(),
-                dpi=150
-                )
-    plt.close()
+    str_table = '<table>'
+    for i in data:
+        str_table = str_table + '<tr>'
+        str_table = str_table + '<td>' + str(i[1]) + '</td><td>' + str(i[2]) + '</td><td>' + str(i[3]) + '</td><td>' + str(i[4]) + '</td>'
+        str_table = str_table + '</tr>'
+    str_table = str_table + ' </table>'
+    return str_table
 
 
 def query4_table():
