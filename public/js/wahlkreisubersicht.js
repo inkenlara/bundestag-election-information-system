@@ -1,16 +1,36 @@
-var value = 10;
-google.charts.load('current', {'packages':['table']});
+// var value = 10;
+// google.charts.load('current', {'packages':['table']});
 // google.charts.setOnLoadCallback(drawTable);
 
 var menu = document.getElementById("wahlkreis_choice");
 menu.addEventListener("change", set_value);
 
+
 function set_value(event) {
     value = menu.value;
-    google.charts.setOnLoadCallback(drawTable);
-    console.log(menu.value)
+    //console.log(menu.value)
+
+    var xmlHttp = new XMLHttpRequest();
+
+    fetch("http://localhost:8000/query3_wahlbeteiligung/" + value.toString()).then(function(response) {
+        return response.json();
+      }).then(function(data) {
+        const newContent = document.createElement('p');        
+        var tag_id = document.getElementById('wahlbet');
+        tag_id.innerHTML = data["data"];
+        
+      }).catch(function(err) {
+        console.log('Fetch Error :-S', err);
+      });
+
 }
 
+
+
+
+
+
+/* 
 // The global variable value contains the Wahlkreis id, which can be used to filter the data
 function drawTable() {
     let data = new google.visualization.DataTable();
@@ -64,5 +84,5 @@ function drawTable() {
 
 
   }
-
+*/
 

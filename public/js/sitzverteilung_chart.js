@@ -19,7 +19,7 @@ google.charts.setOnLoadCallback(drawChart);
           //title: 'Sitzverteilung'
         };
 
-        var chart = new google.visualization.PieChart(document.getElementById('sitzverteilung_chart'));
+        // var chart = new google.visualization.PieChart(document.getElementById('sitzverteilung_chart'));
 
-        chart.draw(data, options);
+        // chart.draw(data, options);
       }

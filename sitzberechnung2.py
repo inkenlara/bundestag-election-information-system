@@ -18,11 +18,19 @@ except ImportError:
     import math
 
 # Inkens local test db:
+"""
 db_host = "localhost"
 db_port = 5432
 db_name = "postgres"
 db_user = "newuser"
 db_password = "pw"
+"""
+
+db_host = "localhost"
+db_port = 5432
+db_name = "wahl"
+db_user = "postgres"
+db_password = ""
 
 try:
     sql_con = psycopg2.connect(
@@ -34,16 +42,16 @@ except:
 
 wahljahr = 2021  # TODO: main erstellen, bei der man das wahljahr angeben kann
 
-cur.execute(
-    "DROP MATERIALIZED VIEW sitzverteilungparteienprobundesland")
-sql_con.commit()
-cur.execute("DROP TABLE sitzverteilungbundestag")
-sql_con.commit()
-cur.execute(
-    "DROP MATERIALIZED VIEW vorlaufigesitzverteilungparteienprobundesland")
-sql_con.commit()
-cur.execute("DROP MATERIALIZED VIEW ParteienInBT")
-cur.execute("DROP MATERIALIZED VIEW VorlaeufigeSitzverteilung")
+# cur.execute(
+#     "DROP MATERIALIZED VIEW sitzverteilungparteienprobundesland")
+# sql_con.commit()
+# cur.execute("DROP TABLE sitzverteilungbundestag")
+# sql_con.commit()
+# cur.execute(
+#     "DROP MATERIALIZED VIEW vorlaufigesitzverteilungparteienprobundesland")
+# sql_con.commit()
+# cur.execute("DROP MATERIALIZED VIEW ParteienInBT")
+# cur.execute("DROP MATERIALIZED VIEW VorlaeufigeSitzverteilung")
 
 
 ###########################################################################################

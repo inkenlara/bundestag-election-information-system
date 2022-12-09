@@ -16,9 +16,24 @@ from PIL import Image
 from fastapi import FastAPI
 from fastapi.responses import FileResponse
 from fastapi.responses import HTMLResponse
+from fastapi.middleware.cors import CORSMiddleware
+import json
 
 app = FastAPI()
 
+origins = [
+    "http://localhost:3000",
+    "http://localhost",
+    "http://localhost:8080"
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/query9_high")
 async def query9_high_call():
@@ -51,6 +66,16 @@ async def query4_call():
     value = query4_table()
     return HTMLResponse(content=value, status_code=200)
 
+@app.get("/query3_wahlbeteiligung/{kreis_id}")
+async def query3_wahlbeteiligung_call(kreis_id: int):
+    value = query3_wahlbeteiligung(kreis_id)
+    return HTMLResponse(content=value, status_code=200)
+
+
+@app.get("/query1_chart")
+async def query1_chart_call():
+    query1_chart()
+    return FileResponse("public/img/query1_chart.png")
 
 db_host = "localhost"
 db_port = 5432
@@ -83,22 +108,20 @@ def query1_chart():
     cur.execute("""SELECT p.KurzBezeichnung, s.sitze FROM sitzverteilungbundestag s, partei p
 WHERE s.partei = p.parteiid""")
 
+    party = []
+    performance = []
     mobile_records = cur.fetchall()
-    results = []
-    labels = []
     for i in mobile_records:
-        labels.append(i[0])
-        results.append(i[1])
-    
-    explode = [0.1 for x in range(0, len(results))]
-
-    fig1, ax1 = plt.subplots()
-    ax1.pie(results, explode=explode, labels=labels, autopct='%1.1f%%',
-            shadow=True, startangle=90)
-    ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
-
+        party.append(i[0])
+        performance.append(int(i[1]))
+    y_pos = np.arange(len(party))
+    plt.bar(y_pos, performance, align='center', alpha=0.5)
+    plt.xticks(y_pos, party)
+    plt.ylabel('Sitze')
+    plt.title('Sitzverteilung')
     plt.savefig('public/img/query1_chart.png')
     plt.close()
+
 
 
 # TODO TEST
@@ -238,12 +261,6 @@ and p.parteiid = k.partei""")
     plt.close()
 
 
-
-# TODO FINISH
-# def query3_wahlbeteiligung(kreis):
-# query4, query5, query6
-
-
 def query4_table():
 
     cur.execute("""with erststimmensieger as (
@@ -285,10 +302,22 @@ def query4_table():
 
 
 
-query4_table()
+def query3_wahlbeteiligung(kreis):
+    cur.execute("""select a.wahlkreis, w.wahlkreisname, (1.00*anzahlwahlende)/anzahlwahlberechtigte as wahlbeteiligung, wahljahr
+        from wahlkreisaggretation as a, wahlkreis as w
+        WHERE wahljahr = 2021 AND a.wahlkreis = w.wahlkreisid""")
+    data =  cur.fetchall()
+    result = 0.0
+    for i in data:
+        if(int(i[0]) == int(kreis)):
+            result = i[2] * 100
+    stringy = '<p> ' + str(float("{:.3f}".format(result))) + " %" + ' </p>' 
+    jsony = {"data": stringy}
+    return json.dumps(jsony)
+
+
 
 def query8_rich():
-
     cur.execute("""with ten_richest as (SELECT wahlkreis, wahlkreisname, einkommenprivatehaushalte as ein FROM strukturdaten
     ORDER BY ein DESC
     LIMIT 10),
