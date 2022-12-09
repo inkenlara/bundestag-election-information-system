@@ -105,6 +105,10 @@ async def query6_win_call():
     value = query6_table_win()
     return HTMLResponse(content=value, status_code=200)
 
+@app.get("/query6_loser")
+async def query6_loser_call():
+    value = query6_table_loser()
+    return HTMLResponse(content=value, status_code=200)
 
 db_host = "localhost"
 db_port = 5432
@@ -456,15 +460,68 @@ and di.wahlkreis = dk.wahlkreis""")
     str_table = str_table + '<th>Last name</th>'
     str_table = str_table + '<th>Partei</th>'
     str_table = str_table + '<th>Differenz</th>'
-    str_table = str_table + '<th>Row number</th>'
     str_table = str_table + '</tr>'
     for i in data:
         str_table = str_table + '<tr>'
-        str_table = str_table + '<td>' + str(i[2]) + '</td><td>' + str(i[7]) + '</td><td>' + str(i[8]) + '</td><td>' + str(i[3]) + '</td><td>' + str(i[4]) + '</td><td>' + str(i[5]) + '</td>'
+        str_table = str_table + '<td>' + str(i[2]) + '</td><td>' + str(i[7]) + '</td><td>' + str(i[8]) + '</td><td>' + str(i[3]) + '</td><td>' + str(i[4]) + '</td>'
         str_table = str_table + '</tr>'
     str_table = str_table + ' </table>'
     return str_table
 
+
+def query6_table_loser():
+    cur.execute("""with sieger as(
+    select *
+    from wahlkreisprozenterst w1
+    where w1.wahljahr = 2021
+    and not exists (select * from wahlkreisprozenterst w2 
+                    where w2.wahljahr = 2021 
+                    and w1.wahlkreis = w2.wahlkreis 
+                    and w2.prozenterststimmen > w1.prozenterststimmen)
+),
+-- differenz zwischen gewinner und parteien
+differenz as(
+    select w.wahljahr, w.wahlkreis, w.parteikurz, s.prozenterststimmen-w.prozenterststimmen as differenz
+    from wahlkreisprozenterst w, sieger s
+    where w.wahljahr = 2021
+    and s.wahljahr = 2021
+    and w.parteikurz not in (select parteikurz from sieger) 
+    and w.wahlkreis = s.wahlkreis
+),
+-- suche fuer jede partei wahlkreis mit kleinster differenz
+kleinste_differenz as (select d1.wahljahr, d1.parteikurz, d1.wahlkreis ,d1.differenz
+from differenz d1
+where not exists (
+    select *
+    from differenz d2
+    where d1.parteikurz = d2.parteikurz
+    and d2.differenz < d1.differenz
+     )
+)
+-- join mit kandidaten
+select k.wahljahr, kd.wahlkreis, wk.wahlkreisname, kd.parteikurz, kd.differenz, k.kandidatid, k.firstname, k.lastname
+from kleinste_differenz kd, kandidaten k, direktkandidaten dk, partei p, wahlkreis as wk
+where kd.parteikurz = p.KurzBezeichnung
+and p.parteiid = k.partei
+and k.wahljahr = 2021
+and wk.wahlkreisid = kd.wahlkreis
+and k.kandidatid = dk.kandidatid
+and kd.wahlkreis = dk.wahlkreis""")
+    data =  cur.fetchall()
+    str_table = '<table>'
+    str_table = str_table + '<tr>'
+    str_table = str_table + '<th>Wahlkreis</th>'
+    str_table = str_table + '<th>First name</th>'
+    str_table = str_table + '<th>Last name</th>'
+    str_table = str_table + '<th>Partei</th>'
+    str_table = str_table + '<th>Differenz</th>'
+    str_table = str_table + '</tr>'
+    for i in data:
+        str_table = str_table + '<tr>'
+        str_table = str_table + '<td>' + str(i[2]) + '</td><td>' + str(i[6]) + '</td><td>' + str(i[7]) + '</td><td>' + str(i[3]) + '</td><td>' + str(i[4]) + '</td>'
+        str_table = str_table + '</tr>'
+    str_table = str_table + ' </table>'
+    return str_table
 
 
 
