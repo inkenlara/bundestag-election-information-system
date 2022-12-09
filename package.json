@@ -20,7 +20,7 @@
   "homepage": "https://github.com/zauberer1/wahl#readme",
   "dependencies": {
     "express": "^4.18.2",
-    "fs": "0.0.1-security",
+    "fs": "^0.0.1-security",
     "pg": "^8.8.0"
   },
   "devDependencies": {
