@@ -81,7 +81,7 @@ and p.parteiid = k.partei
 --wahlbeteiligung
 select wahlkreis, (1.00*anzahlwahlende)/anzahlwahlberechtigte as wahlbeteiligung, wahljahr
 from wahlkreisaggretation
-and wahljahr = 2021
+WHERE wahljahr = 2021
     
 --gewaehlte direktkandidaten
 erststimmensieger as (
@@ -204,9 +204,14 @@ differenz as (
   where s.wahlkreis = zs.wahlkreis
 )
 -- waehle die 10 knappsten abstaende
-select *
-from differenz
+select k.wahljahr, di.wahlkreis, di.parteikurz, di.differenz, di.row_number, k.kandidatid, k.firstname, k.lastname
+from differenz di, kandidaten k, direktkandidaten dk, partei p
 where row_number <= 10
+and di.parteikurz = p.KurzBezeichnung
+and p.parteiid = k.partei
+and k.wahljahr = 2021
+and k.kandidatid = dk.kandidatid
+and di.wahlkreis = dk.wahlkreis
 
 -- Q6: wahlkreise, in der jede partei am knappsten verloren hat
 
@@ -228,9 +233,9 @@ differenz as(
     and s.wahljahr = 2021
     and w.parteikurz not in (select parteikurz from sieger) 
     and w.wahlkreis = s.wahlkreis
-)
+),
 -- suche fuer jede partei wahlkreis mit kleinster differenz
-select d1.wahljahr, d1.parteikurz, d1.wahlkreis ,d1.differenz
+kleinste_differenz as (select d1.wahljahr, d1.parteikurz, d1.wahlkreis ,d1.differenz
 from differenz d1
 where not exists (
     select *
@@ -238,6 +243,15 @@ where not exists (
     where d1.parteikurz = d2.parteikurz
     and d2.differenz < d1.differenz
      )
+)
+-- join mit kandidaten
+select k.wahljahr, kd.wahlkreis, kd.parteikurz, kd.differenz, k.kandidatid, k.firstname, k.lastname
+from kleinste_differenz kd, kandidaten k, direktkandidaten dk, partei p
+where kd.parteikurz = p.KurzBezeichnung
+and p.parteiid = k.partei
+and k.wahljahr = 2021
+and k.kandidatid = dk.kandidatid
+and kd.wahlkreis = dk.wahlkreis
 
 
 
