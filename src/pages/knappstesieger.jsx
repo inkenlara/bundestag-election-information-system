@@ -44,7 +44,7 @@ class Knappstesieger extends Component {
         return response.json();
       })
       .then(function (data) {
-        const newContent = document.createElement("table");
+        // const newContent = document.createElement("table");
         var tag_id = document.getElementById("tableLose");
         tag_id.innerHTML = data["data"];
         return data["data"];
