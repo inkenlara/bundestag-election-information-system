@@ -37,23 +37,23 @@ app.add_middleware(
 
 @app.get("/query9_high")
 async def query9_high_call():
-    query9_high()
-    return FileResponse("public/img/query9_high.png")
+    value = query9_high()
+    return HTMLResponse(content=value, status_code=200)
 
 @app.get("/query9_low")
 async def query9_low_call():
-    query9_low()
-    return FileResponse("public/img/query9_low.png")
+    value = query9_low()
+    return HTMLResponse(content=value, status_code=200)
 
 @app.get("/query8_rich")
 async def query8_rich_call():
-    query8_rich()
-    return FileResponse("public/img/query8_rich.png")
+    value = query8_rich()
+    return HTMLResponse(content=value, status_code=200)
 
 @app.get("/query8_poor")
 async def query8_poor_call():
-    query8_poor()
-    return FileResponse("public/img/query8_poor.png")
+    value = query8_poor()
+    return HTMLResponse(content=value, status_code=200)
 
 
 @app.get("/query4_table")
@@ -80,8 +80,8 @@ async def query3_stimmen_entwicklung_call(kreis_id: int):
 
 @app.get("/query1_chart")
 async def query1_chart_call():
-    query1_chart()
-    return FileResponse("public/img/query1_chart.png")
+    value = query1_chart()
+    return HTMLResponse(content=value, status_code=200)
 
 @app.get("/query1_table")
 async def query1_table_call():
@@ -161,13 +161,17 @@ WHERE s.partei = p.parteiid""")
     for i in mobile_records:
         party.append(i[0])
         performance.append(int(i[1]))
+    jsony = dict(zip(party, performance))
+    return json.dumps(jsony)
+    """
+    print(mobile_records)
     y_pos = np.arange(len(party))
     plt.bar(y_pos, performance, align='center', alpha=0.5)
     plt.xticks(y_pos, party)
     plt.ylabel('Sitze')
     plt.title('Sitzverteilung')
     plt.savefig('public/img/query1_chart.png')
-    plt.close()
+    plt.close() """
 
 
 
@@ -270,7 +274,8 @@ and p.parteiid = k.partei""")
         str_table = str_table + '<td>' + str(i[1]) + '</td><td>' + str(i[2]) + '</td><td>' + str(i[3]) + '</td><td>' + str(i[4]) + '</td>'
         str_table = str_table + '</tr>'
     str_table = str_table + ' </table>'
-    return str_table
+    jsony = {"data": str_table}
+    return json.dumps(jsony)
 
 
 def query4_table():
@@ -316,7 +321,8 @@ def query4_table():
         str_table = str_table + '<td>' + str(i[0]) + '</td><td>' + str(i[1]) + '</td><td>' + str(i[2]) + '</td><td>' + str(i[3]) +'</td>'
         str_table = str_table + '</tr>'
     str_table = str_table + ' </table>'
-    return str_table
+    jsony = {"data": str_table}
+    return json.dumps(jsony)
 
 
 
@@ -354,7 +360,8 @@ ORDER BY v.bundesland""")
         str_table = str_table + '<td>' + str(i[1]) + '</td><td>' + str(i[2]) + '</td><td>' + str(i[3]) + '</td>'
         str_table = str_table + '</tr>'
     str_table = str_table + ' </table>'
-    return str_table
+    jsony = {"data": str_table}
+    return json.dumps(jsony)
 
 
 
@@ -482,7 +489,8 @@ and di.wahlkreis = dk.wahlkreis""")
         str_table = str_table + '<td>' + str(i[2]) + '</td><td>' + str(i[7]) + '</td><td>' + str(i[8]) + '</td><td>' + str(i[3]) + '</td><td>' + str(i[4]) + '</td>'
         str_table = str_table + '</tr>'
     str_table = str_table + ' </table>'
-    return str_table
+    jsony = {"data": str_table}
+    return json.dumps(jsony)
 
 
 def query6_table_loser():
@@ -537,7 +545,8 @@ and kd.wahlkreis = dk.wahlkreis""")
         str_table = str_table + '<td>' + str(i[2]) + '</td><td>' + str(i[6]) + '</td><td>' + str(i[7]) + '</td><td>' + str(i[3]) + '</td><td>' + str(i[4]) + '</td>'
         str_table = str_table + '</tr>'
     str_table = str_table + ' </table>'
-    return str_table
+    jsony = {"data": str_table}
+    return json.dumps(jsony)
 
 
 def query7_wahlbeteiligung(kreis):
@@ -640,6 +649,12 @@ def query8_rich():
     (SELECT wahlkreis FROM ten_richest)
     AND (parteikurz = 'FDP') AND wahljahr = 2021
                         GROUP BY parteikurz),
+	-- Die Linke
+    linke_average_rich as (SELECT parteikurz, avg(prozentzweitstimmen) FROM WahlKreisProzentZweit
+    WHERE WahlKreis IN
+    (SELECT wahlkreis FROM ten_richest)
+    AND (parteikurz = 'DIE LINKE') AND wahljahr = 2021
+                        GROUP BY parteikurz),
     -- grüne average richest
     grune_average_rich as (SELECT parteikurz, avg(prozentzweitstimmen) FROM WahlKreisProzentZweit
     WHERE WahlKreis IN
@@ -652,64 +667,37 @@ def query8_rich():
     (SELECT wahlkreis FROM ten_richest)
     AND (parteikurz = 'AfD') AND wahljahr = 2021
                         GROUP BY parteikurz),
+	-- SSW
+	ssw_average_rich as (SELECT parteikurz, avg(prozentzweitstimmen) FROM WahlKreisProzentZweit
+    WHERE WahlKreis IN
+    (SELECT wahlkreis FROM ten_richest)
+    AND (parteikurz = 'SSW') AND wahljahr = 2021
+                        GROUP BY parteikurz),
 
-    -- CDU/CSU Union average poorest
-    cdu_csu_average_poor as (SELECT parteikurz, avg(prozentzweitstimmen) FROM WahlKreisProzentZweit
-    WHERE WahlKreis IN
-    (SELECT wahlkreis FROM ten_poorest)
-    AND (parteikurz = 'CDU' OR parteikurz = 'CSU') AND wahljahr = 2021
-                            GROUP BY parteikurz),
-    -- SPD average poorest
-    spd_average_poor as (SELECT parteikurz, avg(prozentzweitstimmen) FROM WahlKreisProzentZweit
-    WHERE WahlKreis IN
-    (SELECT wahlkreis FROM ten_poorest)
-    AND (parteikurz = 'SPD') AND wahljahr = 2021
-                        GROUP BY parteikurz),
-    -- fdp average poorest
-    fdp_average_poor as (SELECT parteikurz, avg(prozentzweitstimmen) FROM WahlKreisProzentZweit
-    WHERE WahlKreis IN
-    (SELECT wahlkreis FROM ten_poorest)
-    AND (parteikurz = 'FDP') AND wahljahr = 2021
-                        GROUP BY parteikurz),
-    -- grüne average poorest
-    grune_average_poor as (SELECT parteikurz, avg(prozentzweitstimmen) FROM WahlKreisProzentZweit
-    WHERE WahlKreis IN
-    (SELECT wahlkreis FROM ten_poorest)
-    AND (parteikurz = 'GRÜNE') AND wahljahr = 2021
-                        GROUP BY parteikurz),
-    -- AfD average poorest
-    afd_average_poor as (SELECT parteikurz, avg(prozentzweitstimmen) FROM WahlKreisProzentZweit
-    WHERE WahlKreis IN
-    (SELECT wahlkreis FROM ten_poorest)
-    AND (parteikurz = 'AfD') AND wahljahr = 2021
-                        GROUP BY parteikurz),
                         
     rich_total as (					  
     SELECT parteikurz, avg, 'rich' as category FROM cdu_csu_average_rich UNION 
     SELECT parteikurz, avg, 'rich' as category FROM spd_average_rich UNION
     SELECT parteikurz, avg, 'rich' as category FROM fdp_average_rich UNION
     SELECT parteikurz, avg, 'rich' as category FROM grune_average_rich UNION
-    SELECT parteikurz, avg, 'rich' as category FROM afd_average_rich),
+    SELECT parteikurz, avg, 'rich' as category FROM afd_average_rich UNION
+	SELECT parteikurz, avg, 'rich' as category FROM linke_average_rich UNION
+	SELECT parteikurz, avg, 'rich' as category FROM ssw_average_rich)
 
-    poor_total as (
-    SELECT parteikurz, avg, 'poor' as category FROM cdu_csu_average_poor UNION 
-    SELECT parteikurz, avg, 'poor' as category FROM spd_average_poor UNION
-    SELECT parteikurz, avg, 'poor' as category FROM fdp_average_poor UNION
-    SELECT parteikurz, avg, 'poor' as category FROM grune_average_poor UNION
-    SELECT parteikurz, avg, 'poor' as category FROM afd_average_poor)
-
-    SELECT * FROM rich_total""")
+    SELECT * FROM rich_total ORDER BY parteikurz""")
 
     mobile_records = cur.fetchall()
+    party = []
     results = []
     total = 0
     for i in mobile_records:
-        if(i[0] == "CSU"): continue
-        results.append(i[1])
-        total += i[1]
-    results.append(100 - total)
-    
-    
+        party.append(i[0])
+        results.append(int(i[1]))
+        total += int(i[1])
+    jso = dict(zip(party, results))
+    return json.dumps(jso)
+
+"""   
     labels = 'Grüne', 'FDP', 'SPD', 'CDU', 'AfD', 'Others'
     explode = (0.1, 0.1, 0.1, 0.1, 0.1, 0.1) 
     colors = ['#47973b', '#efe14b', '#de3121', '#c53729', '#4dabe9', '#a8a9aa']
@@ -720,7 +708,7 @@ def query8_rich():
     ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
 
     plt.savefig('public/img/query8_rich.png')
-    plt.close()
+    plt.close() """
 
 
 
@@ -732,39 +720,6 @@ def query8_poor():
     ten_poorest as (SELECT wahlkreis, wahlkreisname, einkommenprivatehaushalte as ein FROM strukturdaten
     ORDER BY ein ASC
     LIMIT 10),
-
-    -- CDU/CSU Union average richest
-    cdu_csu_average_rich as (SELECT parteikurz, avg(prozentzweitstimmen) FROM WahlKreisProzentZweit
-    WHERE WahlKreis IN
-    (SELECT wahlkreis FROM ten_richest)
-    AND (parteikurz = 'CDU' OR parteikurz = 'CSU') AND wahljahr = 2021
-                            GROUP BY parteikurz),
-    -- SPD average richest
-    spd_average_rich as (SELECT parteikurz, avg(prozentzweitstimmen) FROM WahlKreisProzentZweit
-    WHERE WahlKreis IN
-    (SELECT wahlkreis FROM ten_richest)
-    AND (parteikurz = 'SPD') AND wahljahr = 2021
-                        GROUP BY parteikurz),
-    -- fdp average richest
-    fdp_average_rich as (SELECT parteikurz, avg(prozentzweitstimmen) FROM WahlKreisProzentZweit
-    WHERE WahlKreis IN
-    (SELECT wahlkreis FROM ten_richest)
-    AND (parteikurz = 'FDP') AND wahljahr = 2021
-                        GROUP BY parteikurz),
-    -- grüne average richest
-    grune_average_rich as (SELECT parteikurz, avg(prozentzweitstimmen) FROM WahlKreisProzentZweit
-    WHERE WahlKreis IN
-    (SELECT wahlkreis FROM ten_richest)
-    AND (parteikurz = 'GRÜNE') AND wahljahr = 2021
-                        GROUP BY parteikurz),
-    -- AfD average richest
-    afd_average_rich as (SELECT parteikurz, avg(prozentzweitstimmen) FROM WahlKreisProzentZweit
-    WHERE WahlKreis IN
-    (SELECT wahlkreis FROM ten_richest)
-    AND (parteikurz = 'AfD') AND wahljahr = 2021
-                        GROUP BY parteikurz),
-
-    -- CDU/CSU Union average poorest
     cdu_csu_average_poor as (SELECT parteikurz, avg(prozentzweitstimmen) FROM WahlKreisProzentZweit
     WHERE WahlKreis IN
     (SELECT wahlkreis FROM ten_poorest)
@@ -794,31 +749,41 @@ def query8_poor():
     (SELECT wahlkreis FROM ten_poorest)
     AND (parteikurz = 'AfD') AND wahljahr = 2021
                         GROUP BY parteikurz),
+	-- Die Linke
+	linke_avg_poor as (SELECT parteikurz, avg(prozentzweitstimmen) FROM WahlKreisProzentZweit
+    WHERE WahlKreis IN
+    (SELECT wahlkreis FROM ten_poorest)
+    AND (parteikurz = 'DIE LINKE') AND wahljahr = 2021
+                        GROUP BY parteikurz),
+	-- SSW
+	ssw_avg_poor as (SELECT parteikurz, avg(prozentzweitstimmen) FROM WahlKreisProzentZweit
+    WHERE WahlKreis IN
+    (SELECT wahlkreis FROM ten_poorest)
+    AND (parteikurz = 'SSW') AND wahljahr = 2021
+                        GROUP BY parteikurz),
                         
-    rich_total as (					  
-    SELECT parteikurz, avg, 'rich' as category FROM cdu_csu_average_rich UNION 
-    SELECT parteikurz, avg, 'rich' as category FROM spd_average_rich UNION
-    SELECT parteikurz, avg, 'rich' as category FROM fdp_average_rich UNION
-    SELECT parteikurz, avg, 'rich' as category FROM grune_average_rich UNION
-    SELECT parteikurz, avg, 'rich' as category FROM afd_average_rich),
-
     poor_total as (
     SELECT parteikurz, avg, 'poor' as category FROM cdu_csu_average_poor UNION 
     SELECT parteikurz, avg, 'poor' as category FROM spd_average_poor UNION
     SELECT parteikurz, avg, 'poor' as category FROM fdp_average_poor UNION
     SELECT parteikurz, avg, 'poor' as category FROM grune_average_poor UNION
-    SELECT parteikurz, avg, 'poor' as category FROM afd_average_poor)
-
-    SELECT * FROM poor_total""")
+    SELECT parteikurz, avg, 'poor' as category FROM afd_average_poor UNION
+	SELECT parteikurz, avg, 'poor' as category FROM linke_avg_poor UNION
+	SELECT parteikurz, avg, 'poor' as category FROM ssw_avg_poor)
+    
+    SELECT * FROM poor_total ORDER BY parteikurz""")
 
     mobile_records = cur.fetchall()
+    party = []
     results = []
     total = 0
     for i in mobile_records:
-        results.append(i[1])
+        party.append(i[0])
+        results.append(int(i[1]))
         total += i[1]
-    results.append(100 - total)
-    
+    jso = dict(zip(party, results))
+    return json.dumps(jso)
+    """
     labels = 'AfD', 'CDU', 'FDP', 'SPD', 'Grüne', 'Others'
     explode = (0.1, 0.1, 0.1, 0.1, 0.1, 0.1)
     colors = ['#4dabe9', '#c53729', '#efe14b', '#de3121', '#47973b', '#a8a9aa']
@@ -828,7 +793,7 @@ def query8_poor():
     ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
 
     plt.savefig('public/img/query8_poor.png')
-    plt.close()
+    plt.close() """
 
 
 
@@ -874,65 +839,41 @@ WHERE WahlKreis IN
 (SELECT wahlkreis FROM ten_most_educated)
 AND (parteikurz = 'AfD') AND wahljahr = 2021
 					GROUP BY parteikurz),
-
-
--- CDU/CSU Union average least educated
-cdu_csu_average_least_educated as (SELECT parteikurz, avg(prozentzweitstimmen) FROM WahlKreisProzentZweit
+linke_average_most_educated as (SELECT parteikurz, avg(prozentzweitstimmen) FROM WahlKreisProzentZweit
 WHERE WahlKreis IN
-(SELECT wahlkreis FROM ten_least_educated)
-AND (parteikurz = 'CDU' OR parteikurz = 'CSU') AND wahljahr = 2021
-						GROUP BY parteikurz),
--- SPD average least educated
-spd_average_least_educated as (SELECT parteikurz, avg(prozentzweitstimmen) FROM WahlKreisProzentZweit
+(SELECT wahlkreis FROM ten_most_educated)
+AND (parteikurz = 'DIE LINKE') AND wahljahr = 2021
+					GROUP BY parteikurz),					
+ssw_average_most_educated as (SELECT parteikurz, avg(prozentzweitstimmen) FROM WahlKreisProzentZweit
 WHERE WahlKreis IN
-(SELECT wahlkreis FROM ten_least_educated)
-AND (parteikurz = 'SPD') AND wahljahr = 2021
+(SELECT wahlkreis FROM ten_most_educated)
+AND (parteikurz = 'SSW') AND wahljahr = 2021
 					GROUP BY parteikurz),
--- fdp average least educated
-fdp_average_least_educated as (SELECT parteikurz, avg(prozentzweitstimmen) FROM WahlKreisProzentZweit
-WHERE WahlKreis IN
-(SELECT wahlkreis FROM ten_least_educated)
-AND (parteikurz = 'FDP') AND wahljahr = 2021
-					GROUP BY parteikurz),
--- grüne average least educated
-grune_average_least_educated as (SELECT parteikurz, avg(prozentzweitstimmen) FROM WahlKreisProzentZweit
-WHERE WahlKreis IN
-(SELECT wahlkreis FROM ten_least_educated)
-AND (parteikurz = 'GRÜNE') AND wahljahr = 2021
-					  GROUP BY parteikurz),
--- AfD average least educated
-afd_average_least_educated as (SELECT parteikurz, avg(prozentzweitstimmen) FROM WahlKreisProzentZweit
-WHERE WahlKreis IN
-(SELECT wahlkreis FROM ten_least_educated)
-AND (parteikurz = 'AfD') AND wahljahr = 2021
-					  GROUP BY parteikurz),
 					  
 most_educated_total as (					  
 SELECT parteikurz, avg, 'high' as category FROM cdu_csu_average_most_educated UNION 
 SELECT parteikurz, avg, 'high' as category FROM spd_average_most_educated UNION
 SELECT parteikurz, avg, 'high' as category FROM fdp_average_most_educated UNION
 SELECT parteikurz, avg, 'high' as category FROM grune_average_most_educated UNION
-SELECT parteikurz, avg, 'high' as category FROM afd_average_most_educated),
-
-least_educated_total as (
-SELECT parteikurz, avg, 'low' as category FROM cdu_csu_average_least_educated UNION 
-SELECT parteikurz, avg, 'low' as category FROM spd_average_least_educated UNION
-SELECT parteikurz, avg, 'low' as category FROM fdp_average_least_educated UNION
-SELECT parteikurz, avg, 'low' as category FROM grune_average_least_educated UNION
-SELECT parteikurz, avg, 'low' as category FROM afd_average_least_educated)
+SELECT parteikurz, avg, 'high' as category FROM grune_average_most_educated UNION
+SELECT parteikurz, avg, 'high' as category FROM linke_average_most_educated UNION
+SELECT parteikurz, avg, 'high' as category FROM ssw_average_most_educated)
 
 
-SELECT * FROM most_educated_total""")
+SELECT * FROM most_educated_total ORDER BY parteikurz""")
 
     mobile_records = cur.fetchall()
+    party = []
     results = []
     total = 0
     for i in mobile_records:
-        results.append(i[1])
+        party.append(i[0])
+        results.append(int(i[1]))
         total += i[1]
-    results.append(100 - total)
+    jso = dict(zip(party, results))
+    return json.dumps(jso)
     
-    
+    """
     labels = 'Grüne', 'SPD', 'AfD', 'CDU', 'FDP', 'Others'
     explode = (0.1, 0.1, 0.1, 0.1, 0.1, 0.1) 
     colors = ['#47973b', '#de3121', '#4dabe9', '#c53729', '#efe14b', '#a8a9aa']
@@ -942,7 +883,7 @@ SELECT * FROM most_educated_total""")
     # ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
 
     plt.savefig('public/img/query9_high.png')
-    plt.close()
+    plt.close() """
 
 
 
@@ -956,40 +897,6 @@ LIMIT 10),
 ten_least_educated as (SELECT wahlkreis, wahlkreisname, bildung as ein FROM strukturdaten
 ORDER BY ein ASC
 LIMIT 10),
-
--- CDU/CSU Union average most_educated
-cdu_csu_average_most_educated as (SELECT parteikurz, avg(prozentzweitstimmen) FROM WahlKreisProzentZweit
-WHERE WahlKreis IN
-(SELECT wahlkreis FROM ten_most_educated)
-AND (parteikurz = 'CDU' OR parteikurz = 'CSU') AND wahljahr = 2021
-						GROUP BY parteikurz),
--- SPD average most_educated
-spd_average_most_educated as (SELECT parteikurz, avg(prozentzweitstimmen) FROM WahlKreisProzentZweit
-WHERE WahlKreis IN
-(SELECT wahlkreis FROM ten_most_educated)
-AND (parteikurz = 'SPD') AND wahljahr = 2021
-					GROUP BY parteikurz),
--- fdp average most_educated
-fdp_average_most_educated as (SELECT parteikurz, avg(prozentzweitstimmen) FROM WahlKreisProzentZweit
-WHERE WahlKreis IN
-(SELECT wahlkreis FROM ten_most_educated)
-AND (parteikurz = 'FDP') AND wahljahr = 2021
-					GROUP BY parteikurz),
--- grüne average most_educated
-grune_average_most_educated as (SELECT parteikurz, avg(prozentzweitstimmen) FROM WahlKreisProzentZweit
-WHERE WahlKreis IN
-(SELECT wahlkreis FROM ten_most_educated)
-AND (parteikurz = 'GRÜNE') AND wahljahr = 2021
-					  GROUP BY parteikurz),
--- AfD average most_educated
-afd_average_most_educated as (SELECT parteikurz, avg(prozentzweitstimmen) FROM WahlKreisProzentZweit
-WHERE WahlKreis IN
-(SELECT wahlkreis FROM ten_most_educated)
-AND (parteikurz = 'AfD') AND wahljahr = 2021
-					GROUP BY parteikurz),
-
-
--- CDU/CSU Union average least educated
 cdu_csu_average_least_educated as (SELECT parteikurz, avg(prozentzweitstimmen) FROM WahlKreisProzentZweit
 WHERE WahlKreis IN
 (SELECT wahlkreis FROM ten_least_educated)
@@ -1019,32 +926,40 @@ WHERE WahlKreis IN
 (SELECT wahlkreis FROM ten_least_educated)
 AND (parteikurz = 'AfD') AND wahljahr = 2021
 					  GROUP BY parteikurz),
+linke_average_least_educated as (SELECT parteikurz, avg(prozentzweitstimmen) FROM WahlKreisProzentZweit
+WHERE WahlKreis IN
+(SELECT wahlkreis FROM ten_least_educated)
+AND (parteikurz = 'DIE LINKE') AND wahljahr = 2021
+					  GROUP BY parteikurz),
+ssw_average_least_educated as (SELECT parteikurz, avg(prozentzweitstimmen) FROM WahlKreisProzentZweit
+WHERE WahlKreis IN
+(SELECT wahlkreis FROM ten_least_educated)
+AND (parteikurz = 'SSW') AND wahljahr = 2021
+					  GROUP BY parteikurz),
 					  
-most_educated_total as (					  
-SELECT parteikurz, avg, 'high' as category FROM cdu_csu_average_most_educated UNION 
-SELECT parteikurz, avg, 'high' as category FROM spd_average_most_educated UNION
-SELECT parteikurz, avg, 'high' as category FROM fdp_average_most_educated UNION
-SELECT parteikurz, avg, 'high' as category FROM grune_average_most_educated UNION
-SELECT parteikurz, avg, 'high' as category FROM afd_average_most_educated),
-
 least_educated_total as (
 SELECT parteikurz, avg, 'low' as category FROM cdu_csu_average_least_educated UNION 
 SELECT parteikurz, avg, 'low' as category FROM spd_average_least_educated UNION
 SELECT parteikurz, avg, 'low' as category FROM fdp_average_least_educated UNION
 SELECT parteikurz, avg, 'low' as category FROM grune_average_least_educated UNION
+SELECT parteikurz, avg, 'low' as category FROM linke_average_least_educated UNION	
+SELECT parteikurz, avg, 'low' as category FROM ssw_average_least_educated UNION
 SELECT parteikurz, avg, 'low' as category FROM afd_average_least_educated)
 
 
-SELECT * FROM least_educated_total""")
+SELECT * FROM least_educated_total ORDER BY parteikurz""")
     mobile_records = cur.fetchall()
+    party = []
     results = []
     total = 0
     for i in mobile_records:
-        if(i[0] == "CSU"): continue
-        results.append(i[1])
+        party.append(i[0])
+        results.append(int(i[1]))
         total += i[1]
-    results.append(100 - total)
+    jso = dict(zip(party, results))
+    return json.dumps(jso)
     
+    """
     labels = 'FDP', 'Grüne', 'AfD', 'CDU', 'SPD', 'Others'
     explode = (0.1, 0.1, 0.1, 0.1, 0.1, 0.1) 
     colors = ['#efe14b', '#47973b', '#4dabe9', '#c53729', '#de3121', '#a8a9aa']
@@ -1054,5 +969,5 @@ SELECT * FROM least_educated_total""")
     # ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
 
     plt.savefig('public/img/query9_low.png')
-    plt.close()
+    plt.close() """
 
