@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Bar } from "react-chartjs-2";
+// import { Bar } from "react-chartjs-2";
 import BarChart from "../components/Charts/BarChart";
 
 class Sitzverteilung extends Component {
@@ -44,7 +44,7 @@ class Sitzverteilung extends Component {
         return response.json();
       })
       .then(function (data) {
-        const newContent = document.createElement("table");
+        // const newContent = document.createElement("table");
         var tag_id = document.getElementById("tableSitze");
         tag_id.innerHTML = data["data"];
         return data["data"];

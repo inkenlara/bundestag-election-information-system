@@ -54,7 +54,7 @@ class Wahlkreiserst extends Component {
         return response.json();
       })
       .then(function (data) {
-        const newContent = document.createElement("p");
+        // const newContent = document.createElement("p");
         var tag_id = document.getElementById("wahlbet");
         tag_id.innerHTML = data["data"];
         // console.log(this.state.value.toString());
@@ -77,7 +77,7 @@ class Wahlkreiserst extends Component {
         return response.json();
       })
       .then(function (data) {
-        const newContent = document.createElement("p");
+        // const newContent = document.createElement("p");
         var tag_id = document.getElementById("direktkand");
         tag_id.innerHTML = data["data"];
         return data["data"];
@@ -99,7 +99,7 @@ class Wahlkreiserst extends Component {
         return response.json();
       })
       .then(function (data) {
-        const newContent = document.createElement("table");
+        // const newContent = document.createElement("table");
         var tag_id = document.getElementById("p_entw");
         tag_id.innerHTML = data["data"];
         return data["data"];
