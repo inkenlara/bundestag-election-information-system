@@ -6,3 +6,5 @@ query8_poor.png
 query8_rich.png
 query9_high.png 
 query9_low.png
+node_modules/.cache
+__pycache__/
