@@ -61,6 +61,11 @@ async def query4_call():
     value = query4_table()
     return HTMLResponse(content=value, status_code=200)
 
+@app.get("/verify_token/{token}")
+async def token_check_return_wahlzettel_call(token):
+    value = token_check_return_wahlzettel(token)
+    return HTMLResponse(content=value, status_code=200)
+
 @app.get("/query3_wahlbeteiligung/{kreis_id}")
 async def query3_wahlbeteiligung_call(kreis_id: int):
     value = query3_wahlbeteiligung(kreis_id)
@@ -149,6 +154,42 @@ except:
     print("Fail")
 
 plt.switch_backend('Agg') 
+
+
+# validate token, return json
+# isValid, wahlkreis, erstimmenzettel, zweitstimmenzettel
+def token_check_return_wahlzettel(token):
+    jsony = {"isValid": False, "wahlkreis": 0, "erstimmenzettel":[], "zweitstimmenzettel": []}
+    if(not str(token).isdigit()):
+        jsony = {"isValid": False, "wahlkreis": 0, "erstimmenzettel":[], "zweitstimmenzettel": []}
+        return json.dumps(jsony)
+    check_token_query = """
+    select COUNT(*) from tokens where token = {}
+    """.format(token)
+    cur.execute(check_token_query)
+    record_exists = cur.fetchall()[0][0]
+    if not record_exists:
+        print("Token not valid.")
+        jsony = {"isValid": False, "wahlkreis": 0, "erstimmenzettel":[], "zweitstimmenzettel": []}
+        return json.dumps(jsony)
+    else:
+        wahlkreis_query = """
+        select wahlkreis
+        from tokenrange
+        where tokenrangemin < {}
+        and tokenrangemax > {}
+        """.format(token, token)
+        cur.execute(wahlkreis_query)
+        wahlkreis = cur.fetchall()[0][0]
+        zweitstimmenzettel = zweitstimmen_data(wahlkreis)
+        erstimmenzettel = erststimmen_data(wahlkreis)
+        delete_token_query = """
+        DELETE FROM tokens
+        WHERE token = {}
+        """.format(token)
+        cur.execute(delete_token_query)
+        jsony = {"isValid": True, "wahlkreis": wahlkreis, "erstimmenzettel": erstimmenzettel, "zweitstimmenzettel": zweitstimmenzettel}
+        return json.dumps(jsony)
 
 
 def query1_chart():
@@ -971,3 +1012,56 @@ SELECT * FROM least_educated_total ORDER BY parteikurz""")
     plt.savefig('public/img/query9_low.png')
     plt.close() """
 
+
+# Output: list of tuples inlcuding strings (firstname, lastname, job, parteikurz, parteilang)
+# if candidate does not have a party parteikurz and parteilang are None
+def erststimmen_data(wahlkreisid):
+    dirketkandidaten_query = """
+    select k.firstname, k.lastname, k.beruf, p.kurzbezeichnung, p.bezeichnung
+    from direktkandidaten dk, kandidaten k 
+    left outer join partei p on k.partei = p.parteiid
+    where k.wahljahr = 2021
+    and dk.wahlkreis = {}
+    and dk.kandidatid = k.kandidatid
+    """.format(wahlkreisid)
+    cur.execute(dirketkandidaten_query)
+    direktkandidaten = cur.fetchall()
+    return direktkandidaten
+
+
+# Output:list of lists containing parteiid, parteikurz, parteilang, list of tuples containg names of first five list candidates
+def zweitstimmen_data(wahlkreisid):
+    angetretene_parteien_query = """
+    select distinct p.parteiid, p.kurzbezeichnung, p.bezeichnung
+    from listenkandidaten lk, kandidaten k, partei p, wahlkreis w
+    where k.wahljahr = 2021
+    and w.wahlkreisid = {}
+    and w.bundesland = lk.bundesland
+    and lk.kandidatid = k.kandidatid
+    and k.partei = p.parteiid
+    order by p.parteiid asc
+    """.format(wahlkreisid)
+    cur.execute(angetretene_parteien_query)
+    angetretene_parteien = cur.fetchall()
+
+    parteienliste = []
+    for partei in angetretene_parteien:
+        p = list(partei)
+        parteiid = p[0]
+        listenkandidaten_query = """
+        select concat_ws(' ', k.firstname, k.lastname) as kandidaten
+        from listenkandidaten lk, kandidaten k, wahlkreis w
+        where k.wahljahr = 2021
+        and w.wahlkreisid = {}
+        and w.bundesland = lk.bundesland
+        and lk.kandidatid = k.kandidatid
+        and k.partei = {}
+        order by lk.listenplatz asc
+        limit 5
+        """.format(wahlkreisid, parteiid)
+        cur.execute(listenkandidaten_query)
+        listenkandidaten = cur.fetchall()
+        p.append(listenkandidaten)
+        parteienliste.append(p)
+
+    return parteienliste
