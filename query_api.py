@@ -18,6 +18,7 @@ from fastapi.responses import FileResponse
 from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 import json
+from pydantic import BaseModel
 
 app = FastAPI()
 
@@ -34,6 +35,21 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+class Vote(BaseModel):
+    wahlkreis: int
+    token: int
+    erst: str # short partei
+    zweit: str # short partei
+
+
+@app.post("/add_vote")
+def add_vote_call(vote: Vote):
+    add_vote(vote)
+    value = json.dumps({"response": True})
+    return HTMLResponse(content=value, status_code=200)
+
+
 
 @app.get("/query9_high")
 async def query9_high_call():
@@ -154,6 +170,14 @@ except:
     print("Fail")
 
 plt.switch_backend('Agg') 
+
+
+
+# add code to push info to database
+def add_vote(vote):
+    print(vote)
+    # erst - first_last_party
+    # zweit - party number
 
 
 # validate token, return json
