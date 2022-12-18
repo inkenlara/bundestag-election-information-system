@@ -16,23 +16,24 @@ except ImportError:
     import pip
     pip.main(['install', '--user', 'csv'])
     import csv
+import re
 
 # Adnans local test db:
-
+"""
 db_host = "localhost"
 db_port = 5432
 db_name = "wahl"
 db_user = "postgres"
 db_password = ""
+"""
 
 
 # Inkens local test db:
-"""db_host = "localhost"
+db_host = "localhost"
 db_port = 5432
 db_name = "postgres"
 db_user = "newuser"
 db_password = "pw"
-"""
 try:
     sql_con = psycopg2.connect(
         host=db_host, port=db_port, database=db_name, user=db_user, password=db_password)
@@ -76,7 +77,8 @@ CREATE TABLE ListenKandidaten(
 """
 
 
-def kandidaten2021():
+def kandidaten():
+    # kandidaten 2021:
     with open(path_kerg, encoding='utf-8') as f:
         csv_buffer = csv.reader(f, delimiter=';', quotechar='"')
         csv_list = list(csv_buffer)
@@ -146,6 +148,82 @@ def kandidaten2021():
         id = listen[kandidat]
         cur.execute('INSERT INTO Listenkandidaten VALUES(%s, %s, %s)',
                     (id, bundesland, platz))
+
+    # kandidaten 2017:
+    kand_id = len(kandidaten) + 1
+    with open(path_kands_2017, encoding='utf-8') as f:
+        csv_buffer = csv.reader(f, delimiter=';', quotechar='"')
+        next(csv_buffer)
+
+        kandidaten17 = []
+        direkt17 = []
+        listen17 = []
+        for row in csv_buffer:
+            name = row[0]
+            komma_idx = name.find(',')
+            # candidate is direktkandidat and listenkandidat
+            if komma_idx == -1:
+                kand_id -= 1
+                kand_in = row[3]
+                land_start_idx = kand_in.find(' ')
+                land_end_idx = kand_in.find('(') - 1
+                land = kand_in[land_start_idx + 1:land_end_idx]
+                platz = re.search("[0-9]+", kand_in).group()
+                bundeslandid_query = """
+                select bundeslandid
+                from bundesland 
+                where bundeslandname = '{}'
+                """.format(land)
+                cur.execute(bundeslandid_query)
+                land_id = cur.fetchall()[0][0]
+                listen17.append((kand_id, land_id, platz))
+            else:
+                vorname = name[komma_idx + 2:]
+                nachname = name[:komma_idx]
+                beruf = None
+                partei_kurz = row[2]
+                if re.match("EB", partei_kurz):
+                    parteiid = None
+                else:
+                    partei_id_query = """
+                    select parteiid
+                    from partei 
+                    where kurzbezeichnung = '{}'
+                    """.format(partei_kurz)
+                    cur.execute(partei_id_query)
+                    # TODO/HACK: try except kann entfernt werden, wenn wir auch alle parteien von 2017 haben
+                    try:
+                        parteiid = cur.fetchall()[0][0]
+                    except IndexError:
+                        parteiid = None
+                kandidaten17.append(
+                    (kand_id, vorname, nachname, beruf, parteiid, 2017))
+                kand_in = row[3]
+                if re.match("Land", kand_in):
+                    land_start_idx = kand_in.find(' ')
+                    land_end_idx = kand_in.find('(') - 1
+                    land = kand_in[land_start_idx + 1:land_end_idx]
+                    platz = re.search("[0-9]+", kand_in).group()
+                    bundeslandid_query = """
+                    select bundeslandid
+                    from bundesland 
+                    where bundeslandname = '{}'
+                    """.format(land)
+                    cur.execute(bundeslandid_query)
+                    land_id = cur.fetchall()[0][0]
+                    listen17.append((kand_id, land_id, platz))
+                else:
+                    wahlkreisid = re.search("[0-9]+", kand_in).group()
+                    direkt17.append((kand_id, wahlkreisid))
+
+            kand_id += 1
+    cur.executemany(
+        'INSERT INTO kandidaten VALUES(%s, %s, %s, %s, %s, %s)', kandidaten17)
+    cur.executemany(
+        'INSERT INTO direktkandidaten VALUES(%s, %s)', direkt17)
+    cur.executemany(
+        'INSERT INTO listenkandidaten VALUES(%s, %s, %s)', listen17)
+
 
 # bundesländer
 
@@ -931,29 +1009,26 @@ def load_strukturdaten():
         next(csv_buffer)
         lis = []
         for row in csv_buffer:
-            if(int(row[1]) > 300): continue
+            if (int(row[1]) > 300):
+                continue
             bildung = round(
-                    float(str(row[32]).replace(',', ".")), 1)
+                float(str(row[32]).replace(',', ".")), 1)
             lis.append([int(row[1]), row[2], bildung, int(row[35])])
         cur.executemany(
-        'INSERT INTO strukturdaten VALUES(%s, %s, %s, %s)', lis)
+            'INSERT INTO strukturdaten VALUES(%s, %s, %s, %s)', lis)
         for i in lis:
             print(i)
-        
-
 
 
 # CALLING THE FUNCTIONS
 # bundesland()
 # kreise()
 # partei()
-# direktKandidaten2021()
-# direktKandidaten2017()
 # wahlBerechtigte()
 # erstStimmen()
 # WahlKreisAggretation()
-BundesLandAggregation()
-deutschland()
+# BundesLandAggregation()
+# deutschland()
 # WahlKreisZweitStimmenAggregation()
 # BundeslandStimmenAggregation()
 # DeutschlandStimmenAggregation()
@@ -968,7 +1043,7 @@ deutschland()
 # bundesland()
 # partei()
 # kreise()
-# kandidaten2021()
+# kandidaten()
 # DeutschlandStimmenAggregation()
 
 # load_strukturdaten()
@@ -980,6 +1055,8 @@ deutschland()
 # DirektmandateBundeslandStimmenAggregation()
 
 # DirektmandateDeutschlandStimmenAggregation()
+#
+
 
 sql_con.commit()
 sql_con.close()
