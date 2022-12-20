@@ -178,6 +178,7 @@ def add_vote(vote):
     print(vote)
     # erst - first_last_party
     # zweit - party number
+    # if voter chose to not vote, values are None
 
 
 # validate token, return json
