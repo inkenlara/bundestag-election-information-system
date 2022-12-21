@@ -341,14 +341,26 @@ class WahlkreisZweit extends Component {
         </select>
         <h3>Wahlbeteiligung</h3>
         <div id="Wahlbeteiligung">
-          <p id="wahlbet"></p>
+          <h4>2021: </h4>
+          <p style={{ paddingLeft: "40px" }} id="wahlbet"></p>
           {this.renderTable1()}
+          <h4>2017: </h4>
+          <p style={{ paddingLeft: "40px" }} id="wahlbet2017"></p>
+          {this.renderTable12017()}
         </div>
+
         <h3>Direktkandidaten</h3>
-        <div id="Direktkandidaten_info">
-          <p id="direktkand"></p>
-          {this.renderTable2()}
+        <div id="direkt">
+          <div id="Direktkandidaten_info">
+            <h4>2021: </h4>
+            <p style={{ paddingLeft: "40px" }} id="direktkand"></p>
+            {this.renderTable2()}
+            <h4>2017: </h4>
+            <p style={{ paddingLeft: "40px" }} id="direktkand2017"></p>
+            {this.renderTable22017()}
+          </div>
         </div>
+
         <h3>Pro Partei, entwicklung</h3>
         <div id="partei_entw">
           <table id="p_entw"></table>
@@ -363,6 +375,29 @@ class WahlkreisZweit extends Component {
     this.setState({ value: menu.value });
     // console.log(this.state.value);
   };
+
+  handlereq12017() {
+    fetch(
+      "http://localhost:8000/query3_wahlbeteiligung2017/" +
+        this.state.value.toString()
+    )
+      .then(function (response) {
+        return response.json();
+      })
+      .then(function (data) {
+        // const newContent = document.createElement("p");
+        var tag_id = document.getElementById("wahlbet2017");
+        tag_id.innerHTML = data["data"];
+        // console.log(this.state.value.toString());
+        return data["data"];
+      })
+      .catch(function (err) {
+        console.log("Fetch Error :-S", err);
+      });
+  }
+  renderTable12017() {
+    return this.handlereq12017();
+  }
 
   handlereq1() {
     fetch(
@@ -385,6 +420,28 @@ class WahlkreisZweit extends Component {
   }
   renderTable1() {
     return this.handlereq1();
+  }
+
+  handlereq22017() {
+    fetch(
+      "http://localhost:8000/query3_direktkandidaten2017/" +
+        this.state.value.toString()
+    )
+      .then(function (response) {
+        return response.json();
+      })
+      .then(function (data) {
+        // const newContent = document.createElement("p");
+        var tag_id = document.getElementById("direktkand2017");
+        tag_id.innerHTML = data["data"];
+        return data["data"];
+      })
+      .catch(function (err) {
+        console.log("Fetch Error :-S", err);
+      });
+  }
+  renderTable22017() {
+    return this.handlereq22017();
   }
 
   handlereq2() {

@@ -1,3 +1,8 @@
+## Wahl Analyse
+
+The query API has to be turned on and running in the background in order for the analysis and voting websites to work.
+The API provides JSON data to the frontend which then displays it.
+
 ## Usage query API (for now):
 
 `python3 -m uvicorn query_api:app --reload`

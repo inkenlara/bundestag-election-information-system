@@ -72,20 +72,41 @@ async def query8_poor_call():
     return HTMLResponse(content=value, status_code=200)
 
 
+@app.get("/query4_table2017")
+async def query4_call2017():
+    value = query4_table2017()
+    return HTMLResponse(content=value, status_code=200)
+
+
 @app.get("/query4_table")
 async def query4_call():
     value = query4_table()
     return HTMLResponse(content=value, status_code=200)
+
 
 @app.get("/verify_token/{token}")
 async def token_check_return_wahlzettel_call(token):
     value = token_check_return_wahlzettel(token)
     return HTMLResponse(content=value, status_code=200)
 
+
+@app.get("/query3_wahlbeteiligung2017/{kreis_id}")
+async def query3_wahlbeteiligung_call2017(kreis_id: int):
+    value = query3_wahlbeteiligung2017(kreis_id)
+    return HTMLResponse(content=value, status_code=200)
+
+
 @app.get("/query3_wahlbeteiligung/{kreis_id}")
 async def query3_wahlbeteiligung_call(kreis_id: int):
     value = query3_wahlbeteiligung(kreis_id)
     return HTMLResponse(content=value, status_code=200)
+
+
+@app.get("/query3_direktkandidaten2017/{kreis_id}")
+async def query3_direktkandidaten_call2017(kreis_id: int):
+    value = query3_direktkandidaten2017(kreis_id)
+    return HTMLResponse(content=value, status_code=200)
+
 
 @app.get("/query3_direktkandidaten/{kreis_id}")
 async def query3_direktkandidaten_call(kreis_id: int):
@@ -99,10 +120,23 @@ async def query3_stimmen_entwicklung_call(kreis_id: int):
     return HTMLResponse(content=value, status_code=200)
 
 
+@app.get("/query1_chart2017")
+async def query1_chart2017_call():
+    value = query1_chart2017()
+    return HTMLResponse(content=value, status_code=200)
+
+
 @app.get("/query1_chart")
 async def query1_chart_call():
     value = query1_chart()
     return HTMLResponse(content=value, status_code=200)
+
+
+@app.get("/query1_table2017")
+async def query1_table2017_call():
+    value = query1_table2017()
+    return HTMLResponse(content=value, status_code=200)
+
 
 @app.get("/query1_table")
 async def query1_table_call():
@@ -115,9 +149,21 @@ async def query2_table_call():
     return HTMLResponse(content=value, status_code=200)
 
 
+@app.get("/query2_table2017")
+async def query2_table2017_call():
+    value = query2_table2017()
+    return HTMLResponse(content=value, status_code=200)
+
+
 @app.get("/query5_table")
 async def query5_table_call():
     value = query5_table()
+    return HTMLResponse(content=value, status_code=200)
+
+
+@app.get("/query6_win2017")
+async def query6_win_call2017():
+    value = query6_table_win2017()
     return HTMLResponse(content=value, status_code=200)
 
 
@@ -125,6 +171,13 @@ async def query5_table_call():
 async def query6_win_call():
     value = query6_table_win()
     return HTMLResponse(content=value, status_code=200)
+
+
+@app.get("/query6_loser2017")
+async def query6_loser_call2017():
+    value = query6_table_loser2017()
+    return HTMLResponse(content=value, status_code=200)
+
 
 @app.get("/query6_loser")
 async def query6_loser_call():
@@ -217,6 +270,19 @@ def token_check_return_wahlzettel(token):
         return json.dumps(jsony)
 
 
+def query1_chart2017():
+    cur.execute("""""")
+
+    party = []
+    performance = []
+    mobile_records = cur.fetchall()
+    for i in mobile_records:
+        party.append(i[0])
+        performance.append(int(i[1]))
+    jsony = dict(zip(party, performance))
+    return json.dumps(jsony)
+
+
 def query1_chart():
     cur.execute("""SELECT p.KurzBezeichnung, s.sitze FROM sitzverteilungbundestag s, partei p
 WHERE s.partei = p.parteiid""")
@@ -240,8 +306,25 @@ WHERE s.partei = p.parteiid""")
     plt.close() """
 
 
+def query1_table2017():
+    cur.execute("""""")
 
-# TODO TEST
+    data =  cur.fetchall()
+    str_table = '<table>'
+    str_table = str_table + '<tr>'
+    str_table = str_table + '<th>Partei</th>'
+    str_table = str_table + '<th>Sitze</th>'
+    str_table = str_table + '</tr>'
+    for i in data:
+        str_table = str_table + '<tr>'
+        str_table = str_table + '<td>' + str(i[0]) + '</td><td>' + str(i[1]) + '</td>'
+        str_table = str_table + '</tr>'
+    str_table = str_table + ' </table>'
+    jsony = {"data": str_table}
+    return json.dumps(jsony)
+
+
+
 def query1_table():
 
     cur.execute("""SELECT p.KurzBezeichnung, s.sitze FROM sitzverteilungbundestag s, partei p
@@ -262,8 +345,85 @@ def query1_table():
     return json.dumps(jsony)
 
 
+def query2_table2017():
+    cur.execute("""with wahlkreis_max as (
+    select wahlkreis, max(prozenterststimmen) as maxi
+    from wahlkreisprozenterst
+    where wahljahr = 2017
+    group by wahlkreis
+),
+direktmandate_wahlkreis as (
+    select w.wahlkreis, w.parteikurz
+    from wahlkreis_max b, wahlkreisprozenterst w
+    where b.wahlkreis = w.wahlkreis 
+    and b.maxi = w.prozenterststimmen
+),
+direktmandate as(
+    select k.kandidatid, k.firstname, k.lastname, k.beruf, dw.parteikurz as partei
+    from direktmandate_wahlkreis dw, direktkandidaten dk, kandidaten k, partei p
+    where dw.wahlkreis = dk.wahlkreis
+    and dk.kandidatid = k.kandidatid
+    and p.KurzBezeichnung = dw.parteikurz
+    and p.parteiid = k.partei
+    and k.wahljahr = 2017
+),
+-- Teil für Listenmandate
+-- anzahl sitze pro partei pro bundesland minus die direktmandate, die schon verbraucht wurden
+sitze_fuer_liste as(
+    select b.partei, b.bundesland, (s.sitze-b.direktmandate) as listensitze
+    from sitzverteilungparteienprobundesland s, bundeslandstimmenaggregation b 
+    where b.wahljahr = 2017
+    and s.partei = b.partei
+    and s.bundesland = b.bundesland
+),
+-- rausloeschen derer aus listenkandidaten, die schon per direktmandat in den BT kommen
+liste_ohne_direktmandate as(
+    select *
+    from listenkandidaten lk
+    where lk.kandidatid not in (select kandidatid from direktmandate)
+),
+-- kandidaten sortieren, um spaeter nur die top X herauszufiltern
+reihennummern as(
+  select ld.kandidatid, sl.partei, ld.bundesland, ROW_NUMBER() OVER(PARTITION BY sl.partei, sl.bundesland ORDER BY ld.listenplatz ASC) AS row_number
+  from liste_ohne_direktmandate ld, sitze_fuer_liste sl, kandidaten k
+  where ld.kandidatid = k.kandidatid
+  and sl.bundesland = ld.bundesland
+  and sl.partei = k.partei
+),
+-- kandidaten, die einen sitz bekommen herausfiltern
+listenkandidaten as(
+    select r.kandidatid, sl.partei, sl.bundesland
+    from sitze_fuer_liste sl, reihennummern r
+    where sl.partei = r.partei
+    and sl.bundesland = r.bundesland
+    and r.row_number <= sl.listensitze
+)
+-- direktkandidaten und listenkandidaten vereinigen
+select * from direktmandate
+union
+select k.kandidatid, k.firstname, k.lastname, k.beruf, p.KurzBezeichnung as partei
+from listenkandidaten l, kandidaten k, partei p
+where l.kandidatid = k.kandidatid
+and k.wahljahr = 2017
+and p.parteiid = k.partei""")
 
-# TODO TEST
+    data =  cur.fetchall()
+    str_table = '<table>'
+    str_table = str_table + '<tr>'
+    str_table = str_table + '<th>Vorname</th>'
+    str_table = str_table + '<th>Nachname</th>'
+    str_table = str_table + '<th>Partei</th>'
+    str_table = str_table + '</tr>'
+    for i in data:
+        str_table = str_table + '<tr>'
+        str_table = str_table + '<td>' + str(i[1]) + '</td><td>' + str(i[2]) + '</td><td>' + str(i[4]) + '</td>'
+        str_table = str_table + '</tr>'
+    str_table = str_table + ' </table>'
+    jsony = {"data": str_table}
+    return json.dumps(jsony)
+
+
+
 def query2_table():
 
     cur.execute("""with wahlkreis_max as (
@@ -344,6 +504,52 @@ and p.parteiid = k.partei""")
     return json.dumps(jsony)
 
 
+def query4_table2017():
+    cur.execute("""with erststimmensieger as (
+  select we.wahlkreis, we.wahljahr, we.parteikurz as erststimmensieger
+  from wahlkreisprozenterst we
+  where we.wahljahr = 2017
+  and not exists                        
+          (select *                    
+          from wahlkreisprozenterst we2            
+          where we.wahlkreis = we2.wahlkreis  
+          and we2.wahljahr = 2017
+          and we2.prozenterststimmen > we.prozenterststimmen    
+          )
+  ),
+  zweitstimmensieger as(
+    select we.wahlkreis, we.wahljahr, we.parteikurz as zweitstimmensieger
+    from wahlkreisprozentzweit we
+    where we.wahljahr = 2017
+    and not exists                        
+          (select *                    
+          from wahlkreisprozentzweit we2            
+          where we.wahlkreis = we2.wahlkreis  
+          and we2.wahljahr = 2017
+          and we2.prozentzweitstimmen > we.prozentzweitstimmen    
+          )
+  )
+  select w.wahlkreisname,e.wahljahr,e.erststimmensieger,z.zweitstimmensieger
+  from erststimmensieger e, zweitstimmensieger z, wahlkreis w
+  where e.wahlkreis = z.wahlkreis AND e.wahlkreis = w.wahlkreisid""")
+
+    data =  cur.fetchall()
+    str_table = '<table>'
+    str_table = str_table + '<tr>'
+    str_table = str_table + '<th>Wahlkreisname</th>'
+    str_table = str_table + '<th>Wahljahr</th>'
+    str_table = str_table + '<th>Erststimmensieger</th>'
+    str_table = str_table + '<th>Zweitstimmensieger</th>'
+    str_table = str_table + '</tr>'
+    for i in data:
+        str_table = str_table + '<tr>'
+        str_table = str_table + '<td>' + str(i[0]) + '</td><td>' + str(i[1]) + '</td><td>' + str(i[2]) + '</td><td>' + str(i[3]) +'</td>'
+        str_table = str_table + '</tr>'
+    str_table = str_table + ' </table>'
+    jsony = {"data": str_table}
+    return json.dumps(jsony)
+
+
 def query4_table():
 
     cur.execute("""with erststimmensieger as (
@@ -391,6 +597,19 @@ def query4_table():
     return json.dumps(jsony)
 
 
+def query3_wahlbeteiligung2017(kreis):
+    cur.execute("""select a.wahlkreis, w.wahlkreisname, (1.00*anzahlwahlende)/anzahlwahlberechtigte as wahlbeteiligung, wahljahr
+        from wahlkreisaggretation as a, wahlkreis as w
+        WHERE wahljahr = 2017 AND a.wahlkreis = w.wahlkreisid""")
+    data =  cur.fetchall()
+    result = 0.0
+    for i in data:
+        if(int(i[0]) == int(kreis)):
+            result = i[2] * 100
+    stringy = '<p> ' + str(float("{:.3f}".format(result))) + " %" + ' </p>' 
+    jsony = {"data": stringy}
+    return json.dumps(jsony)
+
 
 def query3_wahlbeteiligung(kreis):
     cur.execute("""select a.wahlkreis, w.wahlkreisname, (1.00*anzahlwahlende)/anzahlwahlberechtigte as wahlbeteiligung, wahljahr
@@ -427,6 +646,37 @@ ORDER BY v.bundesland""")
         str_table = str_table + '</tr>'
     str_table = str_table + ' </table>'
     jsony = {"data": str_table}
+    return json.dumps(jsony)
+
+
+
+def query3_direktkandidaten2017(kreis):
+    cur.execute("""with erststimmensieger as (
+  select we.wahlkreis, we.wahljahr, we.parteikurz as erststimmensieger, we.wahljahr
+  from wahlkreisprozenterst we
+  where we.wahljahr = 2017
+  and not exists                        
+          (select *                    
+          from wahlkreisprozenterst we2            
+          where we.wahlkreis = we2.wahlkreis  
+          and we2.wahljahr = 2017
+          and we2.prozenterststimmen > we.prozenterststimmen    
+          )
+)
+select e.wahlkreis,wk.wahlkreisname, k.firstname, k.lastname, e.erststimmensieger, k.wahljahr
+from erststimmensieger e, direktkandidaten dk, kandidaten k, partei p, wahlkreis wk
+where e.erststimmensieger = p.KurzBezeichnung
+and p.parteiid = k.partei
+and wk.wahlkreisid = e.wahlkreis
+and k.kandidatid = dk.kandidatid
+and dk.wahlkreis = e.wahlkreis
+and k.wahljahr = 2017""")
+    data = cur.fetchall()
+    stringy = ''
+    for i in data:
+        if(int(i[0]) == int(kreis)):
+            stringy = '<p> ' + str(i[2]) + '   ' + str(i[3]) + '   ' + str(i[4]) + '   ' + str(i[5]) + ' </p>'
+    jsony = {"data": stringy}
     return json.dumps(jsony)
 
 
@@ -499,6 +749,67 @@ and p.KurzBezeichnung = v.parteikurz""")
     return json.dumps(jsony)
 
 
+def query6_table_win2017():
+    cur.execute("""with sieger as(
+    select *
+    from wahlkreisprozenterst w1
+    where w1.wahljahr = 2017
+    and not exists (select * from wahlkreisprozenterst w2 
+                    where w2.wahljahr = 2017 
+                    and w1.wahlkreis = w2.wahlkreis 
+                    and w2.prozenterststimmen > w1.prozenterststimmen)
+),
+-- filtere zweite
+wahlkreisprozenterst_ohne_sieger as(
+    select * from wahlkreisprozenterst
+    EXCEPT
+    select * from sieger    
+),
+zweite_sieger as(
+    select *
+    from wahlkreisprozenterst_ohne_sieger w1
+    where 
+    w1.wahljahr = 2017
+    and not exists (select * from wahlkreisprozenterst_ohne_sieger w2 
+                    where w2.wahljahr = 2017 
+                    and w1.wahlkreis = w2.wahlkreis 
+                    and w2.prozenterststimmen > w1.prozenterststimmen)    
+), 
+--bilde differenz zwischen stimmen
+differenz as (
+  select s.wahljahr, s.wahlkreis, s.parteikurz, s.prozenterststimmen-zs.prozenterststimmen as differenz, ROW_NUMBER() OVER(PARTITION BY s.parteikurz ORDER BY s.prozenterststimmen-zs.prozenterststimmen ASC) AS row_number
+  from sieger s, zweite_sieger zs
+  where s.wahlkreis = zs.wahlkreis
+)
+-- waehle die 10 knappsten abstaende
+select k.wahljahr, di.wahlkreis, wk.wahlkreisname, di.parteikurz, di.differenz, di.row_number, k.kandidatid, k.firstname, k.lastname
+from differenz di, kandidaten k, direktkandidaten dk, partei p, wahlkreis as wk
+where row_number <= 10
+and di.parteikurz = p.KurzBezeichnung
+and p.parteiid = k.partei
+and k.wahljahr = 2017
+and wk.wahlkreisid = di.wahlkreis
+and k.kandidatid = dk.kandidatid
+and di.wahlkreis = dk.wahlkreis""")
+    data =  cur.fetchall()
+    str_table = '<table>'
+    str_table = str_table + '<tr>'
+    str_table = str_table + '<th>Wahlkreis</th>'
+    str_table = str_table + '<th>First name</th>'
+    str_table = str_table + '<th>Last name</th>'
+    str_table = str_table + '<th>Partei</th>'
+    str_table = str_table + '<th>Differenz</th>'
+    str_table = str_table + '</tr>'
+    for i in data:
+        str_table = str_table + '<tr>'
+        str_table = str_table + '<td>' + str(i[2]) + '</td><td>' + str(i[7]) + '</td><td>' + str(i[8]) + '</td><td>' + str(i[3]) + '</td><td>' + str(i[4]) + '</td>'
+        str_table = str_table + '</tr>'
+    str_table = str_table + ' </table>'
+    jsony = {"data": str_table}
+    return json.dumps(jsony)
+
+
+
 def query6_table_win():
     cur.execute("""with sieger as(
     select *
@@ -553,6 +864,63 @@ and di.wahlkreis = dk.wahlkreis""")
     for i in data:
         str_table = str_table + '<tr>'
         str_table = str_table + '<td>' + str(i[2]) + '</td><td>' + str(i[7]) + '</td><td>' + str(i[8]) + '</td><td>' + str(i[3]) + '</td><td>' + str(i[4]) + '</td>'
+        str_table = str_table + '</tr>'
+    str_table = str_table + ' </table>'
+    jsony = {"data": str_table}
+    return json.dumps(jsony)
+
+
+
+def query6_table_loser2017():
+    cur.execute("""with sieger as(
+    select *
+    from wahlkreisprozenterst w1
+    where w1.wahljahr = 2017
+    and not exists (select * from wahlkreisprozenterst w2 
+                    where w2.wahljahr = 2017 
+                    and w1.wahlkreis = w2.wahlkreis 
+                    and w2.prozenterststimmen > w1.prozenterststimmen)
+),
+-- differenz zwischen gewinner und parteien
+differenz as(
+    select w.wahljahr, w.wahlkreis, w.parteikurz, s.prozenterststimmen-w.prozenterststimmen as differenz
+    from wahlkreisprozenterst w, sieger s
+    where w.wahljahr = 2017
+    and s.wahljahr = 2017
+    and w.parteikurz not in (select parteikurz from sieger) 
+    and w.wahlkreis = s.wahlkreis
+),
+-- suche fuer jede partei wahlkreis mit kleinster differenz
+kleinste_differenz as (select d1.wahljahr, d1.parteikurz, d1.wahlkreis ,d1.differenz
+from differenz d1
+where not exists (
+    select *
+    from differenz d2
+    where d1.parteikurz = d2.parteikurz
+    and d2.differenz < d1.differenz
+     )
+)
+-- join mit kandidaten
+select k.wahljahr, kd.wahlkreis, wk.wahlkreisname, kd.parteikurz, kd.differenz, k.kandidatid, k.firstname, k.lastname
+from kleinste_differenz kd, kandidaten k, direktkandidaten dk, partei p, wahlkreis as wk
+where kd.parteikurz = p.KurzBezeichnung
+and p.parteiid = k.partei
+and k.wahljahr = 2017
+and wk.wahlkreisid = kd.wahlkreis
+and k.kandidatid = dk.kandidatid
+and kd.wahlkreis = dk.wahlkreis""")
+    data =  cur.fetchall()
+    str_table = '<table>'
+    str_table = str_table + '<tr>'
+    str_table = str_table + '<th>Wahlkreis</th>'
+    str_table = str_table + '<th>First name</th>'
+    str_table = str_table + '<th>Last name</th>'
+    str_table = str_table + '<th>Partei</th>'
+    str_table = str_table + '<th>Differenz</th>'
+    str_table = str_table + '</tr>'
+    for i in data:
+        str_table = str_table + '<tr>'
+        str_table = str_table + '<td>' + str(i[2]) + '</td><td>' + str(i[6]) + '</td><td>' + str(i[7]) + '</td><td>' + str(i[3]) + '</td><td>' + str(i[4]) + '</td>'
         str_table = str_table + '</tr>'
     str_table = str_table + ' </table>'
     jsony = {"data": str_table}
