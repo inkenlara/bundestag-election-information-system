@@ -1,6 +1,6 @@
 import React, { Component } from "react";
-// import { Bar } from "react-chartjs-2";
-import BarChart from "../components/Charts/BarChart";
+
+import PieChartq1 from "../components/Charts/PieChartQ1";
 
 class Sitzverteilung extends Component {
   state = {
@@ -14,7 +14,7 @@ class Sitzverteilung extends Component {
         {/*this.handleRequestNew()*/}
         {/*console.log(this.state.data)*/}
         <div>
-          <BarChart /*data={this.state.data}*/ /* options={ } */ />
+          <PieChartq1 /*data={this.state.data}*/ /* options={ } */ />
         </div>
         <table onLoad={this.handleTable} id="tableSitze"></table>
         {this.renderTable()}
