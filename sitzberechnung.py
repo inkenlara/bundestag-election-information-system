@@ -18,19 +18,21 @@ except ImportError:
     import math
 
 # Inkens local test db:
-"""
+
 db_host = "localhost"
 db_port = 5432
 db_name = "postgres"
 db_user = "newuser"
 db_password = "pw"
-"""
 
+"""
 db_host = "localhost"
 db_port = 5432
 db_name = "wahl"
 db_user = "postgres"
 db_password = ""
+"""
+
 
 try:
     sql_con = psycopg2.connect(
@@ -43,15 +45,15 @@ except:
 wahljahr = 2021  # TODO: main erstellen, bei der man das wahljahr angeben kann
 
 cur.execute(
-     "IF EXISTS DROP MATERIALIZED VIEW sitzverteilungparteienprobundesland")
+     "DROP MATERIALIZED VIEW IF EXISTS sitzverteilungparteienprobundesland")
 sql_con.commit()
-cur.execute("IF EXISTS DROP TABLE sitzverteilungbundestag")
+cur.execute("DROP TABLE IF EXISTS sitzverteilungbundestag")
 sql_con.commit()
 cur.execute(
-     "IF EXISTS DROP MATERIALIZED VIEW vorlaufigesitzverteilungparteienprobundesland")
+     "DROP MATERIALIZED VIEW IF EXISTS vorlaufigesitzverteilungparteienprobundesland")
 sql_con.commit()
-cur.execute("IF EXISTS DROP MATERIALIZED VIEW ParteienInBT")
-cur.execute("IF EXISTS DROP MATERIALIZED VIEW VorlaeufigeSitzverteilung")
+cur.execute("DROP MATERIALIZED VIEW IF EXISTS ParteienInBT")
+cur.execute("DROP MATERIALIZED VIEW IF EXISTS VorlaeufigeSitzverteilung")
 sql_con.commit()
 
 ###########################################################################################
@@ -60,22 +62,34 @@ sql_con.commit()
 
 # compute parties that will enter the Bundestag
 
-
-bundestags_parteien = """
-select Partei
-from DeutschlandStimmenAggregation 
-where ProzentZweitStimmen >= 5
-and wahljahr = {}
-union
-select Partei
-from DeutschlandStimmenAggregation 
-where DirektMandate >= 3
-and wahljahr = {}
-union
-select parteiid
-from Partei 
-where kurzbezeichnung = 'SSW'
-""".format(wahljahr, wahljahr)
+if wahljahr == 2021:
+    bundestags_parteien = """
+    select Partei
+    from DeutschlandStimmenAggregation 
+    where ProzentZweitStimmen >= 5
+    and wahljahr = {}
+    union
+    select Partei
+    from DeutschlandStimmenAggregation 
+    where DirektMandate >= 3
+    and wahljahr = {}
+    union
+    select parteiid
+    from Partei 
+    where kurzbezeichnung = 'SSW'
+    """.format(wahljahr, wahljahr)
+else:
+     bundestags_parteien = """
+    select Partei
+    from DeutschlandStimmenAggregation 
+    where ProzentZweitStimmen >= 5
+    and wahljahr = {}
+    union
+    select Partei
+    from DeutschlandStimmenAggregation 
+    where DirektMandate >= 3
+    and wahljahr = {}
+    """.format(wahljahr, wahljahr)   
 
 load_bundestags_parteien = "CREATE MATERIALIZED VIEW ParteienInBT AS {};".format(
     bundestags_parteien)
