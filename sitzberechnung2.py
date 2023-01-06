@@ -42,17 +42,17 @@ except:
 
 wahljahr = 2021  # TODO: main erstellen, bei der man das wahljahr angeben kann
 
-# cur.execute(
-#     "DROP MATERIALIZED VIEW sitzverteilungparteienprobundesland")
-# sql_con.commit()
-# cur.execute("DROP TABLE sitzverteilungbundestag")
-# sql_con.commit()
-# cur.execute(
-#     "DROP MATERIALIZED VIEW vorlaufigesitzverteilungparteienprobundesland")
-# sql_con.commit()
-# cur.execute("DROP MATERIALIZED VIEW ParteienInBT")
-# cur.execute("DROP MATERIALIZED VIEW VorlaeufigeSitzverteilung")
-
+cur.execute(
+     "IF EXISTS DROP MATERIALIZED VIEW sitzverteilungparteienprobundesland")
+sql_con.commit()
+cur.execute("IF EXISTS DROP TABLE sitzverteilungbundestag")
+sql_con.commit()
+cur.execute(
+     "IF EXISTS DROP MATERIALIZED VIEW vorlaufigesitzverteilungparteienprobundesland")
+sql_con.commit()
+cur.execute("IF EXISTS DROP MATERIALIZED VIEW ParteienInBT")
+cur.execute("IF EXISTS DROP MATERIALIZED VIEW VorlaeufigeSitzverteilung")
+sql_con.commit()
 
 ###########################################################################################
 ####################################### Preparation #######################################

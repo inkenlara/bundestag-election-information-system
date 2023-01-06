@@ -119,6 +119,7 @@ def WahlkreisStimmenGenerator(WahlkreisID, firstIDErst, firstIDZweit):
 
     return erststimmen, zweitstimmen
 
+
     """
     # get number of votes for each candidate
     with open(path_kands_2021) as f2:
@@ -147,7 +148,36 @@ def WahlkreisStimmenGenerator(WahlkreisID, firstIDErst, firstIDZweit):
         print(partyErstZweitStimmen)
     """
 
-# WahlkreisStimmenGenerator(1)
+def ungueltigeStimmen(WahlkreisID, firstIDErst, firstIDZweit):
+    # get number of votes for each party
+    with open(path_kerg) as f:
+        csv_buffer = csv.reader(f, delimiter=';', quotechar='"')
+
+        csv_list = list(csv_buffer)
+
+        # get number first votes and second votes for each party
+        for row in csv_list:
+            if (row[0].isdecimal() and int(row[0]) == WahlkreisID and row[2].isdecimal() and int(row[2]) != 99):
+                ungueltig_erst = int(row[11])
+                ungueltig_zweit = int(row[13])  
+
+                # erstimmen: [id, wahlkreis, None]
+                # zweitstimmen: [id, wahlkreis, None]
+
+                ungueltige_erststimmen = []
+                ungueltige_zweitstimmen = []
+
+                # fill in stimmzettel ID and wahlkreis
+                for i in range(ungueltig_erst):
+                    ungueltige_erststimmen.append([firstIDErst, WahlkreisID, -1])
+                    firstIDErst += 1
+
+                for i in range(ungueltig_zweit):
+                    ungueltige_zweitstimmen.append([firstIDZweit, WahlkreisID, -1]) 
+                    firstIDZweit += 1 
+    
+    return ungueltige_erststimmen, ungueltige_zweitstimmen
+
 
 
 allErststimmen = np.array([], dtype=np.int64).reshape(0, 3)
@@ -156,6 +186,7 @@ allZweitstimmen = np.array([], dtype=np.int64).reshape(0, 3)
 startTime = timeit.default_timer()
 startFillingArrysStartTime = timeit.default_timer()
 
+#gueltige stimmen for all wahlkreise
 for i in range(1, 300):
     firstIDErst = len(allErststimmen) + 1
     firstIDZweit = len(allZweitstimmen) + 1
@@ -167,13 +198,37 @@ for i in range(1, 300):
         [allZweitstimmen, zweitstimmen])
 
 
+all_ungueltige_erststimmen = []
+all_ungueltige_zweitstimmen = []
+
+#ungueltige stimmen for all wahlkreise
+for i in range(1, 300):
+    firstIDErst = len(allErststimmen) + len(all_ungueltige_erststimmen) + 1
+    firstIDZweit = len(allZweitstimmen) + len(all_ungueltige_zweitstimmen) + 1
+    ungueltige_erststimmen, ungueltige_zweitstimmen = ungueltigeStimmen(
+        i, firstIDErst, firstIDZweit)
+    all_ungueltige_erststimmen = all_ungueltige_erststimmen + ungueltige_erststimmen
+    all_ungueltige_zweitstimmen = all_ungueltige_zweitstimmen + ungueltige_zweitstimmen
+
+
+
 print("Filling arrays took:", timeit.default_timer() - startFillingArrysStartTime)
 
-#erstimmen_test = WahlkreisStimmenGenerator(1)[0]
-#zweitstimmen_test = WahlkreisStimmenGenerator(1)[1]
 
-#DF = pd.DataFrame(zweitstimmen_test)
-#DF.to_csv("zweitstimmen_test.csv", header=None, index=None)
+# erstimmen_test = WahlkreisStimmenGenerator(1)[0]
+# zweitstimmen_test = WahlkreisStimmenGenerator(1, 0, 0)[1]
+
+
+
+"""DF = pd.DataFrame(zweitstimmen_test)
+DF.to_csv("zweitstimmen_test.csv", header=None, index=None)
+
+zweistimmen_ungueltig_test = ungueltigeStimmen(1, 0, 0)[1]
+
+DF1 = pd.DataFrame(zweistimmen_ungueltig_test)
+DF1.to_csv("zweitstimmen_test.csv", mode='a', index=None, header=None)"""
+
+
 
 DF1 = pd.DataFrame(allErststimmen)
 DF2 = pd.DataFrame(allZweitstimmen)
@@ -181,18 +236,27 @@ DF2 = pd.DataFrame(allZweitstimmen)
 DF1.to_csv("erststimmen.csv", header=None, index=None)
 DF2.to_csv("zweitstimmen.csv", header=None, index=None)
 
-"""
+DF3 = pd.DataFrame(all_ungueltige_erststimmen)
+DF4 = pd.DataFrame(all_ungueltige_zweitstimmen)
+
+DF3.to_csv("erststimmen.csv", mode='a', index=None, header=None)
+DF4.to_csv("zweitstimmen.csv", mode='a', index=None, header=None)
+
 db_host = "localhost"
 db_port = 5432
 db_name = "postgres"
 db_user = "newuser"
 db_password = "pw"
+
+
 """
 db_host = "localhost"
 db_port = 5432
 db_name = "wahl"
 db_user = "postgres"
 db_password = ""
+"""
+
 
 try:
     conn = psycopg2.connect(
@@ -204,26 +268,8 @@ try:
     cur.execute("truncate table zweitstimmen cascade")
     conn.commit()
 
-    #f = open('/Users/inkengruner/Documents/Studium/Master/1. Semester/Datenbanken/wahl/erstimmen_test.csv', 'r')
-    #cur.copy_from(f, 'erststimmen', sep=',')
-    # f.close()
-
-    #f = open('/Users/inkengruner/Documents/Studium/Master/1. Semester/Datenbanken/wahl/zweitstimmen_test.csv', 'r')
-    #cur.copy_from(f, 'zweitstimmen', sep=',')
-    # f.close()
-
     copyDataStartTime = timeit.default_timer()
 
-    # Inken
-    """f = open('/Users/inkengruner/Documents/Studium/Master/1. Semester/Datenbanken/wahl/erststimmen.csv', 'r')
-    cur.copy_from(f, 'erststimmen', sep=',')
-    f.close()
-
-    f = open('/Users/inkengruner/Documents/Studium/Master/1. Semester/Datenbanken/wahl/zweitstimmen.csv', 'r')
-    cur.copy_from(f, 'zweitstimmen', sep=',')
-    f.close()"""
-
-    # Adnan
     f = open('erststimmen.csv', 'r')
     cur.copy_from(f, 'erststimmen', sep=',')
     f.close()

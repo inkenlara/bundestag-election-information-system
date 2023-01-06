@@ -262,7 +262,7 @@ def kreise():
         cur.executemany('INSERT INTO WahlKreis VALUES(%s, %s, %s)', kreis_data)
 
 # Übrige sind mit NULL bezeichnet
-
+# Ungültige haben parteiID -1
 
 def partei():
     total_partei = []
@@ -311,65 +311,10 @@ def partei():
                 r.append(None)
             else:
                 r.append(k_l[dict_key])
+        total_partei.append([-1, "Ungültig", "Ungültig"])
         cur.executemany('INSERT INTO Partei VALUES(%s, %s, %s)', total_partei)
 
 
-"""def direktKandidaten2021():
-    with open(path_kands_2021, encoding='utf-8') as f:
-        csv_buffer = csv.reader(f, delimiter=';', quotechar='"')
-        next(csv_buffer)
-        lis = []
-        KandidatID = 0
-        for row in csv_buffer:
-            KandidatID = KandidatID + 1
-            LastName = row[4]
-            FirstName = row[5]
-            Beruf = row[15]
-            Partei = None                      # TODO MERGE WITH NEW BRANCH
-            WahlKreis = row[19]
-            WahlJahr = 2021
-            AnzahlStimmen = None
-            ProzentWahlhKreis = None
-            lis.append([KandidatID, FirstName, LastName, Beruf, Partei,
-                       WahlKreis, WahlJahr, AnzahlStimmen, ProzentWahlhKreis])
-    cur.executemany('INSERT INTO DirektKandidaten VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s)', lis)"""
-
-
-"""
-	ErstimmID int primary key,
-	Kandidat int references Direktkandidaten,   -- NULl
-	WahlJahr int NOT NULL,
-    WahlKreis int NOT NULL references WahlKreis,
-    KVorName varchar(200),
-	KNachName varchar(200)
-"""
-
-"""
-def erstStimmen():
-    with open(path_kandidaturen, encoding='utf-8') as f:
-        csv_buffer = csv.reader(f, delimiter=';', quotechar='"')
-        next(csv_buffer)
-        next(csv_buffer)
-        next(csv_buffer)
-        final = []
-        ErstimmID = 0
-        WahlJahr = 2021
-        Kandidat = None      # TODO CHECK WITH INKEN'S PART...
-        WahlKreis = 0
-        KVorName = ""
-        KNachName = ""
-        for row in csv_buffer:
-            if (not row[14]):    # if None -> the kandidat ist Direkt kandidat
-                ErstimmID = ErstimmID + 1
-                # if(ErstimmID > 20): break
-                WahlKreis = row[20]
-                KVorName = row[5]
-                KNachName = row[4]
-                final.append([ErstimmID, None, WahlJahr,
-                             WahlKreis, KVorName, KNachName])
-        cur.executemany(
-            'INSERT INTO erststimmen VALUES(%s, %s, %s, %s, %s, %s)', final)
-"""
 
 """WahlKreis int references WahlKreis ON DELETE CASCADE,
 	WahlJahr int NOT NULL,
@@ -1022,41 +967,44 @@ def load_strukturdaten():
             print(i)
 
 
-# CALLING THE FUNCTIONS
-# bundesland()
-# kreise()
-# partei()
-# wahlBerechtigte()
-# erstStimmen()
-# WahlKreisAggretation()
-# BundesLandAggregation()
-# deutschland()
-# WahlKreisZweitStimmenAggregation()
-# BundeslandStimmenAggregation()
-# DeutschlandStimmenAggregation()
-# BundesLandProzentErst()
-# BundesLandProzentZwei()
-# WahlKreisProzentErst()
-# WahlKreisProzentZweit()
+# TRUNCATE THE TABLES
+cur.execute("truncate table partei cascade")
+cur.execute("truncate table bundesland cascade")
+cur.execute("truncate table wahlkreis cascade")
+cur.execute("truncate table WahlKreisAggretation cascade")
+cur.execute("truncate table bundeslandaggregation cascade")
+cur.execute("truncate table deutschlandaggregation cascade")
+cur.execute("truncate table WahlKreisZweitStimmenAggregation cascade")
+cur.execute("truncate table BundeslandStimmenAggregation cascade")
+cur.execute("truncate table DeutschlandStimmenAggregation cascade")
+cur.execute("truncate table BundesLandProzentErst cascade")
+cur.execute("truncate table BundesLandProzentZwei cascade")
+cur.execute("truncate table WahlKreisProzentErst cascade")
+cur.execute("truncate table WahlKreisProzentZweit cascade")
+cur.execute("truncate table kandidaten cascade")
+cur.execute("truncate table direktkandidaten cascade")
+cur.execute("truncate table listenkandidaten cascade")
+cur.execute("truncate table strukturdaten cascade")
+sql_con.commit()
 
-# After BundeslandStimmenAggregation committed:
-# DirektmandateBundeslandStimmenAggregation()
-
-# bundesland()
-# partei()
-# kreise()
-# kandidaten()
-# DeutschlandStimmenAggregation()
-
-# load_strukturdaten()
-
-# cur.execute("truncate table BundeslandStimmenAggregation cascade")
-# sql_con.commit()
-# BundeslandStimmenAggregation()
-# sql_con.commit()
+# CALLING THE FUNCTIONS AND FILL THE TABLES
+bundesland() 
+kreise()
+partei()
+WahlKreisAggretation()
+BundesLandAggregation()
+deutschland()
+WahlKreisZweitStimmenAggregation()
+BundeslandStimmenAggregation()
+DeutschlandStimmenAggregation()
+BundesLandProzentErst()
+BundesLandProzentZwei()
+WahlKreisProzentErst()
+WahlKreisProzentZweit()
+kandidaten()
+load_strukturdaten()
 DirektmandateBundeslandStimmenAggregation()
 DirektmandateDeutschlandStimmenAggregation()
-#
 
 
 sql_con.commit()
