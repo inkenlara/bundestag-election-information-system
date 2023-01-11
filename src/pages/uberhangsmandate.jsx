@@ -5,7 +5,7 @@ class UberhangsMandate extends Component {
   render() {
     return (
       <React.Fragment>
-        <h2 id="Uberhangmandate">Uberhangmandate</h2>
+        <h2 id="Uberhangmandate">Überhangmandate</h2>
         <table onLoad={this.handleTable} id="tableUberhang"></table>
         {this.renderTable()}
       </React.Fragment>

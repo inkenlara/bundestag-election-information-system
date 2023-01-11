@@ -11,7 +11,7 @@ class Educated extends Component {
     return (
       <React.Fragment>
         <h2 id="Add2">
-          Durchschnitt der Parteien in den 10 gebildetsten und den 10
+          Durchschnitt der Top Parteien in den 10 gebildetsten und den 10
           ungebildetsten Wahlkreisen
         </h2>
         <div>

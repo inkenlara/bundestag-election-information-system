@@ -11,7 +11,7 @@ class Rich extends Component {
     return (
       <React.Fragment>
         <h2 id="RichPoor">
-          Durchschnitt der top 5 Parteien in den 10 reichsten und den 10 ärmsten
+          Durchschnitt der Top Parteien in den 10 reichsten und den 10 ärmsten
           Wahlkreisen
         </h2>
         <div>

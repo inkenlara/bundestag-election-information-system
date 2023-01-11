@@ -33,13 +33,13 @@ class Knappstesieger extends Component {
         </button>
 
         <p>
-          die gewählten Erstkandidaten, welche mit dem geringsten Vorsprung
-          gegenuber ihren Konkurrenten gewonnen haben.
+          Gewählte Erstkandidaten, welche mit dem geringsten Vorsprung
+          gegenüber ihren Konkurrenten gewonnen haben.
         </p>
         <table id="tableWin"></table>
         <p>
-          die Wahlkreise, in denen die Partei, falls sie keinen Kreis gewonnen
-          haben am knappsten verloren hat.
+          Wahlkreise, in denen die Partei, falls sie keinen Kreis gewonnen
+          hat, am knappsten verloren hat.
         </p>
         <table id="tableLose"></table>
       </React.Fragment>

@@ -46,7 +46,7 @@ const PieChartHigh = () => {
           "rgba(222, 78, 97, 0.2)",
         ],
         borderColor: [
-          "rgba(181, 0, 21, 1)",
+          "rgba(0, 0, 0, 1)",
           "rgba(255, 0, 153, 1)",
           "rgba(238, 255, 0, 1)",
           "rgba(30, 252, 10, 1)",

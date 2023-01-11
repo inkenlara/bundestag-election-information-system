@@ -199,19 +199,22 @@ async def query7_stimmen_entwicklung(kreis_id: int):
     value = query7_stimmen_entwicklung(kreis_id)
     return HTMLResponse(content=value, status_code=200)
 
+"""
 db_host = "localhost"
 db_port = 5432
 db_name = "wahl"
 db_user = "postgres"
 db_password = ""
+"""
+
 
 # Inkens local test db:
-"""db_host = "localhost"
+db_host = "localhost"
 db_port = 5432
 db_name = "postgres"
 db_user = "newuser"
 db_password = "pw"
-"""
+
 
 
 try:

@@ -7,14 +7,14 @@ const Navbar = () => {
       <Nav>
         <NavMenu>
           <NavLink to="/sitzverteilung">Sitzverteilung</NavLink>
-          <NavLink to="/mitglieder">Bundestag Mitglieder</NavLink>
-          <NavLink to="/wahlkreiszweit">Wahlkreise Zweitstimmen</NavLink>
-          <NavLink to="/stimmkreisSieger">StimmkreisSieger</NavLink>
-          <NavLink to="/uberhangsmandate">Uberhangmandate</NavLink>
-          <NavLink to="/knappstesieger">Knappste sieger</NavLink>
-          <NavLink to="/wahlkreiserst">Wahlkreise Erststimmen</NavLink>
-          <NavLink to="/rich">Rich-Poor</NavLink>
-          <NavLink to="/educated">Educated-Uneducated</NavLink>
+          <NavLink to="/mitglieder">Mitglieder Bundestag</NavLink>
+          <NavLink to="/wahlkreiszweit">Übersicht Wahlkreise</NavLink>
+          <NavLink to="/stimmkreisSieger">Stimmkreissieger</NavLink>
+          <NavLink to="/uberhangsmandate">Überhangmandate</NavLink>
+          <NavLink to="/knappstesieger">Knappste Sieger</NavLink>
+          <NavLink to="/wahlkreiserst">Einzelstimmen</NavLink>
+          <NavLink to="/rich">Arm/ Reich</NavLink>
+          <NavLink to="/educated">Gebildet/ Ungebildet</NavLink>
         </NavMenu>
       </Nav>
     </>

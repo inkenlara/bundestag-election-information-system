@@ -48,7 +48,7 @@ const PieChartPoor = () => {
         ],
         borderColor: [
           "rgba(0, 153, 255, 1)",
-          "rgba(181, 0, 21, 1)",
+          "rgba(0, 0, 0, 1)",
           "rgba(255, 0, 153, 1)",
           "rgba(238, 255, 0, 1)",
           "rgba(30, 252, 10, 1)",

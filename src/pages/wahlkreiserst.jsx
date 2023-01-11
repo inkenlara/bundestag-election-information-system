@@ -7,7 +7,7 @@ class Wahlkreiserst extends Component {
   render() {
     return (
       <React.Fragment>
-        <h2 id="Wahlkreisubersicht_erst">Wahlkreisubersicht (Einzelstimmen)</h2>
+        <h2 id="Wahlkreisubersicht_erst">Wahlkreisübersicht (Einzelstimmen)</h2>
         <select
           defaultValue={1}
           onChange={this.handleValue}
