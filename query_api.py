@@ -311,6 +311,7 @@ def token_check_return_wahlzettel(token):
             print("Invalid Admin token")
             jsony = {"isValid": False, "wahlkreis": 0,
                      "erstimmenzettel": [], "zweitstimmenzettel": []}
+            print(jsony)
             return json.dumps(jsony)
         else:
             admin_wahlkreis_query = """select wahlkreis from adminTokens where token = '{}'""".format(
@@ -321,6 +322,7 @@ def token_check_return_wahlzettel(token):
             erstimmenzettel_admin = erststimmen_data(wahlkreis_admin)
             jsony = {"isValid": "Admin", "wahlkreis": wahlkreis_admin,
                      "erstimmenzettel": erstimmenzettel_admin, "zweitstimmenzettel": zweitstimmenzettel_admin}
+            print(jsony)
             return json.dumps(jsony)
 
     check_token_query = """
