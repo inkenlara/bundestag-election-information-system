@@ -10,6 +10,8 @@ except ImportError:
     import pip
     pip.main(['install', '--user', 'psycopg2'])
     import psycopg2
+from time import sleep
+from typing import List
 from hashlib import sha256
 import matplotlib.pyplot as plt
 import numpy as np
@@ -43,6 +45,36 @@ class Vote(BaseModel):
     token: int
     erst: str  # short partei
     zweit: str  # short partei
+
+
+class BulkVotes(BaseModel):
+    wahlkreis: int
+    token: int
+    list_numbers_first: List[int]
+    list_numbers_second: List[int]
+    list_votes_first: List[str]
+    list_votes_second: List[int]
+
+
+class VoteErst:
+    def __init__(self, wahlkreis, token, erst):
+        self.wahlkreis = wahlkreis
+        self.token = token
+        self.erst = erst
+
+
+class VoteZweit:
+    def __init__(self, wahlkreis, token, zweit):
+        self.wahlkreis = wahlkreis
+        self.token = token
+        self.zweit = zweit
+
+
+@app.post("/send_bulk_votes")
+def add_bulk_votes_call(bulkVotes: BulkVotes):
+    add_bulk_votes(bulkVotes)
+    value = json.dumps({"response": True})
+    return HTMLResponse(content=value, status_code=200)
 
 
 @app.post("/add_vote")
@@ -207,22 +239,20 @@ async def query7_stimmen_entwicklung(kreis_id: int):
     value = query7_stimmen_entwicklung(kreis_id)
     return HTMLResponse(content=value, status_code=200)
 
-"""
 db_host = "localhost"
 db_port = 5432
 db_name = "wahl"
 db_user = "postgres"
-db_password = ""
+db_password = "adnan"
+
 """
-
-
 # Inkens local test db:
 db_host = "localhost"
 db_port = 5432
 db_name = "postgres"
 db_user = "newuser"
 db_password = "pw"
-
+"""
 
 try:
     sql_con = psycopg2.connect(
@@ -233,6 +263,78 @@ except:
     print("Fail")
 
 plt.switch_backend('Agg')
+
+
+# TODO figure out why lines 275, 283 fail
+# try multithreading.., it could be too slow
+def add_bulk_votes(bulkVotes: BulkVotes):
+    for fir in range(0, len(bulkVotes.list_numbers_first)):
+        for k in range(0, bulkVotes.list_numbers_first[fir]):
+            vote1 = VoteErst(bulkVotes.wahlkreis,
+                             bulkVotes.token, bulkVotes.list_votes_first[fir])
+            # add_vote_erst(vote1)
+            print("fir")
+            sleep(1)
+    for sec in range(0, len(bulkVotes.list_numbers_second)):
+        for k in range(0, bulkVotes.list_numbers_second[sec]):
+            vote2 = VoteZweit(bulkVotes.wahlkreis, bulkVotes.token,
+                              bulkVotes.list_votes_second[sec])
+            # add_vote_zweit(vote2)
+            print(sec)
+            sleep(1)
+
+
+def add_vote_erst(vote: VoteErst):
+    wahlkreis = vote.wahlkreis
+    erststimme_party = -1
+    max1_query = """
+    select max(erstimmid)
+    from erststimmen 
+    """
+    cur.execute(max1_query)
+    max1 = cur.fetchall()[0][0]
+    print(vote.erst)
+    if vote.erst == "None":
+        erststimme_party = -1
+    else:
+        erst_party_name = vote.erst.split("_")[2]
+        if (erst_party_name == "null"):
+            erststimme_party = 48
+        else:
+            id_query = """
+            select parteiid
+            from partei 
+            where kurzbezeichnung = '{}'
+            """.format(erst_party_name)
+            cur.execute(id_query)
+            erststimme_party = cur.fetchall()[0][0]
+    insert_vote1_query = """insert into erststimmen(erstimmid, wahlkreis, partei)values ({}, {}, {})""".format(
+        max1 + 1, wahlkreis, erststimme_party)
+    cur.execute(insert_vote1_query)
+    sql_con.commit()
+
+
+def add_vote_zweit(vote: VoteZweit):
+    wahlkreis = vote.wahlkreis
+    zweitstimme_party = -1
+    max2_query = """
+    select max(zweitstimmid)
+    from zweitstimmen 
+    """
+    cur.execute(max2_query)
+    max2 = cur.fetchall()[0][0]
+    print(vote.zweit)
+    zweit_party_num = vote.zweit
+    if (zweit_party_num == "None"):
+        zweitstimme_party = -1
+    else:
+        zweitstimme_party = zweit_party_num
+    insert_vote2_query = """
+    insert into zweitstimmen(zweitstimmid, wahlkreis, partei)
+    values ({}, {}, {})
+    """.format(max2 + 1, wahlkreis, zweitstimme_party)
+    cur.execute(insert_vote2_query)
+    sql_con.commit()
 
 
 # add code to push info to database
