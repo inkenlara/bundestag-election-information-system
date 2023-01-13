@@ -36,11 +36,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 class Vote(BaseModel):
     wahlkreis: int
     token: int
-    erst: str # short partei
-    zweit: str # short partei
+    erst: str  # short partei
+    zweit: str  # short partei
 
 
 @app.post("/add_vote")
@@ -50,21 +51,23 @@ def add_vote_call(vote: Vote):
     return HTMLResponse(content=value, status_code=200)
 
 
-
 @app.get("/query9_high")
 async def query9_high_call():
     value = query9_high()
     return HTMLResponse(content=value, status_code=200)
+
 
 @app.get("/query9_low")
 async def query9_low_call():
     value = query9_low()
     return HTMLResponse(content=value, status_code=200)
 
+
 @app.get("/query8_rich")
 async def query8_rich_call():
     value = query8_rich()
     return HTMLResponse(content=value, status_code=200)
+
 
 @app.get("/query8_poor")
 async def query8_poor_call():
@@ -143,6 +146,7 @@ async def query1_table_call():
     value = query1_table()
     return HTMLResponse(content=value, status_code=200)
 
+
 @app.get("/query2_table")
 async def query2_table_call():
     value = query2_table()
@@ -184,15 +188,18 @@ async def query6_loser_call():
     value = query6_table_loser()
     return HTMLResponse(content=value, status_code=200)
 
+
 @app.get("/query7_wahlbeteiligung/{kreis_id}")
 async def query7_wahlbeteiligung_call(kreis_id: int):
     value = query7_wahlbeteiligung(kreis_id)
     return HTMLResponse(content=value, status_code=200)
 
+
 @app.get("/query7_direktkandidaten/{kreis_id}")
 async def query7_direktkandidaten_call(kreis_id: int):
     value = query7_direktkandidaten(kreis_id)
     return HTMLResponse(content=value, status_code=200)
+
 
 @app.get("/query7_stimmen_entwicklung/{kreis_id}")
 async def query7_stimmen_entwicklung(kreis_id: int):
@@ -216,7 +223,6 @@ db_user = "newuser"
 db_password = "pw"
 
 
-
 try:
     sql_con = psycopg2.connect(
         host=db_host, port=db_port, database=db_name, user=db_user, password=db_password)
@@ -225,24 +231,71 @@ try:
 except:
     print("Fail")
 
-plt.switch_backend('Agg') 
-
+plt.switch_backend('Agg')
 
 
 # add code to push info to database
+# erst - first_last_party
+# zweit - party number
+# if voter chose to not vote, values are None
 def add_vote(vote):
     print(vote)
-    # erst - first_last_party
-    # zweit - party number
-    # if voter chose to not vote, values are None
+    wahlkreis = vote.wahlkreis
+    erststimme_party = -1
+    zweitstimme_party = -1
+
+    max1_query = """
+    select max(erstimmid)
+    from erststimmen 
+    """
+    cur.execute(max1_query)
+    max1 = cur.fetchall()[0][0]
+
+    max2_query = """
+    select max(zweitstimmid)
+    from zweitstimmen 
+    """
+    cur.execute(max2_query)
+    max2 = cur.fetchall()[0][0]
+    print(vote.erst)
+    if vote.erst == "None":
+        erststimme_party = -1
+    else: 
+        erst_party_name = vote.erst.split("_")[2]
+        if (erst_party_name == "null"):
+            erststimme_party = 48
+        else:
+            id_query = """
+            select parteiid
+            from partei 
+            where kurzbezeichnung = '{}'
+            """.format(erst_party_name)
+            cur.execute(id_query)
+            erststimme_party = cur.fetchall()[0][0]
+    insert_vote1_query = """insert into erststimmen(erstimmid, wahlkreis, partei)values ({}, {}, {})""".format(
+        max1 + 1, wahlkreis, erststimme_party)
+    cur.execute(insert_vote1_query)
+    zweit_party_num = vote.zweit
+    if (zweit_party_num == "None"):
+        zweitstimme_party = -1
+    else:
+        zweitstimme_party = zweit_party_num
+    insert_vote2_query = """
+    insert into zweitstimmen(zweitstimmid, wahlkreis, partei)
+    values ({}, {}, {})
+    """.format(max2 + 1, wahlkreis, zweitstimme_party)
+    cur.execute(insert_vote2_query)
+    sql_con.commit()
 
 
 # validate token, return json
 # isValid, wahlkreis, erstimmenzettel, zweitstimmenzettel
 def token_check_return_wahlzettel(token):
-    jsony = {"isValid": False, "wahlkreis": 0, "erstimmenzettel":[], "zweitstimmenzettel": []}
-    if(not str(token).isdigit()):
-        jsony = {"isValid": False, "wahlkreis": 0, "erstimmenzettel":[], "zweitstimmenzettel": []}
+    jsony = {"isValid": False, "wahlkreis": 0,
+             "erstimmenzettel": [], "zweitstimmenzettel": []}
+    if (not str(token).isdigit()):
+        jsony = {"isValid": False, "wahlkreis": 0,
+                 "erstimmenzettel": [], "zweitstimmenzettel": []}
         return json.dumps(jsony)
     check_token_query = """
     select COUNT(*) from tokens where token = {}
@@ -251,7 +304,8 @@ def token_check_return_wahlzettel(token):
     record_exists = cur.fetchall()[0][0]
     if not record_exists:
         print("Token not valid.")
-        jsony = {"isValid": False, "wahlkreis": 0, "erstimmenzettel":[], "zweitstimmenzettel": []}
+        jsony = {"isValid": False, "wahlkreis": 0,
+                 "erstimmenzettel": [], "zweitstimmenzettel": []}
         return json.dumps(jsony)
     else:
         wahlkreis_query = """
@@ -269,7 +323,9 @@ def token_check_return_wahlzettel(token):
         WHERE token = {}
         """.format(token)
         cur.execute(delete_token_query)
-        jsony = {"isValid": True, "wahlkreis": wahlkreis, "erstimmenzettel": erstimmenzettel, "zweitstimmenzettel": zweitstimmenzettel}
+        sql_con.commit()
+        jsony = {"isValid": True, "wahlkreis": wahlkreis,
+                 "erstimmenzettel": erstimmenzettel, "zweitstimmenzettel": zweitstimmenzettel}
         return json.dumps(jsony)
 
 
@@ -312,7 +368,7 @@ WHERE s.partei = p.parteiid""")
 def query1_table2017():
     cur.execute("""""")
 
-    data =  cur.fetchall()
+    data = cur.fetchall()
     str_table = '<table>'
     str_table = str_table + '<tr>'
     str_table = str_table + '<th>Partei</th>'
@@ -320,12 +376,12 @@ def query1_table2017():
     str_table = str_table + '</tr>'
     for i in data:
         str_table = str_table + '<tr>'
-        str_table = str_table + '<td>' + str(i[0]) + '</td><td>' + str(i[1]) + '</td>'
+        str_table = str_table + '<td>' + \
+            str(i[0]) + '</td><td>' + str(i[1]) + '</td>'
         str_table = str_table + '</tr>'
     str_table = str_table + ' </table>'
     jsony = {"data": str_table}
     return json.dumps(jsony)
-
 
 
 def query1_table():
@@ -333,7 +389,7 @@ def query1_table():
     cur.execute("""SELECT p.KurzBezeichnung, s.sitze FROM sitzverteilungbundestag s, partei p
     WHERE s.partei = p.parteiid""")
 
-    data =  cur.fetchall()
+    data = cur.fetchall()
     str_table = '<table>'
     str_table = str_table + '<tr>'
     str_table = str_table + '<th>Partei</th>'
@@ -341,7 +397,8 @@ def query1_table():
     str_table = str_table + '</tr>'
     for i in data:
         str_table = str_table + '<tr>'
-        str_table = str_table + '<td>' + str(i[0]) + '</td><td>' + str(i[1]) + '</td>'
+        str_table = str_table + '<td>' + \
+            str(i[0]) + '</td><td>' + str(i[1]) + '</td>'
         str_table = str_table + '</tr>'
     str_table = str_table + ' </table>'
     jsony = {"data": str_table}
@@ -410,7 +467,7 @@ where l.kandidatid = k.kandidatid
 and k.wahljahr = 2017
 and p.parteiid = k.partei""")
 
-    data =  cur.fetchall()
+    data = cur.fetchall()
     str_table = '<table>'
     str_table = str_table + '<tr>'
     str_table = str_table + '<th>Vorname</th>'
@@ -419,12 +476,13 @@ and p.parteiid = k.partei""")
     str_table = str_table + '</tr>'
     for i in data:
         str_table = str_table + '<tr>'
-        str_table = str_table + '<td>' + str(i[1]) + '</td><td>' + str(i[2]) + '</td><td>' + str(i[4]) + '</td>'
+        str_table = str_table + '<td>' + \
+            str(i[1]) + '</td><td>' + str(i[2]) + \
+            '</td><td>' + str(i[4]) + '</td>'
         str_table = str_table + '</tr>'
     str_table = str_table + ' </table>'
     jsony = {"data": str_table}
     return json.dumps(jsony)
-
 
 
 def query2_table():
@@ -490,7 +548,7 @@ where l.kandidatid = k.kandidatid
 and k.wahljahr = 2021
 and p.parteiid = k.partei""")
 
-    data =  cur.fetchall()
+    data = cur.fetchall()
     str_table = '<table>'
     str_table = str_table + '<tr>'
     str_table = str_table + '<th>Vorname</th>'
@@ -500,7 +558,8 @@ and p.parteiid = k.partei""")
     str_table = str_table + '</tr>'
     for i in data:
         str_table = str_table + '<tr>'
-        str_table = str_table + '<td>' + str(i[1]) + '</td><td>' + str(i[2]) + '</td><td>' + str(i[3]) + '</td><td>' + str(i[4]) + '</td>'
+        str_table = str_table + '<td>' + str(i[1]) + '</td><td>' + str(
+            i[2]) + '</td><td>' + str(i[3]) + '</td><td>' + str(i[4]) + '</td>'
         str_table = str_table + '</tr>'
     str_table = str_table + ' </table>'
     jsony = {"data": str_table}
@@ -536,7 +595,7 @@ def query4_table2017():
   from erststimmensieger e, zweitstimmensieger z, wahlkreis w
   where e.wahlkreis = z.wahlkreis AND e.wahlkreis = w.wahlkreisid""")
 
-    data =  cur.fetchall()
+    data = cur.fetchall()
     str_table = '<table>'
     str_table = str_table + '<tr>'
     str_table = str_table + '<th>Wahlkreisname</th>'
@@ -546,7 +605,8 @@ def query4_table2017():
     str_table = str_table + '</tr>'
     for i in data:
         str_table = str_table + '<tr>'
-        str_table = str_table + '<td>' + str(i[0]) + '</td><td>' + str(i[1]) + '</td><td>' + str(i[2]) + '</td><td>' + str(i[3]) +'</td>'
+        str_table = str_table + '<td>' + str(i[0]) + '</td><td>' + str(
+            i[1]) + '</td><td>' + str(i[2]) + '</td><td>' + str(i[3]) + '</td>'
         str_table = str_table + '</tr>'
     str_table = str_table + ' </table>'
     jsony = {"data": str_table}
@@ -583,7 +643,7 @@ def query4_table():
   from erststimmensieger e, zweitstimmensieger z, wahlkreis w
   where e.wahlkreis = z.wahlkreis AND e.wahlkreis = w.wahlkreisid""")
 
-    data =  cur.fetchall()
+    data = cur.fetchall()
     str_table = '<table>'
     str_table = str_table + '<tr>'
     str_table = str_table + '<th>Wahlkreisname</th>'
@@ -593,7 +653,8 @@ def query4_table():
     str_table = str_table + '</tr>'
     for i in data:
         str_table = str_table + '<tr>'
-        str_table = str_table + '<td>' + str(i[0]) + '</td><td>' + str(i[1]) + '</td><td>' + str(i[2]) + '</td><td>' + str(i[3]) +'</td>'
+        str_table = str_table + '<td>' + str(i[0]) + '</td><td>' + str(
+            i[1]) + '</td><td>' + str(i[2]) + '</td><td>' + str(i[3]) + '</td>'
         str_table = str_table + '</tr>'
     str_table = str_table + ' </table>'
     jsony = {"data": str_table}
@@ -604,12 +665,12 @@ def query3_wahlbeteiligung2017(kreis):
     cur.execute("""select a.wahlkreis, w.wahlkreisname, (1.00*anzahlwahlende)/anzahlwahlberechtigte as wahlbeteiligung, wahljahr
         from wahlkreisaggretation as a, wahlkreis as w
         WHERE wahljahr = 2017 AND a.wahlkreis = w.wahlkreisid""")
-    data =  cur.fetchall()
+    data = cur.fetchall()
     result = 0.0
     for i in data:
-        if(int(i[0]) == int(kreis)):
+        if (int(i[0]) == int(kreis)):
             result = i[2] * 100
-    stringy = '<p> ' + str(float("{:.3f}".format(result))) + " %" + ' </p>' 
+    stringy = '<p> ' + str(float("{:.3f}".format(result))) + " %" + ' </p>'
     jsony = {"data": stringy}
     return json.dumps(jsony)
 
@@ -618,15 +679,14 @@ def query3_wahlbeteiligung(kreis):
     cur.execute("""select a.wahlkreis, w.wahlkreisname, (1.00*anzahlwahlende)/anzahlwahlberechtigte as wahlbeteiligung, wahljahr
         from wahlkreisaggretation as a, wahlkreis as w
         WHERE wahljahr = 2021 AND a.wahlkreis = w.wahlkreisid""")
-    data =  cur.fetchall()
+    data = cur.fetchall()
     result = 0.0
     for i in data:
-        if(int(i[0]) == int(kreis)):
+        if (int(i[0]) == int(kreis)):
             result = i[2] * 100
-    stringy = '<p> ' + str(float("{:.3f}".format(result))) + " %" + ' </p>' 
+    stringy = '<p> ' + str(float("{:.3f}".format(result))) + " %" + ' </p>'
     jsony = {"data": stringy}
     return json.dumps(jsony)
-
 
 
 def query5_table():
@@ -636,7 +696,7 @@ where sitzkontingente < direktmandate
 and b.bundeslandid = v.bundesland
 and partei = p.parteiid
 ORDER BY v.bundesland""")
-    data =  cur.fetchall()
+    data = cur.fetchall()
     str_table = '<table>'
     str_table = str_table + '<tr>'
     str_table = str_table + '<th>Bundesland</th>'
@@ -645,12 +705,13 @@ ORDER BY v.bundesland""")
     str_table = str_table + '</tr>'
     for i in data:
         str_table = str_table + '<tr>'
-        str_table = str_table + '<td>' + str(i[1]) + '</td><td>' + str(i[2]) + '</td><td>' + str(i[3]) + '</td>'
+        str_table = str_table + '<td>' + \
+            str(i[1]) + '</td><td>' + str(i[2]) + \
+            '</td><td>' + str(i[3]) + '</td>'
         str_table = str_table + '</tr>'
     str_table = str_table + ' </table>'
     jsony = {"data": str_table}
     return json.dumps(jsony)
-
 
 
 def query3_direktkandidaten2017(kreis):
@@ -677,11 +738,11 @@ and k.wahljahr = 2017""")
     data = cur.fetchall()
     stringy = ''
     for i in data:
-        if(int(i[0]) == int(kreis)):
-            stringy = '<p> ' + str(i[2]) + '   ' + str(i[3]) + '   ' + str(i[4]) + '   ' + str(i[5]) + ' </p>'
+        if (int(i[0]) == int(kreis)):
+            stringy = '<p> ' + str(i[2]) + '   ' + str(i[3]) + \
+                '   ' + str(i[4]) + '   ' + str(i[5]) + ' </p>'
     jsony = {"data": stringy}
     return json.dumps(jsony)
-
 
 
 def query3_direktkandidaten(kreis):
@@ -708,8 +769,9 @@ and k.wahljahr = 2021""")
     data = cur.fetchall()
     stringy = ''
     for i in data:
-        if(int(i[0]) == int(kreis)):
-            stringy = '<p> ' + str(i[2]) + '   ' + str(i[3]) + '   ' + str(i[4]) + '   ' + str(i[5]) + ' </p>'
+        if (int(i[0]) == int(kreis)):
+            stringy = '<p> ' + str(i[2]) + '   ' + str(i[3]) + \
+                '   ' + str(i[4]) + '   ' + str(i[5]) + ' </p>'
     jsony = {"data": stringy}
     return json.dumps(jsony)
 
@@ -733,7 +795,7 @@ and w.partei = p.parteiid
 and p.KurzBezeichnung = pz.parteikurz
 and w.wahlkreis = v.wahlkreis
 and p.KurzBezeichnung = v.parteikurz""")
-    data =  cur.fetchall()
+    data = cur.fetchall()
     str_table = '<table>'
     str_table = str_table + '<tr>'
     str_table = str_table + '<th>Partei</th>'
@@ -743,9 +805,10 @@ and p.KurzBezeichnung = v.parteikurz""")
     str_table = str_table + '<th>Prozentdifferenz</th>'
     str_table = str_table + '</tr>'
     for i in data:
-        if(int(i[0]) == int(kreis)):
+        if (int(i[0]) == int(kreis)):
             str_table = str_table + '<tr>'
-            str_table = str_table + '<td>' + str(i[1]) + '</td><td>' + str(i[2]) + '</td><td>' + str(float("{:.3f}".format(i[3]))) + '%' + '</td><td>' + str(i[4]) +'</td><td>' + str(float("{:.3f}".format(i[5]))) + '%' +'</td>'
+            str_table = str_table + '<td>' + str(i[1]) + '</td><td>' + str(i[2]) + '</td><td>' + str(float("{:.3f}".format(
+                i[3]))) + '%' + '</td><td>' + str(i[4]) + '</td><td>' + str(float("{:.3f}".format(i[5]))) + '%' + '</td>'
             str_table = str_table + '</tr>'
     str_table = str_table + ' </table>'
     jsony = {"data": str_table}
@@ -794,7 +857,7 @@ and k.wahljahr = 2017
 and wk.wahlkreisid = di.wahlkreis
 and k.kandidatid = dk.kandidatid
 and di.wahlkreis = dk.wahlkreis""")
-    data =  cur.fetchall()
+    data = cur.fetchall()
     str_table = '<table>'
     str_table = str_table + '<tr>'
     str_table = str_table + '<th>Wahlkreis</th>'
@@ -805,12 +868,12 @@ and di.wahlkreis = dk.wahlkreis""")
     str_table = str_table + '</tr>'
     for i in data:
         str_table = str_table + '<tr>'
-        str_table = str_table + '<td>' + str(i[2]) + '</td><td>' + str(i[7]) + '</td><td>' + str(i[8]) + '</td><td>' + str(i[3]) + '</td><td>' + str(i[4]) + '</td>'
+        str_table = str_table + '<td>' + str(i[2]) + '</td><td>' + str(i[7]) + '</td><td>' + str(
+            i[8]) + '</td><td>' + str(i[3]) + '</td><td>' + str(i[4]) + '</td>'
         str_table = str_table + '</tr>'
     str_table = str_table + ' </table>'
     jsony = {"data": str_table}
     return json.dumps(jsony)
-
 
 
 def query6_table_win():
@@ -855,7 +918,7 @@ and k.wahljahr = 2021
 and wk.wahlkreisid = di.wahlkreis
 and k.kandidatid = dk.kandidatid
 and di.wahlkreis = dk.wahlkreis""")
-    data =  cur.fetchall()
+    data = cur.fetchall()
     str_table = '<table>'
     str_table = str_table + '<tr>'
     str_table = str_table + '<th>Wahlkreis</th>'
@@ -866,12 +929,12 @@ and di.wahlkreis = dk.wahlkreis""")
     str_table = str_table + '</tr>'
     for i in data:
         str_table = str_table + '<tr>'
-        str_table = str_table + '<td>' + str(i[2]) + '</td><td>' + str(i[7]) + '</td><td>' + str(i[8]) + '</td><td>' + str(i[3]) + '</td><td>' + str(i[4]) + '</td>'
+        str_table = str_table + '<td>' + str(i[2]) + '</td><td>' + str(i[7]) + '</td><td>' + str(
+            i[8]) + '</td><td>' + str(i[3]) + '</td><td>' + str(i[4]) + '</td>'
         str_table = str_table + '</tr>'
     str_table = str_table + ' </table>'
     jsony = {"data": str_table}
     return json.dumps(jsony)
-
 
 
 def query6_table_loser2017():
@@ -912,7 +975,7 @@ and k.wahljahr = 2017
 and wk.wahlkreisid = kd.wahlkreis
 and k.kandidatid = dk.kandidatid
 and kd.wahlkreis = dk.wahlkreis""")
-    data =  cur.fetchall()
+    data = cur.fetchall()
     str_table = '<table>'
     str_table = str_table + '<tr>'
     str_table = str_table + '<th>Wahlkreis</th>'
@@ -923,7 +986,8 @@ and kd.wahlkreis = dk.wahlkreis""")
     str_table = str_table + '</tr>'
     for i in data:
         str_table = str_table + '<tr>'
-        str_table = str_table + '<td>' + str(i[2]) + '</td><td>' + str(i[6]) + '</td><td>' + str(i[7]) + '</td><td>' + str(i[3]) + '</td><td>' + str(i[4]) + '</td>'
+        str_table = str_table + '<td>' + str(i[2]) + '</td><td>' + str(i[6]) + '</td><td>' + str(
+            i[7]) + '</td><td>' + str(i[3]) + '</td><td>' + str(i[4]) + '</td>'
         str_table = str_table + '</tr>'
     str_table = str_table + ' </table>'
     jsony = {"data": str_table}
@@ -968,7 +1032,7 @@ and k.wahljahr = 2021
 and wk.wahlkreisid = kd.wahlkreis
 and k.kandidatid = dk.kandidatid
 and kd.wahlkreis = dk.wahlkreis""")
-    data =  cur.fetchall()
+    data = cur.fetchall()
     str_table = '<table>'
     str_table = str_table + '<tr>'
     str_table = str_table + '<th>Wahlkreis</th>'
@@ -979,7 +1043,8 @@ and kd.wahlkreis = dk.wahlkreis""")
     str_table = str_table + '</tr>'
     for i in data:
         str_table = str_table + '<tr>'
-        str_table = str_table + '<td>' + str(i[2]) + '</td><td>' + str(i[6]) + '</td><td>' + str(i[7]) + '</td><td>' + str(i[3]) + '</td><td>' + str(i[4]) + '</td>'
+        str_table = str_table + '<td>' + str(i[2]) + '</td><td>' + str(i[6]) + '</td><td>' + str(
+            i[7]) + '</td><td>' + str(i[3]) + '</td><td>' + str(i[4]) + '</td>'
         str_table = str_table + '</tr>'
     str_table = str_table + ' </table>'
     jsony = {"data": str_table}
@@ -994,15 +1059,14 @@ wahlende as
     where zw.wahlkreis = 1)
 select wahlkreis, (1.0*wahlende)/anzahlwahlberechtigte as wahlbeteiligung
 from anzahlwahlberechtigte, wahlende""")
-    data =  cur.fetchall()
+    data = cur.fetchall()
     result = 0.0
     for i in data:
-        if(int(i[0]) == int(kreis)):
+        if (int(i[0]) == int(kreis)):
             result = i[1]
-    stringy = '<p> ' + str(float("{:.3f}".format(result))) + " %" + ' </p>' 
+    stringy = '<p> ' + str(float("{:.3f}".format(result))) + " %" + ' </p>'
     jsony = {"data": stringy}
     return json.dumps(jsony)
-
 
 
 def query7_direktkandidaten(kreis):
@@ -1021,8 +1085,9 @@ and p.parteiid = s.partei""")
     data = cur.fetchall()
     stringy = ''
     for i in data:
-        if(int(i[0]) == int(kreis)):
-            stringy = '<p> ' + str(i[2]) + '   ' + str(i[3]) + '   ' + str(i[6]) + '   ' + str(i[5]) + ' </p>'
+        if (int(i[0]) == int(kreis)):
+            stringy = '<p> ' + str(i[2]) + '   ' + str(i[3]) + \
+                '   ' + str(i[6]) + '   ' + str(i[5]) + ' </p>'
     jsony = {"data": stringy}
     return json.dumps(jsony)
 
@@ -1043,7 +1108,7 @@ select 1 as wahlkreis, wk.wahlkreisname, p.kurzbezeichnung, partei, stimmen_pro_
 from stimmen_pro_partei, stimmen_gesamt, partei p, wahlkreis wk
 WHERE partei = p.parteiid
 and wk.wahlkreisid = 1""")
-    data =  cur.fetchall()
+    data = cur.fetchall()
     str_table = '<table>'
     str_table = str_table + '<tr>'
     str_table = str_table + '<th>Partei</th>'
@@ -1051,9 +1116,10 @@ and wk.wahlkreisid = 1""")
     str_table = str_table + '<th>Prozent stimmen</th>'
     str_table = str_table + '</tr>'
     for i in data:
-        if(int(i[0]) == int(kreis)):
+        if (int(i[0]) == int(kreis)):
             str_table = str_table + '<tr>'
-            str_table = str_table + '<td>' + str(i[2]) + '</td><td>' + str(i[4]) + '</td><td>' + str(float("{:.3f}".format(i[5]))) + '%' + '</td>'
+            str_table = str_table + '<td>' + str(i[2]) + '</td><td>' + str(
+                i[4]) + '</td><td>' + str(float("{:.3f}".format(i[5]))) + '%' + '</td>'
             str_table = str_table + '</tr>'
     str_table = str_table + ' </table>'
     jsony = {"data": str_table}
@@ -1134,6 +1200,7 @@ def query8_rich():
     jso = dict(zip(party, results))
     return json.dumps(jso)
 
+
 """   
     labels = 'Grüne', 'FDP', 'SPD', 'CDU', 'AfD', 'Others'
     explode = (0.1, 0.1, 0.1, 0.1, 0.1, 0.1) 
@@ -1146,7 +1213,6 @@ def query8_rich():
 
     plt.savefig('public/img/query8_rich.png')
     plt.close() """
-
 
 
 def query8_poor():
@@ -1233,11 +1299,6 @@ def query8_poor():
     plt.close() """
 
 
-
-
-
-
-
 def query9_high():
     cur.execute("""with ten_most_educated as (SELECT wahlkreis, wahlkreisname, bildung as ein FROM strukturdaten
 ORDER BY ein DESC
@@ -1309,7 +1370,7 @@ SELECT * FROM most_educated_total ORDER BY parteikurz""")
         total += i[1]
     jso = dict(zip(party, results))
     return json.dumps(jso)
-    
+
     """
     labels = 'Grüne', 'SPD', 'AfD', 'CDU', 'FDP', 'Others'
     explode = (0.1, 0.1, 0.1, 0.1, 0.1, 0.1) 
@@ -1321,10 +1382,6 @@ SELECT * FROM most_educated_total ORDER BY parteikurz""")
 
     plt.savefig('public/img/query9_high.png')
     plt.close() """
-
-
-
-
 
 
 def query9_low():
@@ -1395,7 +1452,7 @@ SELECT * FROM least_educated_total ORDER BY parteikurz""")
         total += i[1]
     jso = dict(zip(party, results))
     return json.dumps(jso)
-    
+
     """
     labels = 'FDP', 'Grüne', 'AfD', 'CDU', 'SPD', 'Others'
     explode = (0.1, 0.1, 0.1, 0.1, 0.1, 0.1) 
