@@ -60,7 +60,7 @@ for i in range(1, 300):
 create_dynamic_tokentable_query = """
 DROP TABLE IF EXISTS tokens;
 CREATE TABLE tokens (
-	token bigint primary key,
+	token char(64) primary key,
 	wahlkreis int NOT NULL REFERENCES wahlkreis ON DELETE CASCADE
 );
 CREATE INDEX tokens_hash_idx ON tokens USING hash(token);

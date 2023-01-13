@@ -5,6 +5,7 @@ except ImportError:
     pip.main(['install', '--user', 'psycopg2'])
     import psycopg2
 import random
+from hashlib import sha256
 
 wahlkreis = 66
 
@@ -50,10 +51,12 @@ def generate_token(wahlkreisid):
 token = generate_token(wahlkreis)
 
 try:
+    hashed_token = sha256(token.to_bytes(8, 'big', signed=False)).hexdigest()
+    print(hashed_token)
     insert_token_query = """
     INSERT INTO tokens 
-        VALUES ({}, {})
-    """.format(token, wahlkreis)
+        VALUES ('{}', {})
+    """.format(hashed_token, wahlkreis)
     cur.execute(insert_token_query)
     print(token)
 except psycopg2.errors.UniqueViolation:

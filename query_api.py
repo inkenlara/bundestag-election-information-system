@@ -10,6 +10,7 @@ except ImportError:
     import pip
     pip.main(['install', '--user', 'psycopg2'])
     import psycopg2
+from hashlib import sha256
 import matplotlib.pyplot as plt
 import numpy as np
 from PIL import Image
@@ -297,9 +298,10 @@ def token_check_return_wahlzettel(token):
         jsony = {"isValid": False, "wahlkreis": 0,
                  "erstimmenzettel": [], "zweitstimmenzettel": []}
         return json.dumps(jsony)
+    hashed_token = sha256(int(token).to_bytes(8, 'big', signed=False)).hexdigest()
     check_token_query = """
-    select COUNT(*) from tokens where token = {}
-    """.format(token)
+    select COUNT(*) from tokens where token = '{}'
+    """.format(hashed_token)
     cur.execute(check_token_query)
     record_exists = cur.fetchall()[0][0]
     if not record_exists:
@@ -318,10 +320,11 @@ def token_check_return_wahlzettel(token):
         wahlkreis = cur.fetchall()[0][0]
         zweitstimmenzettel = zweitstimmen_data(wahlkreis)
         erstimmenzettel = erststimmen_data(wahlkreis)
+        print(hashed_token)
         delete_token_query = """
         DELETE FROM tokens
-        WHERE token = {}
-        """.format(token)
+        WHERE token = '{}'
+        """.format(hashed_token)
         cur.execute(delete_token_query)
         sql_con.commit()
         jsony = {"isValid": True, "wahlkreis": wahlkreis,
