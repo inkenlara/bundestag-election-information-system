@@ -261,7 +261,7 @@ def add_vote(vote):
     print(vote.erst)
     if vote.erst == "None":
         erststimme_party = -1
-    else: 
+    else:
         erst_party_name = vote.erst.split("_")[2]
         if (erst_party_name == "null"):
             erststimme_party = 48
@@ -298,7 +298,31 @@ def token_check_return_wahlzettel(token):
         jsony = {"isValid": False, "wahlkreis": 0,
                  "erstimmenzettel": [], "zweitstimmenzettel": []}
         return json.dumps(jsony)
-    hashed_token = sha256(int(token).to_bytes(8, 'big', signed=False)).hexdigest()
+    hashed_token = sha256(int(token).to_bytes(
+        8, 'big', signed=False)).hexdigest()
+
+    if (len(str(token)) == 16):  # Admin token
+        check_admin_token_query = """
+        select COUNT(*) from adminTokens where token = '{}'
+        """.format(hashed_token)
+        cur.execute(check_admin_token_query)
+        admin_token_legit = cur.fetchall()[0][0]
+        if not admin_token_legit:
+            print("Invalid Admin token")
+            jsony = {"isValid": False, "wahlkreis": 0,
+                     "erstimmenzettel": [], "zweitstimmenzettel": []}
+            return json.dumps(jsony)
+        else:
+            admin_wahlkreis_query = """select wahlkreis from adminTokens where token = '{}'""".format(
+                hashed_token)
+            cur.execute(admin_wahlkreis_query)
+            wahlkreis_admin = cur.fetchall()[0][0]
+            zweitstimmenzettel_admin = zweitstimmen_data(wahlkreis_admin)
+            erstimmenzettel_admin = erststimmen_data(wahlkreis_admin)
+            jsony = {"isValid": "Admin", "wahlkreis": wahlkreis_admin,
+                     "erstimmenzettel": erstimmenzettel_admin, "zweitstimmenzettel": zweitstimmenzettel_admin}
+            return json.dumps(jsony)
+
     check_token_query = """
     select COUNT(*) from tokens where token = '{}'
     """.format(hashed_token)
