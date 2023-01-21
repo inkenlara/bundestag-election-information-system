@@ -246,7 +246,7 @@ async def generate_token(kreis: int):
     value = generate_token(kreis)
     return HTMLResponse(content=value, status_code=200)
 
-"""
+
 db_host = "localhost"
 db_port = 5432
 db_name = "wahl"
@@ -260,7 +260,7 @@ db_port = 5432
 db_name = "postgres"
 db_user = "newuser"
 db_password = "pw"
-
+"""
 
 try:
     sql_con = psycopg2.connect(
@@ -1029,7 +1029,7 @@ and di.wahlkreis = dk.wahlkreis""")
     for i in data:
         str_table = str_table + '<tr>'
         str_table = str_table + '<td>' + str(i[2]) + '</td><td>' + str(i[7]) + '</td><td>' + str(
-            i[8]) + '</td><td>' + str(i[3]) + '</td><td>' + str(i[4]) + '</td>'
+            i[8]) + '</td><td>' + str(i[3]) + '</td><td>' + str(float("{:.3f}".format(i[4]))) + '%' + '</td>'
         str_table = str_table + '</tr>'
     str_table = str_table + ' </table>'
     jsony = {"data": str_table}
@@ -1090,7 +1090,7 @@ and di.wahlkreis = dk.wahlkreis""")
     for i in data:
         str_table = str_table + '<tr>'
         str_table = str_table + '<td>' + str(i[2]) + '</td><td>' + str(i[7]) + '</td><td>' + str(
-            i[8]) + '</td><td>' + str(i[3]) + '</td><td>' + str(i[4]) + '</td>'
+            i[8]) + '</td><td>' + str(i[3]) + '</td><td>' + str(float("{:.3f}".format(i[4]))) + "%" + '</td>'
         str_table = str_table + '</tr>'
     str_table = str_table + ' </table>'
     jsony = {"data": str_table}
@@ -1147,7 +1147,7 @@ and kd.wahlkreis = dk.wahlkreis""")
     for i in data:
         str_table = str_table + '<tr>'
         str_table = str_table + '<td>' + str(i[2]) + '</td><td>' + str(i[6]) + '</td><td>' + str(
-            i[7]) + '</td><td>' + str(i[3]) + '</td><td>' + str(i[4]) + '</td>'
+            i[7]) + '</td><td>' + str(i[3]) + '</td><td>' + str(float("{:.3f}".format(i[4]))) + "%" + '</td>'
         str_table = str_table + '</tr>'
     str_table = str_table + ' </table>'
     jsony = {"data": str_table}
@@ -1204,7 +1204,7 @@ and kd.wahlkreis = dk.wahlkreis""")
     for i in data:
         str_table = str_table + '<tr>'
         str_table = str_table + '<td>' + str(i[2]) + '</td><td>' + str(i[6]) + '</td><td>' + str(
-            i[7]) + '</td><td>' + str(i[3]) + '</td><td>' + str(i[4]) + '</td>'
+            i[7]) + '</td><td>' + str(i[3]) + '</td><td>' + str(float("{:.3f}".format(i[4]))) + "%" + '</td>'
         str_table = str_table + '</tr>'
     str_table = str_table + ' </table>'
     jsony = {"data": str_table}
