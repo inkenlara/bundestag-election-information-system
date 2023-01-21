@@ -246,7 +246,7 @@ async def generate_token(kreis: int):
     value = generate_token(kreis)
     return HTMLResponse(content=value, status_code=200)
 
-
+"""
 db_host = "localhost"
 db_port = 5432
 db_name = "wahl"
@@ -260,7 +260,7 @@ db_port = 5432
 db_name = "postgres"
 db_user = "newuser"
 db_password = "pw"
-"""
+
 
 try:
     sql_con = psycopg2.connect(
@@ -318,7 +318,7 @@ def add_vote_erst(vote: VoteErst):
     wahlkreis = vote.wahlkreis
     erststimme_party = -1
     max1_query = """
-    select case when exists (select 1 from erststimmen) then max(erstimmid) else 1 end
+    select case when exists (select 1 from erststimmen) then max(erstimmid) else 0 end
     from erststimmen 
     """
     cur.execute(max1_query)
@@ -348,7 +348,7 @@ def add_vote_zweit(vote: VoteZweit):
     wahlkreis = vote.wahlkreis
     zweitstimme_party = -1
     max2_query = """
-    select case when exists (select 1 from zweitstimmen) then max(zweitstimmid) else 1 end
+    select case when exists (select 1 from zweitstimmen) then max(zweitstimmid) else 0 end
     from zweitstimmen
     """
     cur.execute(max2_query)
@@ -377,14 +377,14 @@ def add_vote(vote):
     zweitstimme_party = -1
 
     max1_query = """
-    select case when exists (select 1 from erststimmen) then max(erstimmid) else 1 end
+    select case when exists (select 1 from erststimmen) then max(erstimmid) else 0 end
     from erststimmen 
     """
     cur.execute(max1_query)
     max1 = cur.fetchall()[0][0]
 
     max2_query = """
-    select case when exists (select 1 from zweitstimmen) then max(zweitstimmid) else 1 end
+    select case when exists (select 1 from zweitstimmen) then max(zweitstimmid) else 0 end
     from zweitstimmen 
     """
     cur.execute(max2_query)
