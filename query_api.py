@@ -246,7 +246,7 @@ async def generate_token(kreis: int):
     value = generate_token(kreis)
     return HTMLResponse(content=value, status_code=200)
 
-
+"""
 db_host = "localhost"
 db_port = 5432
 db_name = "wahl"
@@ -260,7 +260,7 @@ db_port = 5432
 db_name = "postgres"
 db_user = "newuser"
 db_password = "pw"
-"""
+
 
 try:
     sql_con = psycopg2.connect(
@@ -1223,7 +1223,7 @@ from anzahlwahlberechtigte, wahlende""".format(kreis, kreis))
     result = 0.0
     for i in data:
         if (int(i[0]) == int(kreis)):
-            result = i[1]
+            result = i[1]*100
     stringy = '<p> ' + str(float("{:.3f}".format(result))) + " %" + ' </p>'
     jsony = {"data": stringy}
     return json.dumps(jsony)
@@ -1279,7 +1279,7 @@ and wk.wahlkreisid = {}""".format(kreis, kreis, kreis, kreis))
         if (int(i[0]) == int(kreis)):
             str_table = str_table + '<tr>'
             str_table = str_table + '<td>' + str(i[2]) + '</td><td>' + str(
-                i[4]) + '</td><td>' + str(float("{:.3f}".format(i[5]))) + '%' + '</td>'
+                i[4]) + '</td><td>' + str(float("{:.3f}".format(i[5]*100))) + '%' + '</td>'
             str_table = str_table + '</tr>'
     str_table = str_table + ' </table>'
     jsony = {"data": str_table}
