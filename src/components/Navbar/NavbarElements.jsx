@@ -14,7 +14,7 @@ export const NavLink = styled(Link)`
   border-width: 1px;
   border-style: solid;
   border-color: #3f51b5;
-  background-color: #65dff7;
+  background-color: #add8e6;
   margin-left: 4px;
   margin-right: 4px;
   border-radius: 25px;

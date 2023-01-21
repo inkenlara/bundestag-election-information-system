@@ -900,7 +900,7 @@ and k.wahljahr = 2017""")
     for i in data:
         if (int(i[0]) == int(kreis)):
             stringy = '<p> ' + str(i[2]) + '   ' + str(i[3]) + \
-                '   ' + str(i[4]) + '   ' + str(i[5]) + ' </p>'
+                ',   ' + str(i[4]) + ' </p>'
     jsony = {"data": stringy}
     return json.dumps(jsony)
 
@@ -931,7 +931,7 @@ and k.wahljahr = 2021""")
     for i in data:
         if (int(i[0]) == int(kreis)):
             stringy = '<p> ' + str(i[2]) + '   ' + str(i[3]) + \
-                '   ' + str(i[4]) + '   ' + str(i[5]) + ' </p>'
+                ',   ' + str(i[4]) + ' </p>'
     jsony = {"data": stringy}
     return json.dumps(jsony)
 
@@ -1247,7 +1247,7 @@ and p.parteiid = s.partei""")
     for i in data:
         if (int(i[0]) == int(kreis)):
             stringy = '<p> ' + str(i[2]) + '   ' + str(i[3]) + \
-                '   ' + str(i[6]) + '   ' + str(i[5]) + ' </p>'
+                ',   ' + str(i[6]) + ' </p>'
     jsony = {"data": stringy}
     return json.dumps(jsony)
 
