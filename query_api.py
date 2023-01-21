@@ -239,21 +239,21 @@ async def query7_stimmen_entwicklung(kreis_id: int):
     value = query7_stimmen_entwicklung(kreis_id)
     return HTMLResponse(content=value, status_code=200)
 
-"""
+
 db_host = "localhost"
 db_port = 5432
 db_name = "wahl"
 db_user = "postgres"
 db_password = "adnan"
-"""
 
+"""
 # Inkens local test db:
 db_host = "localhost"
 db_port = 5432
 db_name = "postgres"
 db_user = "newuser"
 db_password = "pw"
-
+"""
 
 try:
     sql_con = psycopg2.connect(
@@ -266,23 +266,21 @@ except:
 plt.switch_backend('Agg')
 
 
-# TODO figure out why lines 275, 283 fail
-# try multithreading.., it could be too slow
 def add_bulk_votes(bulkVotes: BulkVotes):
     for fir in range(0, len(bulkVotes.list_numbers_first)):
         for k in range(0, bulkVotes.list_numbers_first[fir]):
             vote1 = VoteErst(bulkVotes.wahlkreis,
                              bulkVotes.token, bulkVotes.list_votes_first[fir])
-            # add_vote_erst(vote1)
-            print("fir")
-            sleep(1)
+            add_vote_erst(vote1)
+            print(vote1.wahlkreis, vote1.erst)
+            # sleep(1)
     for sec in range(0, len(bulkVotes.list_numbers_second)):
         for k in range(0, bulkVotes.list_numbers_second[sec]):
             vote2 = VoteZweit(bulkVotes.wahlkreis, bulkVotes.token,
                               bulkVotes.list_votes_second[sec])
-            # add_vote_zweit(vote2)
-            print(sec)
-            sleep(1)
+            add_vote_zweit(vote2)
+            print(vote2.wahlkreis, vote2.zweit)
+            # sleep(1)
 
 
 def add_vote_erst(vote: VoteErst):
@@ -338,7 +336,6 @@ def add_vote_zweit(vote: VoteZweit):
     sql_con.commit()
 
 
-# add code to push info to database
 # erst - first_last_party
 # zweit - party number
 # if voter chose to not vote, values are None
