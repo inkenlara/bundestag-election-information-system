@@ -25,12 +25,12 @@ class Wahlkreiserst extends Component {
           <p id="wahlbet"></p>
           {this.renderTable1()}
         </div>
-        <h3>Direktkandidaten</h3>
+        <h3>Gewählte:r Direktkandidat:in</h3>
         <div id="Direktkandidaten_info">
           <p id="direktkand"></p>
           {this.renderTable2()}
         </div>
-        <h3>Pro Partei, entwicklung</h3>
+        <h3>Ergebnisse der Parteien</h3>
         <div id="partei_entw">
           <table id="p_entw"></table>
           {this.renderTable3()}

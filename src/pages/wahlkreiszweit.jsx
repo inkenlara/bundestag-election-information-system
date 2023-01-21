@@ -349,7 +349,7 @@ class WahlkreisZweit extends Component {
           {this.renderTable12017()}
         </div>
 
-        <h3>Direktkandidaten</h3>
+        <h3>Gewählte:r Direktkandidat:in</h3>
         <div id="direkt">
           <div id="Direktkandidaten_info">
             <h4>2021: </h4>
@@ -361,7 +361,7 @@ class WahlkreisZweit extends Component {
           </div>
         </div>
 
-        <h3>Pro Partei, entwicklung</h3>
+        <h3>Ergebnisse der Parteien</h3>
         <div id="partei_entw">
           <table id="p_entw"></table>
           {this.renderTable3()}

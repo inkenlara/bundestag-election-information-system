@@ -958,11 +958,11 @@ and p.KurzBezeichnung = v.parteikurz""")
     data = cur.fetchall()
     str_table = '<table>'
     str_table = str_table + '<tr>'
-    str_table = str_table + '<th>Partei</th>'
-    str_table = str_table + '<th>Anzahlstimmen</th>'
-    str_table = str_table + '<th>Prozentzweitstimmen</th>'
-    str_table = str_table + '<th>Stimmendifferenz</th>'
-    str_table = str_table + '<th>Prozentdifferenz</th>'
+    str_table = str_table + '<th>Partei </th>'
+    str_table = str_table + '<th>Stimmen (absolut) </th>'
+    str_table = str_table + '<th>Stimmen (relativ) </th>'
+    str_table = str_table + '<th>Differenz zu Vorjahr (absolut) </th>'
+    str_table = str_table + '<th>Differenz zu Vorjahr (relativ)</th>'
     str_table = str_table + '</tr>'
     for i in data:
         if (int(i[0]) == int(kreis)):
@@ -1272,8 +1272,8 @@ and wk.wahlkreisid = 1""")
     str_table = '<table>'
     str_table = str_table + '<tr>'
     str_table = str_table + '<th>Partei</th>'
-    str_table = str_table + '<th>Anzahlstimmen</th>'
-    str_table = str_table + '<th>Prozent stimmen</th>'
+    str_table = str_table + '<th>Stimmen (absolut)</th>'
+    str_table = str_table + '<th>Stimmen (relativ)</th>'
     str_table = str_table + '</tr>'
     for i in data:
         if (int(i[0]) == int(kreis)):
