@@ -10,6 +10,7 @@ except ImportError:
     import pip
     pip.main(['install', '--user', 'psycopg2'])
     import psycopg2
+import random
 from time import sleep
 from typing import List
 from hashlib import sha256
@@ -240,6 +241,12 @@ async def query7_stimmen_entwicklung(kreis_id: int):
     return HTMLResponse(content=value, status_code=200)
 
 
+@app.get("/gen_token/{kreis}")
+async def generate_token(kreis: int):
+    value = generate_token(kreis)
+    return HTMLResponse(content=value, status_code=200)
+
+
 db_host = "localhost"
 db_port = 5432
 db_name = "wahl"
@@ -281,6 +288,30 @@ def add_bulk_votes(bulkVotes: BulkVotes):
             add_vote_zweit(vote2)
             print(vote2.wahlkreis, vote2.zweit)
             # sleep(1)
+
+
+def generate_token(kreis):
+    range_query = """
+    select tokenrangemin, tokenrangemax
+    from tokenrange
+    where wahlkreis = {}
+    """.format(kreis)
+    cur.execute(range_query)
+    range = cur.fetchall()[0]
+    mini = range[0]
+    maxi = range[1]
+    token = random.randrange(mini, maxi)
+    hashed_token = sha256(token.to_bytes(8, 'big', signed=False)).hexdigest()
+    print(hashed_token)
+    insert_token_query = """
+    INSERT INTO tokens 
+        VALUES ('{}', {})
+    """.format(hashed_token, kreis)
+    cur.execute(insert_token_query)
+    print(token)
+    sql_con.commit()
+    jsony = {"token": token}
+    return json.dumps(jsony)
 
 
 def add_vote_erst(vote: VoteErst):
