@@ -1212,13 +1212,13 @@ and kd.wahlkreis = dk.wahlkreis""")
 
 
 def query7_wahlbeteiligung(kreis):
-    cur.execute("""with anzahlwahlberechtigte as (select anzahlwahlberechtigte, wahlkreis from wahlkreisaggretation where wahljahr = 2021 and (wahlkreis = 1 or wahlkreis = 2 or wahlkreis = 3 or wahlkreis = 4 or wahlkreis = 5)),
+    cur.execute("""with anzahlwahlberechtigte as (select anzahlwahlberechtigte, wahlkreis from wahlkreisaggretation where wahljahr = 2021 and wahlkreis = {}),
 wahlende as 
     (select count(*) as wahlende
     from anzahlwahlberechtigte a, zweitstimmen zw
-    where zw.wahlkreis = 1)
+    where zw.wahlkreis = {})
 select wahlkreis, (1.0*wahlende)/anzahlwahlberechtigte as wahlbeteiligung
-from anzahlwahlberechtigte, wahlende""")
+from anzahlwahlberechtigte, wahlende""".format(kreis, kreis))
     data = cur.fetchall()
     result = 0.0
     for i in data:
@@ -1256,18 +1256,18 @@ def query7_stimmen_entwicklung(kreis):
     cur.execute("""with stimmen_gesamt as(
     select count(*) as stimmen_gesamt
     from zweitstimmen
-    where wahlkreis = 1
+    where wahlkreis = {}
 ),
     stimmen_pro_partei as(
     select partei, count(*) as stimmen_pro_partei
     from zweitstimmen
-    where wahlkreis = 1
+    where wahlkreis = {}
     group by partei
 )
-select 1 as wahlkreis, wk.wahlkreisname, p.kurzbezeichnung, partei, stimmen_pro_partei, (1.00*stimmen_pro_partei)/stimmen_gesamt as stimmen_prozentual
+select {} as wahlkreis, wk.wahlkreisname, p.kurzbezeichnung, partei, stimmen_pro_partei, (1.00*stimmen_pro_partei)/stimmen_gesamt as stimmen_prozentual
 from stimmen_pro_partei, stimmen_gesamt, partei p, wahlkreis wk
 WHERE partei = p.parteiid
-and wk.wahlkreisid = 1""")
+and wk.wahlkreisid = {}""".format(kreis, kreis, kreis, kreis))
     data = cur.fetchall()
     str_table = '<table>'
     str_table = str_table + '<tr>'
