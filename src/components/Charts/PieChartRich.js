@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 
-import { Pie } from "react-chartjs-2";
+import { Bar, Pie } from "react-chartjs-2";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -29,6 +29,18 @@ const PieChartRich = () => {
         fontSize: 25,
       },
     },
+    layout: {
+      padding: 100
+  },
+  plugins: {
+    title: {
+      display: true,
+      text: "Höchstes verfügbares Einkommen pro Haushalt",
+      font: {
+        size: 18
+    }
+    },
+  },
   };
 
   var vals = {
@@ -36,7 +48,7 @@ const PieChartRich = () => {
     datasets: [
       {
         // Afd, CDU, CSU, Linke, FDP, Grune, SPD
-        label: "Prozent stimmen average",
+        label: "Durchschnittlicher Stimmenanteil in %",
         data: Object.values(data),
         backgroundColor: [
           "rgba(0, 153, 255, 0.2)",
@@ -63,7 +75,7 @@ const PieChartRich = () => {
 
   return (
     <div>
-      <Pie data={vals} height={400} options={options} />
+      <Bar data={vals} height={600} options={options} />
     </div>
   );
 };

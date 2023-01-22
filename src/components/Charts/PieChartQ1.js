@@ -36,7 +36,7 @@ const PieChartq1 = () => {
     datasets: [
       {
         // csu, cdu, linke, fdp, spd, grune, afd, ssw
-        label: "Sitzverteilung",
+        label: "Anzahl Sitze",
         data: Object.values(data),
         backgroundColor: [
           "rgba(0, 0, 153, 0.2)",

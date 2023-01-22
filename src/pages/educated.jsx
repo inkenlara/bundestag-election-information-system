@@ -12,8 +12,11 @@ class Educated extends Component {
       <React.Fragment>
         <h2 id="Add2">
           Durchschnitt der Top Parteien in den 10 gebildetsten und den 10
-          ungebildetsten Wahlkreisen
+          ungebildetsten Wahlkreisen*
         </h2>
+        <p>
+          *Untersucht wurde der Prozentsatz der Schulabgänger:innen mit allgemeiner oder Fachhochschulreife.
+        </p>
         <div>
           <div id="query9-high">
             <PieChartHigh />

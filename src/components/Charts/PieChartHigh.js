@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js/auto";
 
-import { Pie } from "react-chartjs-2";
+import { Pie, Bar } from "react-chartjs-2";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -29,6 +29,18 @@ const PieChartHigh = () => {
         fontSize: 25,
       },
     },
+    layout: {
+      padding: 100
+  },
+  plugins: {
+    title: {
+      display: true,
+      text: "Höchste Bildung",
+      font: {
+        size: 18
+    }
+    },
+  },
   };
 
   var vals = {
@@ -36,7 +48,7 @@ const PieChartHigh = () => {
     datasets: [
       {
         // CDU, linke, FDP, Grune, SDP
-        label: "Prozent stimmen average",
+        label: "Durchschnittlicher Stimmenanteil in %",
         data: Object.values(data),
         backgroundColor: [
           "rgba(0, 0, 0, 0.2)",
@@ -59,7 +71,7 @@ const PieChartHigh = () => {
 
   return (
     <div>
-      <Pie data={vals} height={400} options={options} />
+      <Bar data={vals} height={600} options={options} />
     </div>
   );
 };
