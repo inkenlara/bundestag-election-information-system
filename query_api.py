@@ -1233,6 +1233,7 @@ def query7_direktkandidaten(kreis):
     cur.execute("""with stimmen_pro_partei as (
   select partei, count(*) as stimmen
   from erststimmen
+  where wahlkreis = {}
   group by partei
 )
 select dk.wahlkreis, k.kandidatid, k.firstname, k.lastname, s.partei, k.wahljahr, p.kurzbezeichnung
@@ -1241,7 +1242,8 @@ where stimmen = (select max(stimmen) from stimmen_pro_partei)
 and s.partei = k.partei
 and k.wahljahr= 2021
 and k.kandidatid = dk.kandidatid
-and p.parteiid = s.partei""")
+and p.parteiid = s.partei
+and dk.wahlkreis = {}""".format(kreis, kreis))
     data = cur.fetchall()
     stringy = ''
     for i in data:
@@ -1254,7 +1256,7 @@ and p.parteiid = s.partei""")
 
 def query7_stimmen_entwicklung(kreis):
     cur.execute("""with stimmen_gesamt as(
-    select count(*) as stimmen_gesamt
+    select count(*) - (select count(*) from zweitstimmen where wahlkreis = {} and partei = -1)  as stimmen_gesamt
     from zweitstimmen
     where wahlkreis = {}
 ),
@@ -1267,7 +1269,8 @@ def query7_stimmen_entwicklung(kreis):
 select {} as wahlkreis, wk.wahlkreisname, p.kurzbezeichnung, partei, stimmen_pro_partei, (1.00*stimmen_pro_partei)/stimmen_gesamt as stimmen_prozentual
 from stimmen_pro_partei, stimmen_gesamt, partei p, wahlkreis wk
 WHERE partei = p.parteiid
-and wk.wahlkreisid = {}""".format(kreis, kreis, kreis, kreis))
+and wk.wahlkreisid = {}
+and p.parteiid != -1""".format(kreis, kreis, kreis, kreis, kreis))
     data = cur.fetchall()
     str_table = '<table>'
     str_table = str_table + '<tr>'

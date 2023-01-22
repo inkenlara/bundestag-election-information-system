@@ -258,7 +258,7 @@ and kd.wahlkreis = dk.wahlkreis
 --Q7: Wahlkreisuebersicht (Einzelstimmen)
 
 --betrachte wahlkreise 1-5 (erst mal nur 1)
---wahlbeteiligung (funktioniert wahrscheinlich noch nicht richtig, da ungültige stimmen nicht in den stimmzetteln sind)
+--wahlbeteiligung 
 with anzahlwahlberechtigte as (select anzahlwahlberechtigte, wahlkreis from wahlkreisaggretation where wahljahr = 2021 and wahlkreis = 1),
 wahlende as 
     (select count(*) as wahlende
@@ -285,7 +285,7 @@ and dk.wahlkreis = 1
 --prozentualer und absolute anzahl an stimmen pro partei
 
 with stimmen_gesamt as(
-    select count(*) as stimmen_gesamt
+    select (count(*)- (select count(*) from zweitstimmen where wahlkreis = 1 and partei = -1)) as stimmen_gesamt
     from zweitstimmen
     where wahlkreis = 1
 ),
@@ -297,3 +297,6 @@ with stimmen_gesamt as(
 )
 select 1 as wahlkreis, partei, stimmen_pro_partei, (1.00*stimmen_pro_partei)/stimmen_gesamt as stimmen_prozentual
 from stimmen_pro_partei, stimmen_gesamt
+where partei = p.parteiid
+and wk.wahlkreisid = 1
+and p.parteiid != -1
