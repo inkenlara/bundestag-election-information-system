@@ -253,13 +253,21 @@ db_name = "wahl"
 db_user = "postgres"
 db_password = "adnan"
 
-"""
+
 # Inkens local test db:
 db_host = "localhost"
 db_port = 5432
 db_name = "postgres"
 db_user = "newuser"
 db_password = "pw"
+"""
+
+
+db_host = sys.argv[1]
+db_port = sys.argv[2]
+db_name = sys.argv[3]
+db_user = sys.argv[4]
+db_password = sys.argv[5]
 
 
 try:
