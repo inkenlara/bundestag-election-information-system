@@ -497,7 +497,7 @@ def WahlKreisZweitStimmenAggregation():
                     else:
                         AnzahlStimmen = row[i]
                     final.append([WahlJahr, Partei, WahlKreis,
-                                 AnzahlStimmen, ProzentWahlhKreis, partei])
+                                 AnzahlStimmen])
                     i = i + 4
     with open(path_kerg, encoding='utf-8') as f:
         csv_buffer = csv.reader(f, delimiter=';', quotechar='"')
@@ -522,10 +522,10 @@ def WahlKreisZweitStimmenAggregation():
                     else:
                         AnzahlStimmen = row[i + 1]
                     final.append([WahlJahr, Partei, WahlKreis,
-                                 AnzahlStimmen, ProzentWahlhKreis, partei])
+                                 AnzahlStimmen])
                     i = i + 4
     cur.executemany(
-        'INSERT INTO WahlKreisZweitStimmenAggregation VALUES(%s, %s, %s, %s, %s, %s)', final)
+        'INSERT INTO WahlKreisZweitStimmenAggregation VALUES(%s, %s, %s, %s)', final)
 
 
 """   Wahljahr int NOT NULL,
@@ -568,13 +568,9 @@ def BundeslandStimmenAggregation():
                         AnzahlZweitStimmen = 0
                     else:
                         AnzahlZweitStimmen = row[i + 2]
-                    ProzentErstStimmen = 0             # andere tabele
-                    ProzentZweitStimmen = 0             # andere tabele
-                    DirektMandate = 0               # TODO calc
-                    ListenMandate = 0               # TODO calc
-                    UberhangsMandate = 0            # TODO calc
-                    final.append([WahlJahr, Bundesland, Partei, AnzahlErstStimmen, ProzentErstStimmen,
-                                 AnzahlZweitStimmen, ProzentZweitStimmen, DirektMandate, ListenMandate, UberhangsMandate])
+                    DirektMandate = 0               
+                    final.append([WahlJahr, Bundesland, Partei, AnzahlErstStimmen,
+                                 AnzahlZweitStimmen, DirektMandate])
                     i = i + 4
 
     with open(path_kerg, encoding='utf-8') as f:
@@ -602,16 +598,12 @@ def BundeslandStimmenAggregation():
                         AnzahlZweitStimmen = 0
                     else:
                         AnzahlZweitStimmen = row[i + 2 + 1]
-                    ProzentErstStimmen = 0             # andere tabele
-                    ProzentZweitStimmen = 0             # andere tabele
-                    DirektMandate = 0               # TODO calc
-                    ListenMandate = 0               # TODO calc
-                    UberhangsMandate = 0            # TODO calc
-                    final.append([WahlJahr, Bundesland, Partei, AnzahlErstStimmen, ProzentErstStimmen,
-                                 AnzahlZweitStimmen, ProzentZweitStimmen, DirektMandate, ListenMandate, UberhangsMandate])
+                    DirektMandate = 0               # computed in different function
+                    final.append([WahlJahr, Bundesland, Partei, AnzahlErstStimmen,
+                                 AnzahlZweitStimmen, DirektMandate])
                     i = i + 4
     cur.executemany(
-        'INSERT INTO BundeslandStimmenAggregation VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)', final)
+        'INSERT INTO BundeslandStimmenAggregation VALUES(%s, %s, %s, %s, %s, %s)', final)
 
 
 """
@@ -705,11 +697,9 @@ def DeutschlandStimmenAggregation():
                         AnzahlZweitStimmen = row[i + 2] if row[i + 2] else 0
                     ProzentErstStimmen = 0
                     ProzentZweitStimmen = 0
-                    DirektMandate = 0               # TODO calc
-                    ListenMandate = 0               # TODO calc
-                    UberhangsMandate = 0            # TODO calc
+                    DirektMandate = 0              
                     final2021.append([WahlJahr, Partei, AnzahlErstStimmen, ProzentErstStimmen, AnzahlZweitStimmen,
-                                     ProzentZweitStimmen, DirektMandate, ListenMandate, UberhangsMandate])
+                                     ProzentZweitStimmen, DirektMandate])
                     i = i + 4
     with open(path_kerg2, encoding='utf-8') as f:  # 2021
         csv_buffer = csv.reader(f, delimiter=';', quotechar='"')
@@ -755,11 +745,9 @@ def DeutschlandStimmenAggregation():
                                                  2 + 1] if row[i + 2 + 1] else 0
                     ProzentErstStimmen = 0
                     ProzentZweitStimmen = 0
-                    DirektMandate = 0               # TODO calc
-                    ListenMandate = 0               # TODO calc
-                    UberhangsMandate = 0            # TODO calc
+                    DirektMandate = 0               
                     final2017.append([WahlJahr, Partei, AnzahlErstStimmen, ProzentErstStimmen, AnzahlZweitStimmen,
-                                     ProzentZweitStimmen, DirektMandate, ListenMandate, UberhangsMandate])
+                                     ProzentZweitStimmen, DirektMandate])
                     i = i + 4
     with open(path_kerg2, encoding='utf-8') as f:  # 2017
         csv_buffer = csv.reader(f, delimiter=';', quotechar='"')
@@ -783,7 +771,7 @@ def DeutschlandStimmenAggregation():
                             float(str(list_zwei[i]).replace(',', '.')), 4)
     final = final2021 + final2017
     cur.executemany(
-        'INSERT INTO DeutschlandStimmenAggregation VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s)', final)
+        'INSERT INTO DeutschlandStimmenAggregation VALUES(%s, %s, %s, %s, %s, %s, %s)', final)
 
 
 """WahlJahr int NOT NULL,
@@ -960,11 +948,9 @@ def load_strukturdaten():
                 continue
             bildung = round(
                 float(str(row[32]).replace(',', ".")), 1)
-            lis.append([int(row[1]), row[2], bildung, int(row[35])])
+            lis.append([int(row[1]), bildung, int(row[35])])
         cur.executemany(
-            'INSERT INTO strukturdaten VALUES(%s, %s, %s, %s)', lis)
-        for i in lis:
-            print(i)
+            'INSERT INTO strukturdaten VALUES(%s, %s, %s)', lis)
 
 
 # TRUNCATE THE TABLES

@@ -42,7 +42,7 @@ try:
 except:
     print("Fail")
 
-wahljahr = 2021  # TODO: main erstellen, bei der man das wahljahr angeben kann
+wahljahr = 2021 
 
 cur.execute(
      "DROP MATERIALIZED VIEW IF EXISTS sitzverteilungparteienprobundesland")
@@ -211,8 +211,6 @@ sql_con.commit()
 #########################################################################################
 ####################################### Schritt 3 #######################################
 #########################################################################################
-
-# TODO: speicher die daten für 2021 und 2017
 
 # Verteile 598 Sitze im Bundestag auf die Parteien und vergrößere eventuell den Bundestag
 

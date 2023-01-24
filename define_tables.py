@@ -235,7 +235,9 @@ CREATE TABLE DeutschlandStimmenAggregation (
     Partei int NOT NULL references Partei,
 	PRIMARY KEY(Partei, WahlJahr),
     AnzahlErstStimmen int NOT NULL,
+    ProzentErstStimmen decimal(10, 8) NOT NULL,
 	AnzahlZweitStimmen int NOT NULL,
+    ProzentZweitStimmen decimal(10, 8) NOT NULL,
 	DirektMandate int NOT NULL
 );
 """)
