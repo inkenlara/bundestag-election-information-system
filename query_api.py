@@ -830,7 +830,7 @@ def query4_table():
 
 
 def query3_wahlbeteiligung2017(kreis):
-    cur.execute("""select a.wahlkreis, w.wahlkreisname, (1.00*anzahlwahlende)/anzahlwahlberechtigte as wahlbeteiligung, wahljahr
+    cur.execute("""select a.wahlkreis, w.wahlkreisname, (1.00*AnzahlWaehlende)/anzahlwahlberechtigte as wahlbeteiligung, wahljahr
         from wahlkreisaggretation as a, wahlkreis as w
         WHERE wahljahr = 2017 AND a.wahlkreis = w.wahlkreisid""")
     data = cur.fetchall()
@@ -844,7 +844,7 @@ def query3_wahlbeteiligung2017(kreis):
 
 
 def query3_wahlbeteiligung(kreis):
-    cur.execute("""select a.wahlkreis, w.wahlkreisname, (1.00*anzahlwahlende)/anzahlwahlberechtigte as wahlbeteiligung, wahljahr
+    cur.execute("""select a.wahlkreis, w.wahlkreisname, (1.00*AnzahlWaehlende)/anzahlwahlberechtigte as wahlbeteiligung, wahljahr
         from wahlkreisaggretation as a, wahlkreis as w
         WHERE wahljahr = 2021 AND a.wahlkreis = w.wahlkreisid""")
     data = cur.fetchall()
@@ -1298,10 +1298,12 @@ and p.parteiid != -1""".format(kreis, kreis, kreis, kreis, kreis))
 
 
 def query8_rich():
-    cur.execute("""with ten_richest as (SELECT wahlkreis, wahlkreisname, einkommenprivatehaushalte as ein FROM strukturdaten
+    cur.execute("""with ten_richest as (SELECT s.wahlkreis, w.wahlkreisname, s.einkommenprivatehaushalte as ein FROM strukturdaten s,
+    wahlkreis w where w.wahlkreisid = s.wahlkreis
     ORDER BY ein DESC
     LIMIT 10),
-    ten_poorest as (SELECT wahlkreis, wahlkreisname, einkommenprivatehaushalte as ein FROM strukturdaten
+    ten_poorest as (SELECT s.wahlkreis, w.wahlkreisname, s.einkommenprivatehaushalte as ein FROM strukturdaten s, wahlkreis w 
+    where w.wahlkreisid = s.wahlkreis
     ORDER BY ein ASC
     LIMIT 10),
 
@@ -1388,10 +1390,12 @@ def query8_rich():
 
 def query8_poor():
 
-    cur.execute("""with ten_richest as (SELECT wahlkreis, wahlkreisname, einkommenprivatehaushalte as ein FROM strukturdaten
+    cur.execute("""with ten_richest as (SELECT s.wahlkreis, w.wahlkreisname, s.einkommenprivatehaushalte as ein FROM strukturdaten s,
+    wahlkreis w where w.wahlkreisid = s.wahlkreis
     ORDER BY ein DESC
     LIMIT 10),
-    ten_poorest as (SELECT wahlkreis, wahlkreisname, einkommenprivatehaushalte as ein FROM strukturdaten
+    ten_poorest as (SELECT s.wahlkreis, w.wahlkreisname, s.einkommenprivatehaushalte as ein FROM strukturdaten s,
+    wahlkreis w where w.wahlkreisid = s.wahlkreis
     ORDER BY ein ASC
     LIMIT 10),
     cdu_csu_average_poor as (SELECT parteikurz, avg(prozentzweitstimmen) FROM WahlKreisProzentZweit
@@ -1471,10 +1475,12 @@ def query8_poor():
 
 
 def query9_high():
-    cur.execute("""with ten_most_educated as (SELECT wahlkreis, wahlkreisname, bildung as ein FROM strukturdaten
+    cur.execute("""with ten_most_educated as (SELECT s.wahlkreis, w.wahlkreisname, s.bildung as ein FROM strukturdaten s,
+    wahlkreis w where w.wahlkreisid = s.wahlkreis
 ORDER BY ein DESC
 LIMIT 10),
-ten_least_educated as (SELECT wahlkreis, wahlkreisname, bildung as ein FROM strukturdaten
+ten_least_educated as (SELECT s.wahlkreis, w.wahlkreisname, s.bildung as ein FROM strukturdaten s,
+    wahlkreis w where w.wahlkreisid = s.wahlkreis
 ORDER BY ein ASC
 LIMIT 10),
 
@@ -1556,10 +1562,12 @@ SELECT * FROM most_educated_total ORDER BY parteikurz""")
 
 
 def query9_low():
-    cur.execute("""with ten_most_educated as (SELECT wahlkreis, wahlkreisname, bildung as ein FROM strukturdaten
+    cur.execute("""with ten_most_educated as (SELECT s.wahlkreis, w.wahlkreisname, s.bildung as ein FROM strukturdaten s,
+    wahlkreis w where w.wahlkreisid = s.wahlkreis
 ORDER BY ein DESC
 LIMIT 10),
-ten_least_educated as (SELECT wahlkreis, wahlkreisname, bildung as ein FROM strukturdaten
+ten_least_educated as (SELECT s.wahlkreis, w.wahlkreisname, s.bildung as ein FROM strukturdaten s,
+    wahlkreis w where w.wahlkreisid = s.wahlkreis
 ORDER BY ein ASC
 LIMIT 10),
 cdu_csu_average_least_educated as (SELECT parteikurz, avg(prozentzweitstimmen) FROM WahlKreisProzentZweit

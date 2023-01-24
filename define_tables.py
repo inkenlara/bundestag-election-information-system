@@ -25,7 +25,7 @@ db_port = 5432
 db_name = "wahl"
 db_user = "postgres"
 db_password = ""
-"""
+
 
 # Inkens local test db:
 db_host = "localhost"
@@ -33,6 +33,15 @@ db_port = 5432
 db_name = "postgres"
 db_user = "newuser"
 db_password = "pw"
+"""
+
+
+db_host = sys.argv[1]
+db_port = sys.argv[2]
+db_name = sys.argv[3]
+db_user = sys.argv[4]
+db_password = sys.argv[5]
+
 try:
     sql_con = psycopg2.connect(
         host=db_host, port=db_port, database=db_name, user=db_user, password=db_password)
@@ -58,9 +67,9 @@ cur.execute("drop table if exists WahlKreisProzentZweit cascade")
 cur.execute("drop table if exists kandidaten cascade")
 cur.execute("drop table if exists direktkandidaten cascade")
 cur.execute("drop table if exists listenkandidaten cascade")
-cur.execute("drop table if exists strukturdaten cascade")  
-cur.execute("drop table if exists erststimmen cascade")  
-cur.execute("drop table if exists zweitstimmen cascade")  
+cur.execute("drop table if exists strukturdaten cascade")
+cur.execute("drop table if exists erststimmen cascade")
+cur.execute("drop table if exists zweitstimmen cascade")
 
 sql_con.commit()
 
