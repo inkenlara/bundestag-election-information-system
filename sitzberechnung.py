@@ -1,3 +1,6 @@
+import sys
+
+
 try:
     import psycopg2
 except ImportError:
@@ -18,20 +21,25 @@ except ImportError:
     import math
 
 # Inkens local test db:
-
+"""
 db_host = "localhost"
 db_port = 5432
 db_name = "postgres"
 db_user = "newuser"
 db_password = "pw"
 
-"""
 db_host = "localhost"
 db_port = 5432
 db_name = "wahl"
 db_user = "postgres"
 db_password = ""
 """
+
+db_host = sys.argv[1]
+db_port = sys.argv[2]
+db_name = sys.argv[3]
+db_user = sys.argv[4]
+db_password = sys.argv[5]
 
 
 try:
@@ -45,12 +53,12 @@ except:
 wahljahr = 2021 
 
 cur.execute(
-     "DROP MATERIALIZED VIEW IF EXISTS sitzverteilungparteienprobundesland")
+    "DROP MATERIALIZED VIEW IF EXISTS sitzverteilungparteienprobundesland")
 sql_con.commit()
 cur.execute("DROP TABLE IF EXISTS sitzverteilungbundestag")
 sql_con.commit()
 cur.execute(
-     "DROP MATERIALIZED VIEW IF EXISTS vorlaufigesitzverteilungparteienprobundesland")
+    "DROP MATERIALIZED VIEW IF EXISTS vorlaufigesitzverteilungparteienprobundesland")
 sql_con.commit()
 cur.execute("DROP MATERIALIZED VIEW IF EXISTS ParteienInBT")
 cur.execute("DROP MATERIALIZED VIEW IF EXISTS VorlaeufigeSitzverteilung")
@@ -79,7 +87,7 @@ if wahljahr == 2021:
     where kurzbezeichnung = 'SSW'
     """.format(wahljahr, wahljahr)
 else:
-     bundestags_parteien = """
+    bundestags_parteien = """
     select Partei
     from DeutschlandStimmenAggregation 
     where ProzentZweitStimmen >= 5
@@ -89,7 +97,7 @@ else:
     from DeutschlandStimmenAggregation 
     where DirektMandate >= 3
     and wahljahr = {}
-    """.format(wahljahr, wahljahr)   
+    """.format(wahljahr, wahljahr)
 
 load_bundestags_parteien = "CREATE MATERIALIZED VIEW ParteienInBT AS {};".format(
     bundestags_parteien)
