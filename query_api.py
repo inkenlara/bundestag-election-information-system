@@ -11,12 +11,8 @@ except ImportError:
     pip.main(['install', '--user', 'psycopg2'])
     import psycopg2
 import random
-from time import sleep
 from typing import List
 from hashlib import sha256
-import matplotlib.pyplot as plt
-import numpy as np
-from PIL import Image
 from fastapi import FastAPI
 from fastapi.responses import FileResponse
 from fastapi.responses import HTMLResponse
@@ -278,8 +274,6 @@ try:
 except:
     print("Fail")
 
-plt.switch_backend('Agg')
-
 
 def add_bulk_votes(bulkVotes: BulkVotes):
     for fir in range(0, len(bulkVotes.list_numbers_first)):
@@ -522,15 +516,6 @@ WHERE s.partei = p.parteiid""")
         performance.append(int(i[1]))
     jsony = dict(zip(party, performance))
     return json.dumps(jsony)
-    """
-    print(mobile_records)
-    y_pos = np.arange(len(party))
-    plt.bar(y_pos, performance, align='center', alpha=0.5)
-    plt.xticks(y_pos, party)
-    plt.ylabel('Sitze')
-    plt.title('Sitzverteilung')
-    plt.savefig('public/img/query1_chart.png')
-    plt.close() """
 
 
 def query1_table2017():
@@ -1374,20 +1359,6 @@ def query8_rich():
     return json.dumps(jso)
 
 
-"""   
-    labels = 'Grüne', 'FDP', 'SPD', 'CDU', 'AfD', 'Others'
-    explode = (0.1, 0.1, 0.1, 0.1, 0.1, 0.1) 
-    colors = ['#47973b', '#efe14b', '#de3121', '#c53729', '#4dabe9', '#a8a9aa']
-
-    fig1, ax1 = plt.subplots()
-    ax1.pie(results, explode=explode, labels=labels, colors=colors, autopct='%1.1f%%',
-            shadow=True, startangle=90)
-    ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
-
-    plt.savefig('public/img/query8_rich.png')
-    plt.close() """
-
-
 def query8_poor():
 
     cur.execute("""with ten_richest as (SELECT s.wahlkreis, w.wahlkreisname, s.einkommenprivatehaushalte as ein FROM strukturdaten s,
@@ -1461,17 +1432,6 @@ def query8_poor():
         total += i[1]
     jso = dict(zip(party, results))
     return json.dumps(jso)
-    """
-    labels = 'AfD', 'CDU', 'FDP', 'SPD', 'Grüne', 'Others'
-    explode = (0.1, 0.1, 0.1, 0.1, 0.1, 0.1)
-    colors = ['#4dabe9', '#c53729', '#efe14b', '#de3121', '#47973b', '#a8a9aa']
-    fig1, ax1 = plt.subplots()
-    ax1.pie(results, explode=explode, labels=labels, colors=colors, autopct='%1.1f%%',
-            shadow=True, startangle=90)
-    ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
-
-    plt.savefig('public/img/query8_poor.png')
-    plt.close() """
 
 
 def query9_high():
@@ -1548,18 +1508,6 @@ SELECT * FROM most_educated_total ORDER BY parteikurz""")
     jso = dict(zip(party, results))
     return json.dumps(jso)
 
-    """
-    labels = 'Grüne', 'SPD', 'AfD', 'CDU', 'FDP', 'Others'
-    explode = (0.1, 0.1, 0.1, 0.1, 0.1, 0.1) 
-    colors = ['#47973b', '#de3121', '#4dabe9', '#c53729', '#efe14b', '#a8a9aa']
-    fig1, ax1 = plt.subplots()
-    ax1.pie(results, explode=explode, labels=labels, colors=colors, autopct='%1.1f%%',
-            shadow=True, startangle=90)
-    # ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
-
-    plt.savefig('public/img/query9_high.png')
-    plt.close() """
-
 
 def query9_low():
     cur.execute("""with ten_most_educated as (SELECT s.wahlkreis, w.wahlkreisname, s.bildung as ein FROM strukturdaten s,
@@ -1631,18 +1579,6 @@ SELECT * FROM least_educated_total ORDER BY parteikurz""")
         total += i[1]
     jso = dict(zip(party, results))
     return json.dumps(jso)
-
-    """
-    labels = 'FDP', 'Grüne', 'AfD', 'CDU', 'SPD', 'Others'
-    explode = (0.1, 0.1, 0.1, 0.1, 0.1, 0.1) 
-    colors = ['#efe14b', '#47973b', '#4dabe9', '#c53729', '#de3121', '#a8a9aa']
-    fig1, ax1 = plt.subplots()
-    ax1.pie(results, explode=explode, labels=labels, colors=colors, autopct='%1.1f%%',
-            shadow=True, startangle=90)
-    # ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
-
-    plt.savefig('public/img/query9_low.png')
-    plt.close() """
 
 
 # Output: list of tuples inlcuding strings (firstname, lastname, job, parteikurz, parteilang)

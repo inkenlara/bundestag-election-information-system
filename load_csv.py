@@ -25,7 +25,7 @@ db_port = 5432
 db_name = "wahl"
 db_user = "postgres"
 db_password = ""
-"""
+
 
 
 # Inkens local test db:
@@ -34,6 +34,14 @@ db_port = 5432
 db_name = "postgres"
 db_user = "newuser"
 db_password = "pw"
+"""
+
+db_host = sys.argv[1]
+db_port = sys.argv[2]
+db_name = sys.argv[3]
+db_user = sys.argv[4]
+db_password = sys.argv[5]
+
 try:
     sql_con = psycopg2.connect(
         host=db_host, port=db_port, database=db_name, user=db_user, password=db_password)
@@ -264,6 +272,7 @@ def kreise():
 # Übrige sind mit NULL bezeichnet
 # Ungültige haben parteiID -1
 
+
 def partei():
     total_partei = []
     with open(path_kerg, encoding='utf-8') as f:
@@ -313,7 +322,6 @@ def partei():
                 r.append(k_l[dict_key])
         total_partei.append([-1, "Ungültig", "Ungültig"])
         cur.executemany('INSERT INTO Partei VALUES(%s, %s, %s)', total_partei)
-
 
 
 """WahlKreis int references WahlKreis ON DELETE CASCADE,
@@ -568,7 +576,7 @@ def BundeslandStimmenAggregation():
                         AnzahlZweitStimmen = 0
                     else:
                         AnzahlZweitStimmen = row[i + 2]
-                    DirektMandate = 0               
+                    DirektMandate = 0
                     final.append([WahlJahr, Bundesland, Partei, AnzahlErstStimmen,
                                  AnzahlZweitStimmen, DirektMandate])
                     i = i + 4
@@ -697,7 +705,7 @@ def DeutschlandStimmenAggregation():
                         AnzahlZweitStimmen = row[i + 2] if row[i + 2] else 0
                     ProzentErstStimmen = 0
                     ProzentZweitStimmen = 0
-                    DirektMandate = 0              
+                    DirektMandate = 0
                     final2021.append([WahlJahr, Partei, AnzahlErstStimmen, ProzentErstStimmen, AnzahlZweitStimmen,
                                      ProzentZweitStimmen, DirektMandate])
                     i = i + 4
@@ -745,7 +753,7 @@ def DeutschlandStimmenAggregation():
                                                  2 + 1] if row[i + 2 + 1] else 0
                     ProzentErstStimmen = 0
                     ProzentZweitStimmen = 0
-                    DirektMandate = 0               
+                    DirektMandate = 0
                     final2017.append([WahlJahr, Partei, AnzahlErstStimmen, ProzentErstStimmen, AnzahlZweitStimmen,
                                      ProzentZweitStimmen, DirektMandate])
                     i = i + 4
@@ -974,7 +982,7 @@ cur.execute("truncate table strukturdaten cascade")
 sql_con.commit()
 
 # CALLING THE FUNCTIONS AND FILL THE TABLES
-bundesland() 
+bundesland()
 kreise()
 partei()
 WahlKreisAggretation()
