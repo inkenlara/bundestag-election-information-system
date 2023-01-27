@@ -21,7 +21,9 @@ In order to generate the votes, and fill the tables with the erstimmen/zweitstim
 
 In the project directory, you can run:
 
-`npm start`
+`npm install` to install all dependencies
+
+`npm start` to run the website
 
 Runs the app in the development mode.
 
