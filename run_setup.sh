@@ -15,8 +15,9 @@ pip3 install numpy
 pip3 install pandas
 
 # Run Python files with command line arguments
-python3 define_tables.py $arg1 $arg2 $arg3 $arg4 $arg5
-python3 load_csv.py $arg1 $arg2 $arg3 $arg4 $arg5
-python3 sitzberechnung.py $arg1 $arg2 $arg3 $arg4 $arg5
-python3 create_tokentables.py $arg1 $arg2 $arg3 $arg4 $arg5
+python3 add_credentials.py
+python3 define_tables.py
+python3 load_csv.py
+python3 sitzberechnung.py
+python3 create_tokentables.py
 

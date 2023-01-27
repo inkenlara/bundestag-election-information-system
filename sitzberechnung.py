@@ -35,11 +35,12 @@ db_user = "postgres"
 db_password = ""
 """
 
-db_host = sys.argv[1]
-db_port = sys.argv[2]
-db_name = sys.argv[3]
-db_user = sys.argv[4]
-db_password = sys.argv[5]
+with open("db_credentials.txt", "r") as f:
+    db_host = f.readline().strip()
+    db_port = f.readline().strip()
+    db_name = f.readline().strip()
+    db_user = f.readline().strip()
+    db_password = f.readline().strip()
 
 
 try:
@@ -50,7 +51,7 @@ try:
 except:
     print("Fail")
 
-wahljahr = 2021 
+wahljahr = 2021
 
 cur.execute(
     "DROP MATERIALIZED VIEW IF EXISTS sitzverteilungparteienprobundesland")

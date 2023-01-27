@@ -9,4 +9,5 @@ query9_low.png
 node_modules/
 __pycache__/
 admin_tokens.txt
+db_credentials.txt
 test.html
