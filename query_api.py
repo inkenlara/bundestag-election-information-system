@@ -684,16 +684,14 @@ reihennummern as(
   where ld.kandidatid = k.kandidatid
   and sl.bundesland = ld.bundesland
   and sl.partei = k.partei
+  and k.wahljahr = 2021
 ),
 -- kandidaten, die einen sitz bekommen herausfiltern
-listenkandidaten as(
-    select r.kandidatid, sl.partei, sl.bundesland
-    from sitze_fuer_liste sl, reihennummern r
-    where sl.partei = r.partei
-    and sl.bundesland = r.bundesland
-    and r.row_number <= sl.listensitze
-)
--- direktkandidaten und listenkandidaten vereinigen
+listenkandidaten as (select r.kandidatid, sl.partei, sl.bundesland
+from sitze_fuer_liste sl, reihennummern r
+where sl.partei = r.partei
+and sl.bundesland = r.bundesland
+and r.row_number <= sl.listensitze)
 select * from direktmandate
 union
 select k.kandidatid, k.firstname, k.lastname, k.beruf, p.KurzBezeichnung as partei
