@@ -603,6 +603,7 @@ reihennummern as(
   where ld.kandidatid = k.kandidatid
   and sl.bundesland = ld.bundesland
   and sl.partei = k.partei
+  and k.wahljahr = 2017
 ),
 -- kandidaten, die einen sitz bekommen herausfiltern
 listenkandidaten as(
