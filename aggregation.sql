@@ -2,7 +2,7 @@
 
 -- BUNDESLANDAGGREGATION
 update bundeslandaggregation
-set anzahlwahlberechtigte = anzahlwahlberechtigte + {}, anzahlwaehlende = anzahlwaehlende + {}
+set anzahlwahlberechtigte = anzahlwahlberechtigte + {}, anzahlwaehlende = anzahlwaehlende + {}, bevoelkerung = bevoelkerung + {}
 where wahljahr = 2021
 and bundesland = (select bundesland from wahlkreis where wahlkreisid = {})
 -- if (erststimme ungültig)
@@ -18,35 +18,47 @@ and bundesland = (select bundesland from wahlkreis where wahlkreisid = {})
 
 
 -- BUNDESLANDSTIMMENAGGREGATION
+-- erststimmen
 update bundeslandstimmenaggregation
-set anzahlerststimmen = anzahlerststimmen + {}, anzahlzweitstimmen = anzahlzweitstimmen + {}
+set anzahlerststimmen = anzahlerststimmen + {}
 where wahljahr = 2021
 and bundesland = (select bundesland from wahlkreis where wahlkreisid = {})
+and partei = {}
+
+-- zweitstimmen
+update bundeslandstimmenaggregation
+set anzahlzweitstimmen = anzahlzweitstimmen + {}
+where wahljahr = 2021
+and bundesland = (select bundesland from wahlkreis where wahlkreisid = {})
+and partei = {}
+
 
 
 -- DEUTSCHLANDAGGREGATION
 update DeutschlandAggregation
-set anzahlwahlberechtigte = anzahlwahlberechtigte + {}, anzahlwaehlende = anzahlwaehlende + {}
+set anzahlwahlberechtigte = anzahlwahlberechtigte + {}, anzahlwaehlende = anzahlwaehlende + {}, bevoelkerung = bevoelkerung + {}
 where wahljahr = 2021
-and bundesland = (select bundesland from wahlkreis where wahlkreisid = {})
 -- if (erststimme ungültig)
 update DeutschlandAggregation
 set ungueltigeerst = ungueltigeerst + {}
 where wahljahr = 2021
-and bundesland = (select bundesland from wahlkreis where wahlkreisid = {})
 -- if(zweitstimme ungültig)
 update DeutschlandAggregation
 set ungueltigezweit = ungueltigezweit + {}
 where wahljahr = 2021
-and bundesland = (select bundesland from wahlkreis where wahlkreisid = {})
 
 
 -- DEUTSCHLANDSTIMMENAGGREGATION
+-- erststimmen
 update deutschlandstimmenaggregation
-set anzahlerststimmen = anzahlerststimmen + {}, anzahlzweitstimmen = anzahlzweitstimmen + {}
+set anzahlerststimmen = anzahlerststimmen + {}
 where wahljahr = 2021
-and bundesland = (select bundesland from wahlkreis where wahlkreisid = {})
-
+and partei = {}
+-- zweitstimmen
+update deutschlandstimmenaggregation
+set anzahlzweitstimmen = anzahlzweitstimmen + {}
+where wahljahr = 2021
+and partei = {}
 
 -- WAHLKREISAGGREGATION
 update wahlkreisaggregation
@@ -115,12 +127,12 @@ and deutschlandstimmenaggregation.wahljahr = 2021
 
 -- WAHLKREISPROZENTERST + WAHLKREISPROZENTZWEIT -- TODO: WAHLKREISPROZENTERST NOT POSSIBLE RIGHT NOW
 with neue_prozente as (
-    select wa.wahlkreis, p.KurzBezeichnung, wsa.anzahlstimmen*100.0000/(wa.anzahlwaehlende-wa.ungueltigezweit)as prozentzweit
-    from wahlkreisaggregation wa, wahlkreiszweitstimmenaggregation wsa, partei p
+    select wa.wahlkreis, p.KurzBezeichnung as partei, wsa.anzahlstimmen*100.0000/(wa.anzahlwaehlende-wa.ungueltigezweit)as prozentzweit
+    from wahlkreisaggretation wa, wahlkreiszweitstimmenaggregation wsa, partei p
     where wa.wahljahr = 2021
     and wa.wahljahr = wsa.wahljahr
     and wa.wahlkreis = {}
-    and wsa.partei = w.parteiid
+    and wsa.partei = p.parteiid
 )
 -- update zweit
 update wahlkreisprozentzweit
