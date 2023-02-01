@@ -23,6 +23,7 @@ from pydantic import BaseModel
 app = FastAPI()
 
 origins = [
+    "*",
     "http://localhost:3000",
     "http://localhost",
     "http://localhost:8080"
@@ -289,9 +290,9 @@ def add_bulk_votes(bulkVotes: BulkVotes):
                               bulkVotes.list_votes_second[sec])
             add_vote_zweit(vote2)
             print(vote2.wahlkreis, vote2.zweit)
-    # TODO CHECK length ---------------------------
-    num_votes = len(bulkVotes.list_numbers_first)
-    # ------------------------------------------------------------------------------------
+
+    num_votes = sum(bulkVotes.list_numbers_first)
+    
     print(num_votes)
     bundeslandagg = """update bundeslandaggregation
     set anzahlwahlberechtigte = anzahlwahlberechtigte + {}, anzahlwaehlende = anzahlwaehlende + {}, bevoelkerung = bevoelkerung + {}
@@ -304,10 +305,10 @@ def add_bulk_votes(bulkVotes: BulkVotes):
     where wahljahr = 2021""".format(num_votes, num_votes, num_votes)
     cur.execute(deutschlandagg)
     sql_con.commit()
-    wahlkreisagg = """update wahlkreisaggregation
+    wahlkreisagg = """update wahlkreisaggretation
     set anzahlwahlberechtigte = anzahlwahlberechtigte + {}, anzahlwaehlende = anzahlwaehlende + {}
     where wahljahr = 2021
-    and wahlkreisid = {}""".format(num_votes, num_votes, bulkVotes.wahlkreis)
+    and wahlkreis = {}""".format(num_votes, num_votes, bulkVotes.wahlkreis)
     cur.execute(wahlkreisagg)
     sql_con.commit()
     update_percent_erst = """with neue_prozente as (
@@ -336,18 +337,18 @@ def add_bulk_votes(bulkVotes: BulkVotes):
     and ba.bundesland = bsa.bundesland
     and bsa.partei = p.parteiid
     )
-    update bundeslandprozentzweit
+    update bundeslandprozentzwei
     set prozentzweitstimmen = np.prozentzweit
     from neue_prozente as np
-    where np.KurzBezeichnung = bundeslandprozenterst.parteikurz
-    and bundeslandprozentzweit.bundesland = np.bundesland
-    and bundeslandprozentzweit.wahljahr = 2021""".format(bulkVotes.wahlkreis)
+    where np.KurzBezeichnung = bundeslandprozentzwei.parteikurz
+    and bundeslandprozentzwei.bundesland = np.bundesland
+    and bundeslandprozentzwei.wahljahr = 2021""".format(bulkVotes.wahlkreis)
     cur.execute(update_percent_zweit)
     sql_con.commit()
     deutsch_prozente = """with neue_prozente as (
-    select dsa.partei, dsa.anzahlerststimmen*100.0000/(da.anzahlwaehlende-ba.ungueltigeerst) as prozenterst, dsa.anzahlzweitstimmen*100.0000/(da.anzahlwaehlende-da.ungueltigezweit)as prozentzweit
+    select dsa.partei, dsa.anzahlerststimmen*100.0000/(da.anzahlwaehlende-da.ungueltigeerst) as prozenterst, dsa.anzahlzweitstimmen*100.0000/(da.anzahlwaehlende-da.ungueltigezweit)as prozentzweit
     from DeutschlandAggregation da, deutschlandstimmenaggregation dsa
-    where ba.wahljahr = 2021
+    where da.wahljahr = 2021
     and da.wahljahr = dsa.wahljahr
     )
     -- update erst und zweit
@@ -532,7 +533,7 @@ def add_vote(vote):
     where wahljahr = 2021"""
     cur.execute(deutschlandagg)
     sql_con.commit()
-    wahlkreisagg = """update wahlkreisaggregation
+    wahlkreisagg = """update wahlkreisaggretation
     set anzahlwahlberechtigte = anzahlwahlberechtigte + 1, anzahlwaehlende = anzahlwaehlende + 1
     where wahljahr = 2021
     and wahlkreisid = {}""".format(wahlkreis)
@@ -564,12 +565,12 @@ def add_vote(vote):
     and ba.bundesland = bsa.bundesland
     and bsa.partei = p.parteiid
     )
-    update bundeslandprozentzweit
+    update bundeslandprozentzwei
     set prozentzweitstimmen = np.prozentzweit
     from neue_prozente as np
     where np.KurzBezeichnung = bundeslandprozenterst.parteikurz
-    and bundeslandprozentzweit.bundesland = np.bundesland
-    and bundeslandprozentzweit.wahljahr = 2021""".format(wahlkreis)
+    and bundeslandprozentzwei.bundesland = np.bundesland
+    and bundeslandprozentzwei.wahljahr = 2021""".format(wahlkreis)
     cur.execute(update_percent_zweit)
     sql_con.commit()
     deutsch_prozente = """with neue_prozente as (

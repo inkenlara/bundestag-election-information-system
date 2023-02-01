@@ -102,12 +102,12 @@ where np.KurzBezeichnung = bundeslandprozenterst.parteikurz
 and bundeslandprozenterst.bundesland = np.bundesland
 and bundeslandprozenterst.wahljahr = 2021
 -- update zweit
-update bundeslandprozentzweit
+update bundeslandprozentzwei
 set prozentzweitstimmen = np.prozentzweit
 from neue_prozente as np
-where np.KurzBezeichnung = bundeslandprozenterst.parteikurz
-and bundeslandprozentzweit.bundesland = np.bundesland
-and bundeslandprozentzweit.wahljahr = 2021
+where np.KurzBezeichnung = bundeslandprozentzwei.parteikurz
+and bundeslandprozentzwei.bundesland = np.bundesland
+and bundeslandprozentzwei.wahljahr = 2021
 
 
 -- DEUTSCHLANDSTIMMENAGGREGATION
