@@ -283,16 +283,59 @@ def add_bulk_votes(bulkVotes: BulkVotes):
             vote1 = VoteErst(bulkVotes.wahlkreis,
                              bulkVotes.token, bulkVotes.list_votes_first[fir])
             add_vote_erst(vote1)
-            print(vote1.wahlkreis, vote1.erst)
     for sec in range(0, len(bulkVotes.list_numbers_second)):
         for k in range(0, bulkVotes.list_numbers_second[sec]):
             vote2 = VoteZweit(bulkVotes.wahlkreis, bulkVotes.token,
                               bulkVotes.list_votes_second[sec])
             add_vote_zweit(vote2)
-            print(vote2.wahlkreis, vote2.zweit)
-    # TODO CHECK length ---------------------------
-    num_votes = len(bulkVotes.list_numbers_first)
-    # ------------------------------------------------------------------------------------
+
+    num_votes = sum(bulkVotes.list_numbers_first)
+
+    ungueltig_erst = bulkVotes.list_numbers_first[0]
+    ungueltig_zweit = bulkVotes.list_numbers_second[0]
+    
+    ungueltige_bundes_erst = """update bundeslandaggregation
+    set ungueltigeerst = ungueltigeerst + {}
+    where wahljahr = 2021
+    and bundesland = (select bundesland from wahlkreis where wahlkreisid = {})""".format(ungueltig_erst, bulkVotes.wahlkreis)
+    cur.execute(ungueltige_bundes_erst)
+    sql_con.commit()
+
+    ungueltige_bundes_zweit = """update bundeslandaggregation
+    set ungueltigezweit = ungueltigezweit + {}
+    where wahljahr = 2021
+    and bundesland = (select bundesland from wahlkreis where wahlkreisid = {})""".format(ungueltig_zweit, bulkVotes.wahlkreis)
+    cur.execute(ungueltige_bundes_zweit)
+    sql_con.commit()
+
+    ungueltige_deutschland_erst = """update DeutschlandAggregation
+    set ungueltigeerst = ungueltigeerst + {}
+    where wahljahr = 2021""".format(ungueltig_erst)
+    cur.execute(ungueltige_deutschland_erst)
+    sql_con.commit()
+
+    ungueltige_deutschland_zweit= """update DeutschlandAggregation
+    set ungueltigezweit = ungueltigezweit + {}
+    where wahljahr = 2021""".format(ungueltig_zweit)
+    cur.execute(ungueltige_deutschland_zweit)
+    sql_con.commit()
+
+
+    ungueltige_kreis_erst = """update wahlkreisaggretation
+    set ungueltigeerst = ungueltigeerst + {}
+    where wahljahr = 2021
+    and wahlkreis = {}""".format(ungueltig_erst, bulkVotes.wahlkreis)
+    cur.execute(ungueltige_kreis_erst)
+    sql_con.commit()
+
+    ungueltige_kreis_zweit= """update wahlkreisaggretation
+    set ungueltigezweit = ungueltigezweit + {}
+    where wahljahr = 2021
+    and wahlkreis = {}""".format(ungueltig_zweit, bulkVotes.wahlkreis)
+    cur.execute(ungueltige_kreis_zweit)
+    sql_con.commit()
+
+
     print(num_votes)
     bundeslandagg = """update bundeslandaggregation
     set anzahlwahlberechtigte = anzahlwahlberechtigte + {}, anzahlwaehlende = anzahlwaehlende + {}, bevoelkerung = bevoelkerung + {}
@@ -305,11 +348,12 @@ def add_bulk_votes(bulkVotes: BulkVotes):
     where wahljahr = 2021""".format(num_votes, num_votes, num_votes)
     cur.execute(deutschlandagg)
     sql_con.commit()
-    wahlkreisagg = """update wahlkreisaggregation
+    wahlkreisagg = """update wahlkreisaggretation
     set anzahlwahlberechtigte = anzahlwahlberechtigte + {}, anzahlwaehlende = anzahlwaehlende + {}
     where wahljahr = 2021
-    and wahlkreisid = {}""".format(num_votes, num_votes, bulkVotes.wahlkreis)
+    and wahlkreis = {}""".format(num_votes, num_votes, bulkVotes.wahlkreis)
     cur.execute(wahlkreisagg)
+    
     sql_con.commit()
     update_percent_erst = """with neue_prozente as (
     select ba.bundesland, p.KurzBezeichnung, bsa.anzahlerststimmen*100.0000/(ba.anzahlwaehlende-ba.ungueltigeerst) as prozenterst, bsa.anzahlzweitstimmen*100.0000/(ba.anzahlwaehlende-ba.ungueltigezweit)as prozentzweit
@@ -337,18 +381,18 @@ def add_bulk_votes(bulkVotes: BulkVotes):
     and ba.bundesland = bsa.bundesland
     and bsa.partei = p.parteiid
     )
-    update bundeslandprozentzweit
+    update bundeslandprozentzwei
     set prozentzweitstimmen = np.prozentzweit
     from neue_prozente as np
-    where np.KurzBezeichnung = bundeslandprozenterst.parteikurz
-    and bundeslandprozentzweit.bundesland = np.bundesland
-    and bundeslandprozentzweit.wahljahr = 2021""".format(bulkVotes.wahlkreis)
+    where np.KurzBezeichnung = bundeslandprozentzwei.parteikurz
+    and bundeslandprozentzwei.bundesland = np.bundesland
+    and bundeslandprozentzwei.wahljahr = 2021""".format(bulkVotes.wahlkreis)
     cur.execute(update_percent_zweit)
     sql_con.commit()
     deutsch_prozente = """with neue_prozente as (
-    select dsa.partei, dsa.anzahlerststimmen*100.0000/(da.anzahlwaehlende-ba.ungueltigeerst) as prozenterst, dsa.anzahlzweitstimmen*100.0000/(da.anzahlwaehlende-da.ungueltigezweit)as prozentzweit
+    select dsa.partei, dsa.anzahlerststimmen*100.0000/(da.anzahlwaehlende-da.ungueltigeerst) as prozenterst, dsa.anzahlzweitstimmen*100.0000/(da.anzahlwaehlende-da.ungueltigezweit)as prozentzweit
     from DeutschlandAggregation da, deutschlandstimmenaggregation dsa
-    where ba.wahljahr = 2021
+    where da.wahljahr = 2021
     and da.wahljahr = dsa.wahljahr
     )
     -- update erst und zweit
@@ -406,13 +450,11 @@ def generate_token(kreis):
     maxi = range[1]
     token = random.randrange(mini, maxi)
     hashed_token = sha256(token.to_bytes(8, 'big', signed=False)).hexdigest()
-    print(hashed_token)
     insert_token_query = """
     INSERT INTO tokens 
         VALUES ('{}', {})
     """.format(hashed_token, kreis)
     cur.execute(insert_token_query)
-    print(token)
     sql_con.commit()
     jsony = {"token": token}
     return json.dumps(jsony)
@@ -427,7 +469,6 @@ def add_vote_erst(vote: VoteErst):
     """
     cur.execute(max1_query)
     max1 = cur.fetchall()[0][0]
-    print(vote.erst)
     if vote.erst == "None":
         erststimme_party = -1
     else:
@@ -447,6 +488,27 @@ def add_vote_erst(vote: VoteErst):
     cur.execute(insert_vote1_query)
     sql_con.commit()
 
+    bundesland_partei_erst = """update bundeslandstimmenaggregation
+    set anzahlerststimmen = anzahlerststimmen + 1
+    where wahljahr = 2021
+    and bundesland = (select bundesland from wahlkreis where wahlkreisid = {})
+    and partei = {}""".format(wahlkreis, erststimme_party)
+    cur.execute(bundesland_partei_erst)
+    sql_con.commit()
+    deutschland_partei_erst = """update deutschlandstimmenaggregation
+    set anzahlerststimmen = anzahlerststimmen + 1
+    where wahljahr = 2021
+    and partei = {}""".format(erststimme_party)
+    cur.execute(deutschland_partei_erst)
+    sql_con.commit()
+    wahlkreis_partei_erst = """update wahlkreisstimmenaggregation
+    set anzahlerststimmen = anzahlerststimmen + 1
+    where wahljahr = 2021
+    and wahlkreis = {}
+    and partei = {}""".format(wahlkreis, erststimme_party)
+    cur.execute(wahlkreis_partei_erst)
+    sql_con.commit()
+
 
 def add_vote_zweit(vote: VoteZweit):
     wahlkreis = vote.wahlkreis
@@ -457,7 +519,6 @@ def add_vote_zweit(vote: VoteZweit):
     """
     cur.execute(max2_query)
     max2 = cur.fetchall()[0][0]
-    print(vote.zweit)
     zweit_party_num = vote.zweit
     if (zweit_party_num == "None"):
         zweitstimme_party = -1
@@ -470,12 +531,31 @@ def add_vote_zweit(vote: VoteZweit):
     cur.execute(insert_vote2_query)
     sql_con.commit()
 
+    bundesland_partei_zweit = """update bundeslandstimmenaggregation
+    set anzahlzweitstimmen = anzahlzweitstimmen + 1
+    where wahljahr = 2021
+    and bundesland = (select bundesland from wahlkreis where wahlkreisid = {})
+    and partei = {}""".format(wahlkreis, zweitstimme_party)
+    cur.execute(bundesland_partei_zweit)
+    sql_con.commit()
+    deutschland_partei_zweit = """update deutschlandstimmenaggregation
+    set anzahlzweitstimmen = anzahlzweitstimmen + 1
+    where wahljahr = 2021
+    and partei = {}""".format(zweitstimme_party)
+    cur.execute(deutschland_partei_zweit)
+    sql_con.commit()
+    wahlkreis_partei_zweit = """update wahlkreisstimmenaggregation
+    set anzahlzweitstimmen = anzahlzweitstimmen + 1
+    where wahljahr = 2021
+    and wahlkreis = {}
+    and partei = {}""".format(wahlkreis, zweitstimme_party)
+    cur.execute(wahlkreis_partei_zweit)
+    sql_con.commit()
 
 # erst - first_last_party
 # zweit - party number
 # if voter chose to not vote, values are None
 def add_vote(vote):
-    print(vote)
     wahlkreis = vote.wahlkreis
     erststimme_party = -1
     zweitstimme_party = -1
@@ -493,7 +573,6 @@ def add_vote(vote):
     """
     cur.execute(max2_query)
     max2 = cur.fetchall()[0][0]
-    print(vote.erst)
     if vote.erst == "None":
         erststimme_party = -1
     else:
@@ -522,6 +601,89 @@ def add_vote(vote):
     """.format(max2 + 1, wahlkreis, zweitstimme_party)
     cur.execute(insert_vote2_query)
     sql_con.commit()
+
+    bundesland_partei_erst = """update bundeslandstimmenaggregation
+    set anzahlerststimmen = anzahlerststimmen + 1
+    where wahljahr = 2021
+    and bundesland = (select bundesland from wahlkreis where wahlkreisid = {})
+    and partei = {}""".format(wahlkreis, erststimme_party)
+    cur.execute(bundesland_partei_erst)
+    sql_con.commit()
+    deutschland_partei_erst = """update deutschlandstimmenaggregation
+    set anzahlerststimmen = anzahlerststimmen + 1
+    where wahljahr = 2021
+    and partei = {}""".format(erststimme_party)
+    cur.execute(deutschland_partei_erst)
+    sql_con.commit()
+    wahlkreis_partei_erst = """update wahlkreisstimmenaggregation
+    set anzahlerststimmen = anzahlerststimmen + 1
+    where wahljahr = 2021
+    and wahlkreis = {}
+    and partei = {}""".format(wahlkreis, erststimme_party)
+    cur.execute(wahlkreis_partei_erst)
+    sql_con.commit()
+
+
+    bundesland_partei_zweit = """update bundeslandstimmenaggregation
+    set anzahlzweitstimmen = anzahlzweitstimmen + 1
+    where wahljahr = 2021
+    and bundesland = (select bundesland from wahlkreis where wahlkreisid = {})
+    and partei = {}""".format(wahlkreis, zweitstimme_party)
+    cur.execute(bundesland_partei_zweit)
+    sql_con.commit()
+    deutschland_partei_zweit = """update deutschlandstimmenaggregation
+    set anzahlzweitstimmen = anzahlzweitstimmen + 1
+    where wahljahr = 2021
+    and partei = {}""".format(zweitstimme_party)
+    cur.execute(deutschland_partei_zweit)
+    sql_con.commit()
+    wahlkreis_partei_zweit = """update wahlkreisstimmenaggregation
+    set anzahlzweitstimmen = anzahlzweitstimmen + 1
+    where wahljahr = 2021
+    and wahlkreis = {}
+    and partei = {}""".format(wahlkreis, zweitstimme_party)
+    cur.execute(wahlkreis_partei_zweit)
+    sql_con.commit()
+
+
+
+    if(erststimme_party == -1):  # ungueltig 1
+        ungueltige_bundes_erst = """update bundeslandaggregation set ungueltigeerst = ungueltigeerst + 1
+        where wahljahr = 2021
+        and bundesland = (select bundesland from wahlkreis where wahlkreisid = {})""".format(wahlkreis)
+        cur.execute(ungueltige_bundes_erst)
+        sql_con.commit()
+        ungueltige_deutschland_erst = """update DeutschlandAggregation
+        set ungueltigeerst = ungueltigeerst + 1
+        where wahljahr = 2021"""
+        cur.execute(ungueltige_deutschland_erst)
+        sql_con.commit()
+        ungueltige_kreis_erst = """update wahlkreisaggretation
+        set ungueltigeerst = ungueltigeerst + 1
+        where wahljahr = 2021
+        and wahlkreis = {}""".format(wahlkreis)
+        cur.execute(ungueltige_kreis_erst)
+        sql_con.commit()
+    if(zweitstimme_party == -1): # ungueltig 2
+        ungueltige_bundes_zweit = """update bundeslandaggregation
+        set ungueltigezweit = ungueltigezweit + 1
+        where wahljahr = 2021
+        and bundesland = (select bundesland from wahlkreis where wahlkreisid = {})""".format(wahlkreis)
+        cur.execute(ungueltige_bundes_zweit)
+        sql_con.commit()
+        ungueltige_deutschland_zweit= """update DeutschlandAggregation
+        set ungueltigezweit = ungueltigezweit + 1
+        where wahljahr = 2021"""
+        cur.execute(ungueltige_deutschland_zweit)
+        sql_con.commit()
+        ungueltige_kreis_zweit= """update wahlkreisaggretation
+        set ungueltigezweit = ungueltigezweit + 1
+        where wahljahr = 2021
+        and wahlkreis = {}""".format(wahlkreis)
+        cur.execute(ungueltige_kreis_zweit)
+        sql_con.commit()
+
+    
     bundeslandagg = """update bundeslandaggregation
     set anzahlwahlberechtigte = anzahlwahlberechtigte + 1, anzahlwaehlende = anzahlwaehlende + 1, bevoelkerung = bevoelkerung + 1
     where wahljahr = 2021
@@ -533,10 +695,10 @@ def add_vote(vote):
     where wahljahr = 2021"""
     cur.execute(deutschlandagg)
     sql_con.commit()
-    wahlkreisagg = """update wahlkreisaggregation
+    wahlkreisagg = """update wahlkreisaggretation
     set anzahlwahlberechtigte = anzahlwahlberechtigte + 1, anzahlwaehlende = anzahlwaehlende + 1
     where wahljahr = 2021
-    and wahlkreisid = {}""".format(wahlkreis)
+    and wahlkreis = {}""".format(wahlkreis)
     cur.execute(wahlkreisagg)
     sql_con.commit()
     update_percent_erst = """with neue_prozente as (
@@ -565,18 +727,18 @@ def add_vote(vote):
     and ba.bundesland = bsa.bundesland
     and bsa.partei = p.parteiid
     )
-    update bundeslandprozentzweit
+    update bundeslandprozentzwei
     set prozentzweitstimmen = np.prozentzweit
     from neue_prozente as np
-    where np.KurzBezeichnung = bundeslandprozenterst.parteikurz
-    and bundeslandprozentzweit.bundesland = np.bundesland
-    and bundeslandprozentzweit.wahljahr = 2021""".format(wahlkreis)
+    where np.KurzBezeichnung = bundeslandprozentzwei.parteikurz
+    and bundeslandprozentzwei.bundesland = np.bundesland
+    and bundeslandprozentzwei.wahljahr = 2021""".format(wahlkreis)
     cur.execute(update_percent_zweit)
     sql_con.commit()
     deutsch_prozente = """with neue_prozente as (
-    select dsa.partei, dsa.anzahlerststimmen*100.0000/(da.anzahlwaehlende-ba.ungueltigeerst) as prozenterst, dsa.anzahlzweitstimmen*100.0000/(da.anzahlwaehlende-da.ungueltigezweit)as prozentzweit
+    select dsa.partei, dsa.anzahlerststimmen*100.0000/(da.anzahlwaehlende-da.ungueltigeerst) as prozenterst, dsa.anzahlzweitstimmen*100.0000/(da.anzahlwaehlende-da.ungueltigezweit)as prozentzweit
     from DeutschlandAggregation da, deutschlandstimmenaggregation dsa
-    where ba.wahljahr = 2021
+    where da.wahljahr = 2021
     and da.wahljahr = dsa.wahljahr
     )
     -- update erst und zweit
@@ -644,7 +806,6 @@ def token_check_return_wahlzettel(token):
             print("Invalid Admin token")
             jsony = {"isValid": False, "wahlkreis": 0,
                      "erstimmenzettel": [], "zweitstimmenzettel": []}
-            print(jsony)
             return json.dumps(jsony)
         else:
             admin_wahlkreis_query = """select wahlkreis from adminTokens where token = '{}'""".format(
@@ -655,7 +816,6 @@ def token_check_return_wahlzettel(token):
             erstimmenzettel_admin = erststimmen_data(wahlkreis_admin)
             jsony = {"isValid": "Admin", "wahlkreis": wahlkreis_admin,
                      "erstimmenzettel": erstimmenzettel_admin, "zweitstimmenzettel": zweitstimmenzettel_admin}
-            print(jsony)
             return json.dumps(jsony)
 
     check_token_query = """
@@ -679,7 +839,6 @@ def token_check_return_wahlzettel(token):
         wahlkreis = cur.fetchall()[0][0]
         zweitstimmenzettel = zweitstimmen_data(wahlkreis)
         erstimmenzettel = erststimmen_data(wahlkreis)
-        print(hashed_token)
         delete_token_query = """
         DELETE FROM tokens
         WHERE token = '{}'
