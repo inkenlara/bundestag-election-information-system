@@ -289,6 +289,108 @@ def add_bulk_votes(bulkVotes: BulkVotes):
                               bulkVotes.list_votes_second[sec])
             add_vote_zweit(vote2)
             print(vote2.wahlkreis, vote2.zweit)
+    # TODO CHECK length ---------------------------
+    num_votes = len(bulkVotes.list_numbers_first)
+    # ------------------------------------------------------------------------------------
+    print(num_votes)
+    bundeslandagg = """update bundeslandaggregation
+    set anzahlwahlberechtigte = anzahlwahlberechtigte + {}, anzahlwaehlende = anzahlwaehlende + {}, bevoelkerung = bevoelkerung + {}
+    where wahljahr = 2021
+    and bundesland = (select bundesland from wahlkreis where wahlkreisid = {})""".format(num_votes, num_votes, num_votes, bulkVotes.wahlkreis)
+    cur.execute(bundeslandagg)
+    sql_con.commit()
+    deutschlandagg = """update DeutschlandAggregation
+    set anzahlwahlberechtigte = anzahlwahlberechtigte + {}, anzahlwaehlende = anzahlwaehlende + {}, bevoelkerung = bevoelkerung + {}
+    where wahljahr = 2021""".format(num_votes, num_votes, num_votes)
+    cur.execute(deutschlandagg)
+    sql_con.commit()
+    wahlkreisagg = """update wahlkreisaggregation
+    set anzahlwahlberechtigte = anzahlwahlberechtigte + {}, anzahlwaehlende = anzahlwaehlende + {}
+    where wahljahr = 2021
+    and wahlkreisid = {}""".format(num_votes, num_votes, bulkVotes.wahlkreis)
+    cur.execute(wahlkreisagg)
+    sql_con.commit()
+    update_percent_erst = """with neue_prozente as (
+    select ba.bundesland, p.KurzBezeichnung, bsa.anzahlerststimmen*100.0000/(ba.anzahlwaehlende-ba.ungueltigeerst) as prozenterst, bsa.anzahlzweitstimmen*100.0000/(ba.anzahlwaehlende-ba.ungueltigezweit)as prozentzweit
+    from bundeslandaggregation ba, bundeslandstimmenaggregation bsa, partei p
+    where ba.wahljahr = 2021
+    and ba.wahljahr = bsa.wahljahr
+    and ba.bundesland =  (select bundesland from wahlkreis where wahlkreisid = {})
+    and ba.bundesland = bsa.bundesland
+    and bsa.partei = p.parteiid
+    )
+    update bundeslandprozenterst
+    set prozenterststimmen = np.prozenterst
+    from neue_prozente as np
+    where np.KurzBezeichnung = bundeslandprozenterst.parteikurz
+    and bundeslandprozenterst.bundesland = np.bundesland
+    and bundeslandprozenterst.wahljahr = 2021""".format(bulkVotes.wahlkreis)
+    cur.execute(update_percent_erst)
+    sql_con.commit()
+    update_percent_zweit = """with neue_prozente as (
+    select ba.bundesland, p.KurzBezeichnung, bsa.anzahlerststimmen*100.0000/(ba.anzahlwaehlende-ba.ungueltigeerst) as prozenterst, bsa.anzahlzweitstimmen*100.0000/(ba.anzahlwaehlende-ba.ungueltigezweit)as prozentzweit
+    from bundeslandaggregation ba, bundeslandstimmenaggregation bsa, partei p
+    where ba.wahljahr = 2021
+    and ba.wahljahr = bsa.wahljahr
+    and ba.bundesland =  (select bundesland from wahlkreis where wahlkreisid = {})
+    and ba.bundesland = bsa.bundesland
+    and bsa.partei = p.parteiid
+    )
+    update bundeslandprozentzweit
+    set prozentzweitstimmen = np.prozentzweit
+    from neue_prozente as np
+    where np.KurzBezeichnung = bundeslandprozenterst.parteikurz
+    and bundeslandprozentzweit.bundesland = np.bundesland
+    and bundeslandprozentzweit.wahljahr = 2021""".format(bulkVotes.wahlkreis)
+    cur.execute(update_percent_zweit)
+    sql_con.commit()
+    deutsch_prozente = """with neue_prozente as (
+    select dsa.partei, dsa.anzahlerststimmen*100.0000/(da.anzahlwaehlende-ba.ungueltigeerst) as prozenterst, dsa.anzahlzweitstimmen*100.0000/(da.anzahlwaehlende-da.ungueltigezweit)as prozentzweit
+    from DeutschlandAggregation da, deutschlandstimmenaggregation dsa
+    where ba.wahljahr = 2021
+    and da.wahljahr = dsa.wahljahr
+    )
+    -- update erst und zweit
+    update deutschlandstimmenaggregation
+    set prozenterststimmen = np.prozenterst, prozentzweitstimmen = np.prozentzweit
+    from neue_prozente as np
+    where np.partei = deutschlandstimmenaggregation.partei
+    and deutschlandstimmenaggregation.wahljahr = 2021"""
+    cur.execute(deutsch_prozente)
+    sql_con.commit()
+    wahlkreis_erst_prozente = """with neue_prozente as (
+    select wa.wahlkreis, p.KurzBezeichnung as partei, wsa.anzahlzweitstimmen*100.0000/(wa.anzahlwaehlende-wa.ungueltigezweit)as prozentzweit, wsa.anzahlerststimmen*100.0000/(wa.anzahlwaehlende-wa.ungueltigeerst)as prozenterst
+    from wahlkreisaggretation wa, wahlkreisstimmenaggregation wsa, partei p
+    where wa.wahljahr = 2021
+    and wa.wahljahr = wsa.wahljahr
+    and wa.wahlkreis = {}
+    and wsa.partei = p.parteiid
+    )
+    -- update erst
+    update wahlkreisprozenterst
+    set prozenterststimmen = np.prozenterst
+    from neue_prozente as np
+    where np.partei = wahlkreisprozenterst.parteikurz
+    and np.wahlkreis = wahlkreisprozenterst.wahlkreis
+    and wahljahr = 2021""".format(bulkVotes.wahlkreis)
+    cur.execute(wahlkreis_erst_prozente)
+    sql_con.commit()
+    wahlkreis_zweit_prozente = """with neue_prozente as (
+    select wa.wahlkreis, p.KurzBezeichnung as partei, wsa.anzahlzweitstimmen*100.0000/(wa.anzahlwaehlende-wa.ungueltigezweit)as prozentzweit, wsa.anzahlerststimmen*100.0000/(wa.anzahlwaehlende-wa.ungueltigeerst)as prozenterst
+    from wahlkreisaggretation wa, wahlkreisstimmenaggregation wsa, partei p
+    where wa.wahljahr = 2021
+    and wa.wahljahr = wsa.wahljahr
+    and wa.wahlkreis = {}
+    and wsa.partei = p.parteiid
+    )
+    update wahlkreisprozentzweit
+    set prozentzweitstimmen = np.prozentzweit
+    from neue_prozente as np
+    where np.partei = wahlkreisprozentzweit.parteikurz
+    and np.wahlkreis = wahlkreisprozentzweit.wahlkreis
+    and wahljahr = 2021""".format(bulkVotes.wahlkreis)
+    cur.execute(wahlkreis_zweit_prozente)
+    sql_con.commit()
 
 
 def generate_token(kreis):
@@ -418,6 +520,104 @@ def add_vote(vote):
     values ({}, {}, {})
     """.format(max2 + 1, wahlkreis, zweitstimme_party)
     cur.execute(insert_vote2_query)
+    sql_con.commit()
+    bundeslandagg = """update bundeslandaggregation
+    set anzahlwahlberechtigte = anzahlwahlberechtigte + 1, anzahlwaehlende = anzahlwaehlende + 1, bevoelkerung = bevoelkerung + 1
+    where wahljahr = 2021
+    and bundesland = (select bundesland from wahlkreis where wahlkreisid = {})""".format(wahlkreis)
+    cur.execute(bundeslandagg)
+    sql_con.commit()
+    deutschlandagg = """update DeutschlandAggregation
+    set anzahlwahlberechtigte = anzahlwahlberechtigte + 1, anzahlwaehlende = anzahlwaehlende + 1, bevoelkerung = bevoelkerung + 1
+    where wahljahr = 2021"""
+    cur.execute(deutschlandagg)
+    sql_con.commit()
+    wahlkreisagg = """update wahlkreisaggregation
+    set anzahlwahlberechtigte = anzahlwahlberechtigte + 1, anzahlwaehlende = anzahlwaehlende + 1
+    where wahljahr = 2021
+    and wahlkreisid = {}""".format(wahlkreis)
+    cur.execute(wahlkreisagg)
+    sql_con.commit()
+    update_percent_erst = """with neue_prozente as (
+    select ba.bundesland, p.KurzBezeichnung, bsa.anzahlerststimmen*100.0000/(ba.anzahlwaehlende-ba.ungueltigeerst) as prozenterst, bsa.anzahlzweitstimmen*100.0000/(ba.anzahlwaehlende-ba.ungueltigezweit)as prozentzweit
+    from bundeslandaggregation ba, bundeslandstimmenaggregation bsa, partei p
+    where ba.wahljahr = 2021
+    and ba.wahljahr = bsa.wahljahr
+    and ba.bundesland =  (select bundesland from wahlkreis where wahlkreisid = {})
+    and ba.bundesland = bsa.bundesland
+    and bsa.partei = p.parteiid
+    )
+    update bundeslandprozenterst
+    set prozenterststimmen = np.prozenterst
+    from neue_prozente as np
+    where np.KurzBezeichnung = bundeslandprozenterst.parteikurz
+    and bundeslandprozenterst.bundesland = np.bundesland
+    and bundeslandprozenterst.wahljahr = 2021""".format(wahlkreis)
+    cur.execute(update_percent_erst)
+    sql_con.commit()
+    update_percent_zweit = """with neue_prozente as (
+    select ba.bundesland, p.KurzBezeichnung, bsa.anzahlerststimmen*100.0000/(ba.anzahlwaehlende-ba.ungueltigeerst) as prozenterst, bsa.anzahlzweitstimmen*100.0000/(ba.anzahlwaehlende-ba.ungueltigezweit)as prozentzweit
+    from bundeslandaggregation ba, bundeslandstimmenaggregation bsa, partei p
+    where ba.wahljahr = 2021
+    and ba.wahljahr = bsa.wahljahr
+    and ba.bundesland =  (select bundesland from wahlkreis where wahlkreisid = {})
+    and ba.bundesland = bsa.bundesland
+    and bsa.partei = p.parteiid
+    )
+    update bundeslandprozentzweit
+    set prozentzweitstimmen = np.prozentzweit
+    from neue_prozente as np
+    where np.KurzBezeichnung = bundeslandprozenterst.parteikurz
+    and bundeslandprozentzweit.bundesland = np.bundesland
+    and bundeslandprozentzweit.wahljahr = 2021""".format(wahlkreis)
+    cur.execute(update_percent_zweit)
+    sql_con.commit()
+    deutsch_prozente = """with neue_prozente as (
+    select dsa.partei, dsa.anzahlerststimmen*100.0000/(da.anzahlwaehlende-ba.ungueltigeerst) as prozenterst, dsa.anzahlzweitstimmen*100.0000/(da.anzahlwaehlende-da.ungueltigezweit)as prozentzweit
+    from DeutschlandAggregation da, deutschlandstimmenaggregation dsa
+    where ba.wahljahr = 2021
+    and da.wahljahr = dsa.wahljahr
+    )
+    -- update erst und zweit
+    update deutschlandstimmenaggregation
+    set prozenterststimmen = np.prozenterst, prozentzweitstimmen = np.prozentzweit
+    from neue_prozente as np
+    where np.partei = deutschlandstimmenaggregation.partei
+    and deutschlandstimmenaggregation.wahljahr = 2021"""
+    cur.execute(deutsch_prozente)
+    sql_con.commit()
+    wahlkreis_erst_prozente = """with neue_prozente as (
+    select wa.wahlkreis, p.KurzBezeichnung as partei, wsa.anzahlzweitstimmen*100.0000/(wa.anzahlwaehlende-wa.ungueltigezweit)as prozentzweit, wsa.anzahlerststimmen*100.0000/(wa.anzahlwaehlende-wa.ungueltigeerst)as prozenterst
+    from wahlkreisaggretation wa, wahlkreisstimmenaggregation wsa, partei p
+    where wa.wahljahr = 2021
+    and wa.wahljahr = wsa.wahljahr
+    and wa.wahlkreis = {}
+    and wsa.partei = p.parteiid
+    )
+    -- update erst
+    update wahlkreisprozenterst
+    set prozenterststimmen = np.prozenterst
+    from neue_prozente as np
+    where np.partei = wahlkreisprozenterst.parteikurz
+    and np.wahlkreis = wahlkreisprozenterst.wahlkreis
+    and wahljahr = 2021""".format(wahlkreis)
+    cur.execute(wahlkreis_erst_prozente)
+    sql_con.commit()
+    wahlkreis_zweit_prozente = """with neue_prozente as (
+    select wa.wahlkreis, p.KurzBezeichnung as partei, wsa.anzahlzweitstimmen*100.0000/(wa.anzahlwaehlende-wa.ungueltigezweit)as prozentzweit, wsa.anzahlerststimmen*100.0000/(wa.anzahlwaehlende-wa.ungueltigeerst)as prozenterst
+    from wahlkreisaggretation wa, wahlkreisstimmenaggregation wsa, partei p
+    where wa.wahljahr = 2021
+    and wa.wahljahr = wsa.wahljahr
+    and wa.wahlkreis = {}
+    and wsa.partei = p.parteiid
+    )
+    update wahlkreisprozentzweit
+    set prozentzweitstimmen = np.prozentzweit
+    from neue_prozente as np
+    where np.partei = wahlkreisprozentzweit.parteikurz
+    and np.wahlkreis = wahlkreisprozentzweit.wahlkreis
+    and wahljahr = 2021""".format(wahlkreis)
+    cur.execute(wahlkreis_zweit_prozente)
     sql_con.commit()
 
 
