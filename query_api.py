@@ -283,14 +283,12 @@ def add_bulk_votes(bulkVotes: BulkVotes):
                              bulkVotes.token, bulkVotes.list_votes_first[fir])
             add_vote_erst(vote1)
             print(vote1.wahlkreis, vote1.erst)
-            # sleep(1)
     for sec in range(0, len(bulkVotes.list_numbers_second)):
         for k in range(0, bulkVotes.list_numbers_second[sec]):
             vote2 = VoteZweit(bulkVotes.wahlkreis, bulkVotes.token,
                               bulkVotes.list_votes_second[sec])
             add_vote_zweit(vote2)
             print(vote2.wahlkreis, vote2.zweit)
-            # sleep(1)
 
 
 def generate_token(kreis):
@@ -931,16 +929,16 @@ and k.wahljahr = 2021""")
 
 def query3_stimmen_entwicklung(kreis):
     cur.execute("""with vorjahr as (
-    select w.wahlkreis, pz.parteikurz, w.anzahlstimmen, pz.prozentzweitstimmen
-    from wahlkreisprozentzweit pz, wahlkreiszweitstimmenaggregation w, partei p
+    select w.wahlkreis, pz.parteikurz, w.anzahlzweitstimmen, pz.prozentzweitstimmen
+    from wahlkreisprozentzweit pz, wahlkreisstimmenaggregation w, partei p
     where pz.wahljahr = 2017
     and w.wahljahr = 2017
     and pz.wahlkreis = w.wahlkreis
     and w.partei = p.parteiid
     and p.KurzBezeichnung = pz.parteikurz
 )
-select w.wahlkreis, pz.parteikurz, w.anzahlstimmen, pz.prozentzweitstimmen, w.anzahlstimmen-v.anzahlstimmen as stimmendifferenz, pz.prozentzweitstimmen-v.prozentzweitstimmen as prozentdifferenz
-from wahlkreisprozentzweit pz, wahlkreiszweitstimmenaggregation w, partei p, vorjahr v
+select w.wahlkreis, pz.parteikurz, w.anzahlzweitstimmen, pz.prozentzweitstimmen, w.anzahlzweitstimmen-v.anzahlzweitstimmen as stimmendifferenz, pz.prozentzweitstimmen-v.prozentzweitstimmen as prozentdifferenz
+from wahlkreisprozentzweit pz, wahlkreisstimmenaggregation w, partei p, vorjahr v
 where pz.wahljahr = 2021
 and w.wahljahr = 2021
 and pz.wahlkreis = w.wahlkreis
