@@ -77,11 +77,21 @@ where wahljahr = 2021
 and wahlkreisid = {}
 
 --WAHLKREISSTIMMENAGGREGATION
+-- erststimmen
 update wahlkreisstimmenaggregation
-set anzahlstimmen = anzahlstimmen + {}
+set anzahlerststimmen = anzahlerststimmen + {}
 where wahljahr = 2021
 and wahlkreisid = {}
 and partei = {}
+
+-- zweitstimmen
+update wahlkreisstimmenaggregation
+set anzahlzweitstimmen = anzahlzweitstimmen + {}
+where wahljahr = 2021
+and wahlkreisid = {}
+and partei = {}
+
+
 
 
 -- BUNDESLANDPROZENTERST + BUNDESLANDPROZENTZWEIT
