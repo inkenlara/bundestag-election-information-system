@@ -88,11 +88,12 @@ CREATE TABLE DeutschlandAggregation(
 );	
 
 
-CREATE TABLE WahlKreisZweitStimmenAggregation (
+CREATE TABLE WahlKreisStimmenAggregation (
 	WahlJahr int NOT NULL,
 	Partei int references Partei,
 	WahlKreis int references WahlKreis,
-	AnzahlStimmen int NOT NULL,
+	AnzahlZweitStimmen int NOT NULL,
+	AnzahlErstStimmen int NOT NULL,
 	PRIMARY KEY(Partei, WahlKreis, WahlJahr)
 );
 

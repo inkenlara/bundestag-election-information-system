@@ -481,7 +481,7 @@ def deutschland():
     ParteiName varchar(200)"""
 
 
-def WahlKreisZweitStimmenAggregation():
+def WahlKreisStimmenAggregation():
     final = []
     with open(path_kerg, encoding='utf-8') as f:
         csv_buffer = csv.reader(f, delimiter=';', quotechar='"')
@@ -499,15 +499,21 @@ def WahlKreisZweitStimmenAggregation():
                 ProzentWahlhKreis = 0
                 WahlKreis = row[0]
                 i = 21
+                j = 19
                 for partei in partei_namen:
                     Partei = partei_namen.index(partei) + 1
                     if (not row[i]):
                         AnzahlStimmen = 0
                     else:
                         AnzahlStimmen = row[i]
-                    final.append([WahlJahr, Partei, WahlKreis,
+                    if (not row[j]):
+                        AnzahlErstStimmen = 0
+                    else:
+                        AnzahlErstStimmen = row[j]
+                    final.append([WahlJahr, Partei, WahlKreis, AnzahlErstStimmen,
                                  AnzahlStimmen])
                     i = i + 4
+                    j = j + 4
     with open(path_kerg, encoding='utf-8') as f:
         csv_buffer = csv.reader(f, delimiter=';', quotechar='"')
         partei_namen = []
@@ -524,17 +530,23 @@ def WahlKreisZweitStimmenAggregation():
                 ProzentWahlhKreis = 0
                 WahlKreis = int(row[0])
                 i = 21
+                j = 19
                 for partei in partei_namen:
                     Partei = partei_namen.index(partei) + 1
                     if (not row[i + 1]):
                         AnzahlStimmen = 0
                     else:
                         AnzahlStimmen = row[i + 1]
-                    final.append([WahlJahr, Partei, WahlKreis,
+                    if (not row[j + 1]):
+                        AnzahlErstStimmen = 0
+                    else:
+                        AnzahlErstStimmen = row[j + 1]
+                    final.append([WahlJahr, Partei, WahlKreis, AnzahlErstStimmen, 
                                  AnzahlStimmen])
                     i = i + 4
+                    j = j + 4
     cur.executemany(
-        'INSERT INTO WahlKreisZweitStimmenAggregation VALUES(%s, %s, %s, %s)', final)
+        'INSERT INTO WahlKreisStimmenAggregation VALUES(%s, %s, %s, %s, %s)', final)
 
 
 """   Wahljahr int NOT NULL,
@@ -969,7 +981,7 @@ cur.execute("truncate table wahlkreis cascade")
 cur.execute("truncate table WahlKreisAggretation cascade")
 cur.execute("truncate table bundeslandaggregation cascade")
 cur.execute("truncate table deutschlandaggregation cascade")
-cur.execute("truncate table WahlKreisZweitStimmenAggregation cascade")
+cur.execute("truncate table WahlKreisStimmenAggregation cascade")
 cur.execute("truncate table BundeslandStimmenAggregation cascade")
 cur.execute("truncate table DeutschlandStimmenAggregation cascade")
 cur.execute("truncate table BundesLandProzentErst cascade")
@@ -989,7 +1001,7 @@ partei()
 WahlKreisAggretation()
 BundesLandAggregation()
 deutschland()
-WahlKreisZweitStimmenAggregation()
+WahlKreisStimmenAggregation()
 BundeslandStimmenAggregation()
 DeutschlandStimmenAggregation()
 BundesLandProzentErst()

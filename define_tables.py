@@ -58,7 +58,7 @@ cur.execute("drop table if exists wahlkreis cascade")
 cur.execute("drop table if exists WahlKreisAggretation cascade")
 cur.execute("drop table if exists bundeslandaggregation cascade")
 cur.execute("drop table if exists deutschlandaggregation cascade")
-cur.execute("drop table if exists WahlKreisZweitStimmenAggregation cascade")
+cur.execute("drop table if exists WahlKreisStimmenAggregation cascade")
 cur.execute("drop table if exists BundeslandStimmenAggregation cascade")
 cur.execute("drop table if exists DeutschlandStimmenAggregation cascade")
 cur.execute("drop table if exists BundesLandProzentErst cascade")
@@ -178,11 +178,12 @@ CREATE TABLE DeutschlandAggregation(
 """)
 
 cur.execute("""
-CREATE TABLE WahlKreisZweitStimmenAggregation (
+CREATE TABLE WahlKreisStimmenAggregation (
 	WahlJahr int NOT NULL,
 	Partei int references Partei,
 	WahlKreis int references WahlKreis,
-	AnzahlStimmen int NOT NULL,
+    AnzahlErstStimmen int NOT NULL,
+	AnzahlZweitStimmen int NOT NULL,
 	PRIMARY KEY(Partei, WahlKreis, WahlJahr)
 );
 """)
