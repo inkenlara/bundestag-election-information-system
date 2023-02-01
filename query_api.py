@@ -23,6 +23,7 @@ from pydantic import BaseModel
 app = FastAPI()
 
 origins = [
+    "*",
     "http://localhost:3000",
     "http://localhost",
     "http://localhost:8080"
@@ -691,15 +692,8 @@ def token_check_return_wahlzettel(token):
 
 
 def query1_chart2017():
-    cur.execute("""""")
-
-    party = []
-    performance = []
-    mobile_records = cur.fetchall()
-    for i in mobile_records:
-        party.append(i[0])
-        performance.append(int(i[1]))
-    jsony = dict(zip(party, performance))
+    jsony = {"CSU": 46, "CDU": 200, "DIE LINKE": 69,
+             "FDP": 80, "SPD": 153, "GR\u00dcNE": 67, "AfD": 94}
     return json.dumps(jsony)
 
 
@@ -718,20 +712,7 @@ WHERE s.partei = p.parteiid""")
 
 
 def query1_table2017():
-    cur.execute("""""")
-
-    data = cur.fetchall()
-    str_table = '<table>'
-    str_table = str_table + '<tr>'
-    str_table = str_table + '<th>Partei</th>'
-    str_table = str_table + '<th>Sitze</th>'
-    str_table = str_table + '</tr>'
-    for i in data:
-        str_table = str_table + '<tr>'
-        str_table = str_table + '<td>' + \
-            str(i[0]) + '</td><td>' + str(i[1]) + '</td>'
-        str_table = str_table + '</tr>'
-    str_table = str_table + ' </table>'
+    str_table = """<table><tr><th>Partei</th><th>Sitze</th></tr><tr><td>CSU</td><td>46</td></tr><tr><td>CDU</td><td>200</td></tr><tr><td>DIE LINKE</td><td>69</td></tr><tr><td>FDP</td><td>80</td></tr><tr><td>SPD</td><td>153</td></tr><tr><td>GR\u00dcNE</td><td>67</td></tr><tr><td>AfD</td><td>94</td></tr><tr><td></table>"""
     jsony = {"data": str_table}
     return json.dumps(jsony)
 
