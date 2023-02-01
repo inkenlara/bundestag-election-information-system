@@ -76,8 +76,8 @@ set ungueltigezweit = ungueltigezweit + {}
 where wahljahr = 2021
 and wahlkreisid = {}
 
---WAHLKREISZWEITSTIMMENAGGREGATION
-update wahlkreiszweitstimmenaggregation
+--WAHLKREISSTIMMENAGGREGATION
+update wahlkreisstimmenaggregation
 set anzahlstimmen = anzahlstimmen + {}
 where wahljahr = 2021
 and wahlkreisid = {}
@@ -125,15 +125,23 @@ where np.partei = deutschlandstimmenaggregation.partei
 and deutschlandstimmenaggregation.wahljahr = 2021
 
 
--- WAHLKREISPROZENTERST + WAHLKREISPROZENTZWEIT -- TODO: WAHLKREISPROZENTERST NOT POSSIBLE RIGHT NOW
+-- WAHLKREISPROZENTERST + WAHLKREISPROZENTZWEIT
 with neue_prozente as (
-    select wa.wahlkreis, p.KurzBezeichnung as partei, wsa.anzahlstimmen*100.0000/(wa.anzahlwaehlende-wa.ungueltigezweit)as prozentzweit
-    from wahlkreisaggretation wa, wahlkreiszweitstimmenaggregation wsa, partei p
+    select wa.wahlkreis, p.KurzBezeichnung as partei, wsa.anzahlzweitstimmen*100.0000/(wa.anzahlwaehlende-wa.ungueltigezweit)as prozentzweit, wsa.anzahlerststimmen*100.0000/(wa.anzahlwaehlende-wa.ungueltigeerst)as prozenterst
+    from wahlkreisaggretation wa, wahlkreisstimmenaggregation wsa, partei p
     where wa.wahljahr = 2021
     and wa.wahljahr = wsa.wahljahr
     and wa.wahlkreis = {}
     and wsa.partei = p.parteiid
 )
+-- update erst
+update wahlkreisprozenterst
+set prozenterststimmen = np.prozenterst
+from neue_prozente as np
+where np.partei = wahlkreisprozenterst.parteikurz
+and np.wahlkreis = wahlkreisprozenterst.wahlkreis
+and wahljahr = 2021
+
 -- update zweit
 update wahlkreisprozentzweit
 set prozentzweitstimmen = np.prozentzweit
