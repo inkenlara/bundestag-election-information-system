@@ -119,34 +119,6 @@ def WahlkreisStimmenGenerator(WahlkreisID, firstIDErst, firstIDZweit):
 
     return erststimmen, zweitstimmen
 
-    """
-    # get number of votes for each candidate
-    with open(path_kands_2021) as f2:
-        csv_buffer = csv.reader(f2, delimiter=';', quotechar='"')
-
-        for i in range(8):
-            next(csv_buffer)
-
-        candidate_stimmen = {}
-        for row in csv_buffer:
-            kreis = int(row[19]) if row[19] and row[19].isdecimal() else None
-            if kreis == WahlkreisID:
-                candidate_name = row[5]
-                candidate_surname = row[4]
-                partei = row[23]
-
-                # TODO: gilt nur, wenn es nur eine EB in dem Wahlkreis gibt:
-                if (partei[:3] == "EB:"):
-                    stimmen = partyErstZweitStimmen["Übrige"][0]
-                else:
-                    stimmen = partyErstZweitStimmen[partei][0]
-
-                candidate_stimmen[partei] = [
-                    candidate_name, candidate_surname, stimmen]
-
-        print(partyErstZweitStimmen)
-    """
-
 
 def ungueltigeStimmen(WahlkreisID, firstIDErst, firstIDZweit):
     # get number of votes for each party
@@ -269,8 +241,25 @@ try:
     cur = conn.cursor()
     print("Success")
 
-    cur.execute("truncate table erststimmen cascade")
-    cur.execute("truncate table zweitstimmen cascade")
+    cur.execute("drop table if exists erststimmen cascade")
+    cur.execute("drop table if exists zweitstimmen cascade")
+    conn.commit()
+
+    cur.execute("""
+    CREATE TABLE ErstStimmen(
+        ErstimmID int primary key,
+        WahlKreis int NOT NULL references WahlKreis,
+        Partei int references Partei ON DELETE SET NULL
+    );
+    """)
+
+    cur.execute("""
+    CREATE TABLE ZweitStimmen(
+        ZweitstimmID int primary key,
+        WahlKreis int NOT NULL references WahlKreis,
+        Partei int references Partei ON DELETE SET NULL
+    );
+    """)
     conn.commit()
 
     copyDataStartTime = timeit.default_timer()

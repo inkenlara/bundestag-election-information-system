@@ -69,8 +69,6 @@ cur.execute("drop table if exists kandidaten cascade")
 cur.execute("drop table if exists direktkandidaten cascade")
 cur.execute("drop table if exists listenkandidaten cascade")
 cur.execute("drop table if exists strukturdaten cascade")
-cur.execute("drop table if exists erststimmen cascade")
-cur.execute("drop table if exists zweitstimmen cascade")
 
 sql_con.commit()
 
@@ -122,22 +120,6 @@ CREATE TABLE ListenKandidaten(
 	Bundesland int NOT NULL references BundesLand,
 	ListenPlatz int not null,
 	FOREIGN KEY (KandidatID) REFERENCES Kandidaten ON DELETE CASCADE
-);
-""")
-
-cur.execute("""
-CREATE TABLE ErstStimmen(
-	ErstimmID int primary key,
-	WahlKreis int NOT NULL references WahlKreis,
-	Partei int references Partei ON DELETE SET NULL
-);
-""")
-
-cur.execute("""
-CREATE TABLE ZweitStimmen(
-	ZweitstimmID int primary key,
-	WahlKreis int NOT NULL references WahlKreis,
-	Partei int references Partei ON DELETE SET NULL
 );
 """)
 
