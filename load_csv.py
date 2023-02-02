@@ -659,7 +659,8 @@ def DirektmandateBundeslandStimmenAggregation():
         then (select direktmandate from aggregated_direktmandate d where b.bundesland = d.bundesland and b.partei = d.parteiid)
         else 0
         end
-        """.format(wahljahr)
+        where wahljahr = {}
+        """.format(wahljahr, wahljahr)
 
         cur.execute(direktmandate_query)
 
@@ -675,9 +676,9 @@ def DirektmandateDeutschlandStimmenAggregation():
         group by partei)
         update deutschlandstimmenaggregation d
         set direktmandate = (select direktmandate from aggregation a where a.partei = d.partei)
-        """.format(wahljahr)
-
-    cur.execute(direktmandate_query)
+        where wahljahr = {}
+        """.format(wahljahr, wahljahr)
+        cur.execute(direktmandate_query)
 
 
 """Wahljahr int NOT NULL,

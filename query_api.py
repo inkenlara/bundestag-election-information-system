@@ -923,7 +923,7 @@ direktmandate as(
 -- anzahl sitze pro partei pro bundesland minus die direktmandate, die schon verbraucht wurden
 sitze_fuer_liste as(
     select b.partei, b.bundesland, (s.sitze-b.direktmandate) as listensitze
-    from sitzverteilungparteienprobundesland s, bundeslandstimmenaggregation b 
+    from sitzverteilungparteienprobundesland2017 s, bundeslandstimmenaggregation b 
     where b.wahljahr = 2017
     and s.partei = b.partei
     and s.bundesland = b.bundesland
