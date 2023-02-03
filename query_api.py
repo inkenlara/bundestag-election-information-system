@@ -1287,7 +1287,8 @@ and pz.wahlkreis = w.wahlkreis
 and w.partei = p.parteiid
 and p.KurzBezeichnung = pz.parteikurz
 and w.wahlkreis = v.wahlkreis
-and p.KurzBezeichnung = v.parteikurz""")
+and p.KurzBezeichnung = v.parteikurz
+order by pz.prozentzweitstimmen desc""")
     data = cur.fetchall()
     str_table = '<table>'
     str_table = str_table + '<tr>'
@@ -1617,7 +1618,8 @@ select {} as wahlkreis, wk.wahlkreisname, p.kurzbezeichnung, partei, stimmen_pro
 from stimmen_pro_partei, stimmen_gesamt, partei p, wahlkreis wk
 WHERE partei = p.parteiid
 and wk.wahlkreisid = {}
-and p.parteiid != -1""".format(kreis, kreis, kreis, kreis, kreis))
+and p.parteiid != -1
+order by stimmen_prozentual desc""".format(kreis, kreis, kreis, kreis, kreis))
     data = cur.fetchall()
     str_table = '<table>'
     str_table = str_table + '<tr>'
