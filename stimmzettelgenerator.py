@@ -250,6 +250,7 @@ try:
         ErstimmID int primary key,
         WahlKreis int NOT NULL references WahlKreis,
         Partei int references Partei ON DELETE SET NULL
+    CREATE INDEX erststimmen_wahlkreis_idx ON public.erststimmen USING hash (wahlkreis)
     );
     """)
 
@@ -258,6 +259,7 @@ try:
         ZweitstimmID int primary key,
         WahlKreis int NOT NULL references WahlKreis,
         Partei int references Partei ON DELETE SET NULL
+    CREATE INDEX zweitstimmen_wahlkreis_idx ON public.zweitstimmen USING hash (wahlkreis)
     );
     """)
     conn.commit()

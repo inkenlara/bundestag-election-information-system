@@ -1438,6 +1438,13 @@ def query6_table_loser2017():
                     and w1.wahlkreis = w2.wahlkreis 
                     and w2.prozenterststimmen > w1.prozenterststimmen)
 ),
+-- suche fuer jede partei wahlkreis, in dem sie angetreten ist
+angetreten_in as (select p.kurzbezeichnung as parteikurz, dk.wahlkreis
+from direktkandidaten dk, kandidaten k, partei p
+where dk.kandidatid = k.kandidatid
+and k.partei = p.parteiid
+and k.wahljahr = 2017
+),
 -- differenz zwischen gewinner und parteien
 differenz as(
     select w.wahljahr, w.wahlkreis, w.parteikurz, s.prozenterststimmen-w.prozenterststimmen as differenz
@@ -1446,9 +1453,10 @@ differenz as(
     and s.wahljahr = 2017
     and w.parteikurz not in (select parteikurz from sieger) 
     and w.wahlkreis = s.wahlkreis
+    and exists (select * from angetreten_in a where a.parteikurz = w.parteikurz and w.wahlkreis = a.wahlkreis)
 ),
 -- suche fuer jede partei wahlkreis mit kleinster differenz
-kleinste_differenz as (select d1.wahljahr, d1.parteikurz, d1.wahlkreis ,d1.differenz
+kleinste_differenz as (select d1.wahljahr, d1.parteikurz, d1.wahlkreis, d1.differenz
 from differenz d1
 where not exists (
     select *
@@ -1457,7 +1465,6 @@ where not exists (
     and d2.differenz < d1.differenz
      )
 )
--- join mit kandidaten
 select k.wahljahr, kd.wahlkreis, wk.wahlkreisname, kd.parteikurz, kd.differenz, k.kandidatid, k.firstname, k.lastname
 from kleinste_differenz kd, kandidaten k, direktkandidaten dk, partei p, wahlkreis as wk
 where kd.parteikurz = p.KurzBezeichnung
@@ -1495,6 +1502,13 @@ def query6_table_loser():
                     and w1.wahlkreis = w2.wahlkreis 
                     and w2.prozenterststimmen > w1.prozenterststimmen)
 ),
+-- suche fuer jede partei wahlkreis, in dem sie angetreten ist
+angetreten_in as (select p.kurzbezeichnung as parteikurz, dk.wahlkreis
+from direktkandidaten dk, kandidaten k, partei p
+where dk.kandidatid = k.kandidatid
+and k.partei = p.parteiid
+and k.wahljahr = 2021
+),
 -- differenz zwischen gewinner und parteien
 differenz as(
     select w.wahljahr, w.wahlkreis, w.parteikurz, s.prozenterststimmen-w.prozenterststimmen as differenz
@@ -1503,9 +1517,10 @@ differenz as(
     and s.wahljahr = 2021
     and w.parteikurz not in (select parteikurz from sieger) 
     and w.wahlkreis = s.wahlkreis
+    and exists (select * from angetreten_in a where a.parteikurz = w.parteikurz and w.wahlkreis = a.wahlkreis)
 ),
 -- suche fuer jede partei wahlkreis mit kleinster differenz
-kleinste_differenz as (select d1.wahljahr, d1.parteikurz, d1.wahlkreis ,d1.differenz
+kleinste_differenz as (select d1.wahljahr, d1.parteikurz, d1.wahlkreis, d1.differenz
 from differenz d1
 where not exists (
     select *
@@ -1514,7 +1529,6 @@ where not exists (
     and d2.differenz < d1.differenz
      )
 )
--- join mit kandidaten
 select k.wahljahr, kd.wahlkreis, wk.wahlkreisname, kd.parteikurz, kd.differenz, k.kandidatid, k.firstname, k.lastname
 from kleinste_differenz kd, kandidaten k, direktkandidaten dk, partei p, wahlkreis as wk
 where kd.parteikurz = p.KurzBezeichnung
