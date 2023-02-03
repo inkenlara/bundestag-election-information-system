@@ -756,6 +756,7 @@ def add_vote(vote):
     from wahlkreisaggretation wa, wahlkreisstimmenaggregation wsa, partei p
     where wa.wahljahr = 2021
     and wa.wahljahr = wsa.wahljahr
+    and wsa.wahlkreis = wa.wahlkreis
     and wa.wahlkreis = {}
     and wsa.partei = p.parteiid
     )
@@ -773,6 +774,7 @@ def add_vote(vote):
     from wahlkreisaggretation wa, wahlkreisstimmenaggregation wsa, partei p
     where wa.wahljahr = 2021
     and wa.wahljahr = wsa.wahljahr
+    and wsa.wahlkreis = wa.wahlkreis
     and wa.wahlkreis = {}
     and wsa.partei = p.parteiid
     )
