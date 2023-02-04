@@ -1837,7 +1837,8 @@ WHERE WahlKreis IN
 AND (parteikurz = 'SSW') AND wahljahr = 2021
 					GROUP BY parteikurz),
 					  
-most_educated_total as (					  
+most_educated_total as (
+SELECT parteikurz, avg, 'high' as category FROM afd_average_most_educated UNION 					  
 SELECT parteikurz, avg, 'high' as category FROM cdu_csu_average_most_educated UNION 
 SELECT parteikurz, avg, 'high' as category FROM spd_average_most_educated UNION
 SELECT parteikurz, avg, 'high' as category FROM fdp_average_most_educated UNION

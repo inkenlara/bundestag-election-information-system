@@ -47,10 +47,11 @@ const PieChartHigh = () => {
     labels: Object.keys(data),
     datasets: [
       {
-        // CDU, linke, FDP, Grune, SDP
+        // AfD, CDU, linke, FDP, Grune, SDP
         label: "Durchschnittlicher Stimmenanteil in %",
         data: Object.values(data),
         backgroundColor: [
+          "rgba(0, 153, 255, 0.2)",
           "rgba(0, 0, 0, 0.2)",
           "rgba(255, 0, 153, 0.2)",
           "rgba(238, 255, 0, 0.2)",
@@ -58,6 +59,7 @@ const PieChartHigh = () => {
           "rgba(222, 78, 97, 0.2)",
         ],
         borderColor: [
+          "rgba(0, 153, 255, 1)",
           "rgba(0, 0, 0, 1)",
           "rgba(255, 0, 153, 1)",
           "rgba(238, 255, 0, 1)",
