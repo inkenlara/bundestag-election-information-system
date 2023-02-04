@@ -5,36 +5,30 @@ export const Nav = styled.nav`
   background: #3f51b5;
   height: 45px;
   display: flex;
-  justify-content: space-between;
-  padding: 0.2rem calc((100vw - 1000px) / 2);
+  justify-content: center;
   z-index: 12;
 `;
 
 export const NavLink = styled(Link)`
-  border-width: 1px;
-  border-style: solid;
-  border-color: #3f51b5;
-  background-color: #add8e6;
-  margin-left: 4px;
-  margin-right: 4px;
-  border-radius: 25px;
-  color: #3f51b5;
+  color: white;
   display: flex;
   align-items: center;
-  text-decoration: none;
   padding: 0 1rem;
   height: 100%;
   cursor: pointer;
+  text-decoration: none;
   &.active {
-    color: #4d4dff;
+    text-decoration: underline;
+  }
+  &:hover {
+    text-decoration: underline;
   }
 `;
 
 export const NavMenu = styled.div`
   display: flex;
-  align-items: left;
+  justify-content: center;
   width: 100%;
-  margin-left: -40px;
   /* Second Nav */
   /* margin-right: 24px; */
   /* Third Nav */
