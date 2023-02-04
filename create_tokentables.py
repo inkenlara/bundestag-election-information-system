@@ -6,8 +6,6 @@ import sys
 try:
     import psycopg2
 except ImportError:
-    import pip
-    pip.main(['install', '--user', 'psycopg2'])
     import psycopg2
 
 

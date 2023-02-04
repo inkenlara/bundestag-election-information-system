@@ -4,8 +4,6 @@ import sys
 try:
     import psycopg2
 except ImportError:
-    import pip
-    pip.main(['install', '--user', 'psycopg2'])
     import psycopg2
 try:
     import numpy as np
@@ -56,27 +54,29 @@ wahljahre = [2017, 2021]
 for wahljahr in wahljahre:
     if wahljahr == 2017:
         cur.execute(
-        "DROP MATERIALIZED VIEW IF EXISTS sitzverteilungparteienprobundesland2017")
+            "DROP MATERIALIZED VIEW IF EXISTS sitzverteilungparteienprobundesland2017")
         sql_con.commit()
         cur.execute("DROP TABLE IF EXISTS sitzverteilungbundestag2017")
         sql_con.commit()
         cur.execute(
-        "DROP MATERIALIZED VIEW IF EXISTS vorlaufigesitzverteilungparteienprobundesland2017")
-        sql_con.commit()    
+            "DROP MATERIALIZED VIEW IF EXISTS vorlaufigesitzverteilungparteienprobundesland2017")
+        sql_con.commit()
         cur.execute("DROP MATERIALIZED VIEW IF EXISTS ParteienInBT2017")
-        cur.execute("DROP MATERIALIZED VIEW IF EXISTS VorlaeufigeSitzverteilung")
+        cur.execute(
+            "DROP MATERIALIZED VIEW IF EXISTS VorlaeufigeSitzverteilung")
         sql_con.commit()
     else:
         cur.execute(
-        "DROP MATERIALIZED VIEW IF EXISTS sitzverteilungparteienprobundesland")
+            "DROP MATERIALIZED VIEW IF EXISTS sitzverteilungparteienprobundesland")
         sql_con.commit()
         cur.execute("DROP TABLE IF EXISTS sitzverteilungbundestag")
         sql_con.commit()
         cur.execute(
-        "DROP MATERIALIZED VIEW IF EXISTS vorlaufigesitzverteilungparteienprobundesland")
-        sql_con.commit()    
+            "DROP MATERIALIZED VIEW IF EXISTS vorlaufigesitzverteilungparteienprobundesland")
+        sql_con.commit()
         cur.execute("DROP MATERIALIZED VIEW IF EXISTS ParteienInBT")
-        cur.execute("DROP MATERIALIZED VIEW IF EXISTS VorlaeufigeSitzverteilung")
+        cur.execute(
+            "DROP MATERIALIZED VIEW IF EXISTS VorlaeufigeSitzverteilung")
         sql_con.commit()
 
     ###########################################################################################
@@ -102,7 +102,7 @@ for wahljahr in wahljahre:
         where kurzbezeichnung = 'SSW'
         """.format(wahljahr, wahljahr)
         load_bundestags_parteien = "CREATE MATERIALIZED VIEW ParteienInBT AS {};".format(
-        bundestags_parteien)
+            bundestags_parteien)
     else:
         bundestags_parteien = """
         select Partei
@@ -121,13 +121,11 @@ for wahljahr in wahljahre:
     cur.execute(load_bundestags_parteien)
     sql_con.commit()
 
-
     ######################################################################################
     ####################################### Step 1 #######################################
     ######################################################################################
 
     # Distribute the 598 seats in the bundestag to the Länder according to their population
-
 
     divisor_query = """
     select (1.0000 * bevoelkerung)/598 as divisor
@@ -137,7 +135,6 @@ for wahljahr in wahljahre:
 
     cur.execute(divisor_query)
     divisor = round(cur.fetchall()[0][0])
-
 
     while (True):
         vorlaeufige_sitzverteilung_summe_query = """
@@ -173,7 +170,6 @@ for wahljahr in wahljahre:
     cur.execute(vorlaeufige_sitzverteilung)
     sql_con.commit()
 
-
     #########################################################################################
     ####################################### Schritt 2 #######################################
     #########################################################################################
@@ -184,6 +180,7 @@ for wahljahr in wahljahre:
 
     # input: bundeslandID int
     # output: list((bundesland int, partei int, sitze int))
+
     def sitze_parteien_pro_bundesland(bundeslandID):
         if wahljahr == 2017:
             p = "parteieninbt2017"
@@ -244,11 +241,11 @@ for wahljahr in wahljahre:
 
         return divisor_query
 
-
     total_query = ""
     for i in range(1, 17):
         if (i != 16):
-            total_query = total_query + sitze_parteien_pro_bundesland(i) + "union"
+            total_query = total_query + \
+                sitze_parteien_pro_bundesland(i) + "union"
         else:
             total_query = total_query + sitze_parteien_pro_bundesland(i)
 
@@ -257,11 +254,10 @@ for wahljahr in wahljahre:
             total_query)
     else:
         vorlaeufige_sitzverteilung_partei_bundesland = "CREATE MATERIALIZED VIEW VorlaufigeSitzverteilungParteienProBundesland AS {};".format(
-            total_query)   
+            total_query)
 
     cur.execute(vorlaeufige_sitzverteilung_partei_bundesland)
     sql_con.commit()
-
 
     #########################################################################################
     ####################################### Schritt 3 #######################################
@@ -344,11 +340,10 @@ for wahljahr in wahljahre:
             sitze_bundestag_query)
     else:
         sitze_bundestag = "CREATE TABLE SitzverteilungBundestag AS {};".format(
-        sitze_bundestag_query)
+            sitze_bundestag_query)
 
     cur.execute(sitze_bundestag)
     sql_con.commit()
-
 
     #########################################################################################
     ####################################### Schritt 4 #######################################
@@ -414,7 +409,6 @@ for wahljahr in wahljahre:
 
         return endgueltig_query
 
-
     parteien_bt_query = """
     select partei
     from {}
@@ -436,7 +430,7 @@ for wahljahr in wahljahre:
             total_query)
     else:
         sitzverteilung_partei_bundesland = "CREATE MATERIALIZED VIEW SitzverteilungParteienProBundesland AS {};".format(
-            total_query)    
+            total_query)
     cur.execute(sitzverteilung_partei_bundesland)
 
     cur.execute("DROP MATERIALIZED VIEW IF EXISTS VorlaeufigeSitzverteilung")

@@ -7,8 +7,6 @@ except ImportError:
 try:
     import psycopg2
 except ImportError:
-    import pip
-    pip.main(['install', '--user', 'psycopg2'])
     import psycopg2
 import random
 from typing import List
@@ -293,7 +291,7 @@ def add_bulk_votes(bulkVotes: BulkVotes):
 
     ungueltig_erst = bulkVotes.list_numbers_first[0]
     ungueltig_zweit = bulkVotes.list_numbers_second[0]
-    
+
     ungueltige_bundes_erst = """update bundeslandaggregation
     set ungueltigeerst = ungueltigeerst + {}
     where wahljahr = 2021
@@ -314,12 +312,11 @@ def add_bulk_votes(bulkVotes: BulkVotes):
     cur.execute(ungueltige_deutschland_erst)
     sql_con.commit()
 
-    ungueltige_deutschland_zweit= """update DeutschlandAggregation
+    ungueltige_deutschland_zweit = """update DeutschlandAggregation
     set ungueltigezweit = ungueltigezweit + {}
     where wahljahr = 2021""".format(ungueltig_zweit)
     cur.execute(ungueltige_deutschland_zweit)
     sql_con.commit()
-
 
     ungueltige_kreis_erst = """update wahlkreisaggretation
     set ungueltigeerst = ungueltigeerst + {}
@@ -328,13 +325,12 @@ def add_bulk_votes(bulkVotes: BulkVotes):
     cur.execute(ungueltige_kreis_erst)
     sql_con.commit()
 
-    ungueltige_kreis_zweit= """update wahlkreisaggretation
+    ungueltige_kreis_zweit = """update wahlkreisaggretation
     set ungueltigezweit = ungueltigezweit + {}
     where wahljahr = 2021
     and wahlkreis = {}""".format(ungueltig_zweit, bulkVotes.wahlkreis)
     cur.execute(ungueltige_kreis_zweit)
     sql_con.commit()
-
 
     print(num_votes)
     bundeslandagg = """update bundeslandaggregation
@@ -353,7 +349,7 @@ def add_bulk_votes(bulkVotes: BulkVotes):
     where wahljahr = 2021
     and wahlkreis = {}""".format(num_votes, num_votes, bulkVotes.wahlkreis)
     cur.execute(wahlkreisagg)
-    
+
     sql_con.commit()
     update_percent_erst = """with neue_prozente as (
     select ba.bundesland, p.KurzBezeichnung, bsa.anzahlerststimmen*100.0000/(ba.anzahlwaehlende-ba.ungueltigeerst) as prozenterst, bsa.anzahlzweitstimmen*100.0000/(ba.anzahlwaehlende-ba.ungueltigezweit)as prozentzweit
@@ -557,6 +553,8 @@ def add_vote_zweit(vote: VoteZweit):
 # erst - first_last_party
 # zweit - party number
 # if voter chose to not vote, values are None
+
+
 def add_vote(vote):
     wahlkreis = vote.wahlkreis
     erststimme_party = -1
@@ -625,7 +623,6 @@ def add_vote(vote):
     cur.execute(wahlkreis_partei_erst)
     sql_con.commit()
 
-
     bundesland_partei_zweit = """update bundeslandstimmenaggregation
     set anzahlzweitstimmen = anzahlzweitstimmen + 1
     where wahljahr = 2021
@@ -647,9 +644,7 @@ def add_vote(vote):
     cur.execute(wahlkreis_partei_zweit)
     sql_con.commit()
 
-
-
-    if(erststimme_party == -1):  # ungueltig 1
+    if (erststimme_party == -1):  # ungueltig 1
         ungueltige_bundes_erst = """update bundeslandaggregation set ungueltigeerst = ungueltigeerst + 1
         where wahljahr = 2021
         and bundesland = (select bundesland from wahlkreis where wahlkreisid = {})""".format(wahlkreis)
@@ -666,26 +661,25 @@ def add_vote(vote):
         and wahlkreis = {}""".format(wahlkreis)
         cur.execute(ungueltige_kreis_erst)
         sql_con.commit()
-    if(zweitstimme_party == -1): # ungueltig 2
+    if (zweitstimme_party == -1):  # ungueltig 2
         ungueltige_bundes_zweit = """update bundeslandaggregation
         set ungueltigezweit = ungueltigezweit + 1
         where wahljahr = 2021
         and bundesland = (select bundesland from wahlkreis where wahlkreisid = {})""".format(wahlkreis)
         cur.execute(ungueltige_bundes_zweit)
         sql_con.commit()
-        ungueltige_deutschland_zweit= """update DeutschlandAggregation
+        ungueltige_deutschland_zweit = """update DeutschlandAggregation
         set ungueltigezweit = ungueltigezweit + 1
         where wahljahr = 2021"""
         cur.execute(ungueltige_deutschland_zweit)
         sql_con.commit()
-        ungueltige_kreis_zweit= """update wahlkreisaggretation
+        ungueltige_kreis_zweit = """update wahlkreisaggretation
         set ungueltigezweit = ungueltigezweit + 1
         where wahljahr = 2021
         and wahlkreis = {}""".format(wahlkreis)
         cur.execute(ungueltige_kreis_zweit)
         sql_con.commit()
 
-    
     bundeslandagg = """update bundeslandaggregation
     set anzahlwahlberechtigte = anzahlwahlberechtigte + 1, anzahlwaehlende = anzahlwaehlende + 1, bevoelkerung = bevoelkerung + 1
     where wahljahr = 2021
